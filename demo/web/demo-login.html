@@ -1,0 +1,75 @@
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script src="/lib/sockjs/sockjs.min.js"></script>
+<script type="text/javascript" src="/lib/SR_REST.js"></script>
+<script type="text/javascript" src="config.js"></script>
+<script>
+
+// retrieve account & password from HTML elements
+function getInput() {
+
+    var account = document.getElementById('account').value; 
+	var email = document.getElementById('email').value; 
+    var password = document.getElementById('password').value;
+	var server = document.getElementById('server').value;
+	
+	return {account: account, email: email, password: password, server: server};	
+}
+
+// allow string to check if it begins with something
+// ref: http://stackoverflow.com/questions/1767246/javascript-check-if-string-begins-with-something
+String.prototype.startsWith = function (needle) {
+    return(this.indexOf(needle) == 0);
+};
+
+function login(type) {
+	SR.login(type, getInput(), function (result) {
+		
+		// process login success
+		if (result.code === 0) {
+			alert('success, msg: ' + result.msg);
+			
+			// do not redirect if it's just to reset password
+			if (type !== 'getpass')
+				window.location = 'demo-lobby.html';
+		}
+		else if (result.code === 1) {
+			alert('fail, msg: ' + result.msg);
+		}
+		else if (result.code === 2) {
+			alert('error, msg: ' + result.msg);
+		}
+		else if (result.code === 3) {
+			alert('data mismatch, msg: ' + result.msg);
+		}	
+		else {
+			alert('unknown error code: ' + result.code);
+		}
+	});
+}
+
+</script>
+</head>
+
+<body>
+
+<form name="login" action="" method="GET">
+
+Account: <input type="text" value="" id="account">
+Password: <input type="text" value="" id="password">
+e-mail: <input type="text" value="" id="email">
+<br>
+Remote Server: <input type="text" value="" id="server">
+<br>
+<a href="javascript:login('account')">Login</a><br>
+<!-- <a href="javascript:login('FB');">FB Login</a><br> -->
+<a href="javascript:login('guest')">Guest Login</a><br>
+<p>
+<a href="javascript:login('getpass')">Forgot Password</a><br>
+<a href="javascript:login('register')">Register</a><br>
+
+</form>
+</body>
+</html>

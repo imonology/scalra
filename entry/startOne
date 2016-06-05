@@ -1,0 +1,4 @@
+#!/bin/bash
+cd ..
+node ./entry/frontier.js ./entry/settings.js $1 $2
+

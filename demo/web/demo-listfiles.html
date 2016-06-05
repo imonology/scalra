@@ -1,0 +1,38 @@
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script src="/lib/sockjs/sockjs.min.js"></script>
+<script type="text/javascript" src="/lib/SR_REST.js"></script>
+<script type="text/javascript" src="config.js"></script>
+<script>
+
+var onConnect = function () {
+	
+	console.log('onConnect called...');
+	SR.sendEvent('SHOW_UPLOAD', function (res) {
+		console.log('res:');
+		console.log(res);
+		document.write('<b>已上傳檔案 (直接點選可下載, 或按右鍵另存新檔):</b><br>');
+		document.write('<a href="/web/demo-upload.html">繼續上傳</a><p>');
+		document.write('<div>');
+		for (var i=0; i < res.files.length; i++) {
+			document.write('<a href=\"/event/DOWNLOAD?filename=' + res.files[i] + '\" target=\"_blank\">' + res.files[i] + '</a></br>');	
+		}
+		document.write('</div>');
+		document.close();
+	});		
+}
+
+// perform action only after page is loaded
+document.addEventListener ("DOMContentLoaded", function () {
+
+});
+
+</script>
+</head>
+<body>
+	
+	
+</body>
+</html>

@@ -1,0 +1,3 @@
+#!/bin/bash
+screen -m -d -S $1 forever -a -o ./log/forever.log -e ./log/forever.err ./$1/frontier.js $2 $3
+

@@ -1,0 +1,4 @@
+/bin/su scalra -c "/usr/bin/screen -dmS monitor bash -c '/home/scalra/users/scalra/Scalra/start; exec bash'"
+/bin/su scalra -c "/usr/bin/screen -dmS pmgt bash -c 'cd /home/scalra/users/scalra/icpm; node utils/pmgtdaemon/pmgtdaemon.js; exec bash'"
+/bin/su scalra -c "/usr/bin/screen -dmS icpm bash -c 'cd /home/scalra/users/scalra/icpm; node app.js; exec bash'"
+

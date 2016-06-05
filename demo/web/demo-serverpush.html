@@ -1,0 +1,35 @@
+
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<script src="/lib/sockjs/sockjs.min.js"></script>
+<script src="/lib/SR_REST.js"></script>
+<script src="config.js"></script>
+<script type="text/javascript">
+<!--
+	
+	var channel = 'test';
+	var textarea;
+
+	var onMessage = function (data, ch) {
+		// display message
+		textarea.value += (ch + ': ' + data.data + '\n') ;
+	}
+
+	var onConnect = function () {
+		textarea = document.getElementById('messageArea'); 
+		SR.subscribe(channel, 0, onMessage);		
+	}
+
+// -->
+</script>
+
+</head>
+
+<body>
+
+<textarea id="messageArea" rows="15" cols="100" ></textarea>
+</body>
+
+</html>

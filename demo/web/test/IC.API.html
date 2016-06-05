@@ -1,0 +1,22 @@
+
+<html>
+
+// test SR.API
+				
+// negative test
+SR.API.HelloWorld(function (err, result) {
+	if (err) {
+		return SR.error(err);
+	}
+	SR.warn(result);
+});
+
+// positive test
+SR.API.HelloWorld({name: 'John'}, function (err, result) {
+	if (err) {
+		return SR.error(err);
+	}
+	SR.warn(result);	
+});
+
+</html>

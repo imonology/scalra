@@ -1,0 +1,167 @@
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script src="/lib/sockjs/sockjs.min.js"></script>
+<script type="text/javascript" src="/lib/SR_REST.js"></script>
+<script type="text/javascript" src="config.js"></script>
+<script>
+
+var accountField = undefined;
+var emailField = undefined;
+var dataArea = undefined;
+
+var onConnect = function () {
+	
+	console.log('onConnect called...');
+	SR.sendEvent('SR_QUERY_USERDATA', function (result) {
+		
+		if (result.code === 0 && result.data) {
+			accountField.value = result.data.account; 
+			emailField.value = result.data.email;
+			
+			var str = JSON.stringify(result.data.data, undefined, 2);
+			dataArea.value = str;
+		}
+	});	
+	
+	// check if SR.Video exists
+	if (typeof SR.Video === 'object') {
+		console.log('SR.Video exists...');
+		if (typeof SR.Video.WebRTC === 'object')
+			console.log('SR.Video.WebRTC exists...');
+	}
+}
+
+// perform action only after page is loaded
+document.addEventListener ("DOMContentLoaded", function () {
+    
+	// load message area
+	accountField = document.getElementById("account");
+	emailField = document.getElementById("email");
+	dataArea = document.getElementById('user_data');
+	
+});
+
+function logout () {
+	SR.login('logout', {account: accountField.value}, function (result) {
+		
+		// process login success
+		if (result.code === 0) {
+			alert('success, msg: ' + result.msg);
+			// switch page
+			if (result.msg.startsWith('ACCOUNT_LOGOUT_SUCCESS')) {
+				var url = './demo-login.html';
+				//alert('going to URL: ' + url);
+				window.location.href = url;
+			}
+		}
+		else if (result.code === 1) {
+			alert('fail, msg: ' + result.msg);
+			var url = './demo-login.html';
+			window.location.href = url;			
+		}
+		else {
+			alert('error, msg: ' + result.msg);
+		}
+	});		
+}
+
+var onResponse = function (result) {
+	// process login success
+	if (result.code === 0) {
+		alert('success, msg: ' + result.msg);		
+	}
+	else if (result.code === 1) {
+		alert('fail, msg: ' + result.msg);
+	}
+	else {
+		alert('error, msg: ' + result.msg);
+	}
+}
+
+function update_email() {
+
+	var account = document.getElementById("account").value;
+	var email = document.getElementById("email").value;
+
+	SR.login('SR_UPDATE_EMAIL', {account: account, email: email}, onResponse);
+}
+
+function update_data() {
+
+	var obj = undefined;
+	
+	try {
+		obj = JSON.parse(dataArea.value);
+	}
+	catch (e) {
+		console.log('parse error: ');
+		console.log(e);
+	}
+
+	if (obj === undefined) {	
+		alert('no data to update or cannot properly parse input data');
+		return;
+	}
+	
+	SR.sendEvent('SR_UPDATE_USERDATA', obj, function (type, result) {
+		
+		if (type !== 'SR_UPDATE_USERDATA')
+			return false;
+		
+		// if success
+		if (result.code === 0)
+			alert('update user data succcess: ' + result.msg);
+		else
+			alert('update user data failed: ' + result.msg);
+		
+		return true;
+		
+	});
+}
+
+function add_account() {
+
+	var account = document.getElementById("local_account").value;
+	var password = document.getElementById("local_password").value;
+	var server = document.getElementById("server").value;
+
+	SR.login('addlocal', {account: accountField.value, local_account: {account: account, password: password, server: server}}, onResponse);
+}
+
+</script>
+
+</head>
+
+<body>
+
+<form name="login" action="" method="GET">
+Main Lobby
+<p>
+
+account: <input type="text" value="" id="account">
+email: <input type="text" value="" id="email">
+<a href="javascript:update_email()">Change E-mail</a><br>
+<a href="javascript:logout()">Logout</a><br>
+<a href="./demo-chat.html">Chat</a><br>
+<a href="./demo-upload.html">Upload</a><br>
+<a href="./demo-listfiles.html">List Uploads</a><br>
+<a href="./demo-TTT.html?multiuser=true">Tic-tac-toe</a><br>
+<p>
+user_data:<br>
+<textarea id="user_data" rows="10" cols="100"></textarea>
+<a href="javascript:update_data()">Update data</a><br>
+<p>
+
+<p>
+	
+Local account: <input type="text" value="" id="local_account">
+Password: <input type="text" value="" id="local_password">
+Server: <input type="text" value="" id="server">
+<a href="javascript:add_account()">Add Account</a><br>
+<p>
+
+</form>
+</body>
+</html>

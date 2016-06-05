@@ -1,0 +1,72 @@
+<html>
+<head>
+<script type="text/javascript" src="/lib/SR_REST.js"></script>
+<script>
+
+var connected = false;
+
+var connectEntry = function () {
+	
+// get a entry server
+// list is in the format of (ip_port -> RTT)
+// NOTE: the list must return with at least one entry
+SR.queryEntry(function (list) {
+
+	if (connected)
+		return;
+
+	var minEntry = '';
+	var minRTT = 100000;
+	
+	// find the least RTT entry and connect
+	for (var i in list) {
+		if (list[i] < minRTT) {
+			minRTT = list[i];
+			minEntry = i;
+		}
+	}
+		
+	// connect to closest entry
+	var url = 'http://' + minEntry + '/event/PING';
+	httpGet(url, function (res) {
+		if (!res) {
+			console.log('HTTP error');
+			return;
+		}
+		
+		connected = true;
+		
+		var type = res[HEADER_UPDATE];
+		var para = res[HEADER_PARA];
+		
+		document.getElementById('textArea').value = para;
+	});
+});
+
+}
+
+
+</script>
+</head>
+<body>
+
+<a href="javascript:connectEntry()">Connect to Entry Server</a>
+<p>
+
+
+<textarea id="textArea">
+
+</textarea>
+
+<script>
+
+
+
+
+</script>
+
+
+</body>
+</html>
+
+

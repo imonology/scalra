@@ -1,0 +1,298 @@
+
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script src="/lib/sockjs/sockjs.min.js"></script>
+<script src="/lib/SR_REST.js"></script>
+<script src="./logic.js"></script>
+<script src="./display.js"></script>
+<script type="text/javascript">
+<!--
+	/*
+		A demo for using Scalra to build a simple tic-tac-toe game
+	*/
+	
+    //
+    //  config & globals
+    //
+    var bound = {x: 500, y: 500};
+    
+    // game logic
+    var logic = undefined;
+
+	// Handler for Scalra socket server connetion
+	var onSocketEvent = function (response){
+		console.log( '***Socket.IO connection response: '	+ response);
+		
+		// check connection response returned by Scalra socket server
+		switch (response){
+			// socket.io library loaded failed
+			case 'socket_load_failed': {
+				alert('socket io error: socket.io.js must be loaded');
+			}
+			break;
+			
+			// Scalra socket server connected successfully
+			case 'connect':	{
+				//onConnect();
+			}
+			break;
+			
+			/*
+			// Scalra socket server reconnected successfully
+			case 'reconnect': {
+				SR.subscribe(channel, 0, onMessage);
+				SR.subscribe('lobby', 0, onMessage);
+			}
+			break;
+			*/
+				
+			case 'disconnect': {
+				alert('***Socket.IO connection response: '  + response);
+			}
+			break;
+			
+			// Scalra socket server connection failed
+			case 'error': {
+				alert('***Socket.IO connection response: '  + response);
+			}
+            break;
+			
+			// Scalra socket server reconnected failed
+			case 'reconnect_failed': {
+                alert('***Socket.IO connection response: '  + response);
+            }
+            break;
+			
+			// Scalra socket server reconnection error
+            case 'reconnect_error': {
+                 alert('***Socket.IO connection response: '  + response);
+            }
+            break;
+		}
+	};
+                                             
+    // perform action only after page is loaded
+    document.addEventListener ("DOMContentLoaded", function () {
+        
+        // 
+        //  drawing code
+        //
+
+        // reference to page objects
+        var canvas     = document.getElementById('canvasArea');
+        var mouse_x    = document.getElementById("mouse_x");
+        var mouse_y    = document.getElementById("mouse_y");
+                         
+        // init display object
+        Display.init(bound, canvas,
+                     document.getElementById('messageArea'),
+                     document.getElementById('titleArea'));
+
+        //
+        // User Interaction / Page Manipulation code
+        //
+		
+		// update format: 
+		//	{	start: 'number',		// indicate which player to start next (0 or 1)
+		//		cells: [],				// which symbols are in which cells
+		//		winner: 'string',		// which player has won
+		//  }
+		
+        var onUpdate = function (update) {
+		
+			// new game
+			if (typeof update.start === 'number') {
+				
+                // set edge layout
+                var layout = [
+                    {a: {x: bound.x/3, y: 0}, b: {x: bound.x/3, y: bound.y}},
+                    {a: {x: bound.x/3*2, y: 0}, b: {x: bound.x/3*2, y: bound.y}},
+                    {a: {x: 0, y: bound.y/3}, b: {x: bound.x, y: bound.y/3}},
+                    {a: {x: 0, y: bound.y/3*2}, b: {x: bound.x, y: bound.y/3*2}}
+                ];                
+            
+				// draw new grids, clean out nodes
+				Display.update({edges: layout, nodes: []});
+				Display.writeText('\n=== 新局開始 ===');			
+				Display.writeText('玩家 ' + (update.start === 0 ? 'O' : 'X') + ' 先');
+				return;
+			}
+
+			// draw latest cells
+			Display.update({nodes: update.cells});
+            
+            // tie game
+            if (update.winner === 'Tie')
+                alert('平手!');
+            // someone wins
+            else if (update.winner !== '') {
+                
+                // convert winning pattern to an edge
+                var num;
+                var a = undefined;
+                var b = undefined;
+                
+                for (var i=0; i < 9; i++) {
+                    num = 1 << (8-i);
+                    if ((num & update.pattern)) {
+                        if (a === undefined)
+                            a = i;
+                        else
+                            b = i;
+                    }
+                }
+    
+                // draw winning line   
+				Display.drawCells(a, b);
+				
+				if (update.hasOwnProperty('msg') === false)
+					update.msg = update.winner + ' 贏了!';
+                            
+                // show who wins
+                Display.writeText(update.msg);
+                alert(update.msg);
+            }
+        }
+     
+        // reflect change in parameters to display
+        function updateFields (mouse) {
+                        
+            if (mouse) {
+                mouse_x.value = mouse.x;
+                mouse_y.value = mouse.y;
+            }
+            
+            Display.render();
+        }
+        
+		// when a click happens at x, y coord
+        var clickEvent = function (x, y) {
+                                  
+            // determine which cell is clicked
+            var width_x = bound.x / 3;
+            var width_y = bound.y / 3;
+            var cell_x = Math.floor(x / width_x);
+            var cell_y = Math.floor(y / width_y);
+                                 
+            // calculate cell index
+            var idx = cell_x + cell_y * 3;        
+            logic.inputCell(idx);
+        }
+
+        // get mouse down events
+        canvas.addEventListener ("mousedown", function (event) {
+            var x = event.pageX;
+            var y = event.pageY;
+            
+            // get adjusted x & y coordinates            
+            x = x - Display.topleft[0];
+            y = y - Display.topleft[1];
+            
+            clickEvent(x, y);
+        });
+          
+		// mouse input
+        canvas.addEventListener ("mousemove", function (event) {
+                        
+            var x, y;
+            
+            if (event.offsetX) {
+                x = event.offsetX;
+                y = event.offsetY;
+            }
+            else if (event.layerX) {
+                x = event.layerX;
+                y = event.layerY;
+            }
+            
+            // re-obtain origin
+            Display.refreshOrigin(); 
+                        
+            // get adjusted x & y coordinates            
+            x = x - Display.topleft[0];
+            y = y - Display.topleft[1];
+            
+            updateFields({x: x, y: y}); 
+        });
+        
+        //
+        //  network code
+        //
+        
+        // create socket (but only if account exists)
+        var multiuser = SR.getParameterByName('multiuser');
+		
+        if (multiuser !== 'true') {
+            // define game logic for single-player
+            logic = new Logic(onUpdate);  		
+		}
+		else {
+		
+			var onResponse = function (type, data) {
+				switch (type) {
+					case 'USER_LOGIN_REPLY':
+						Display.title.value = data.name; 
+						return true;
+					
+					case 'USER_INPUT_REPLY':
+						onUpdate(data);
+						return true;
+						
+					case 'WAIT_USER':
+						Display.writeText('等另位使用者...');
+						return true;
+						
+					case 'GAME_START':
+						Display.writeText('遊戲開始, 對手: ' + data.opponent);
+						Display.writeText(data.msg);
+						return true;
+						
+					case 'GAME_OVER':
+						Display.writeText('對手離開: ' + data.depart + ' 等下一位...');
+						Display.writeText(data.msg);					
+						return true;
+						
+					default:
+						return false;
+				}
+			}
+        
+			SR.setSocketServer({port: 37070, 
+								onEvent: onSocketEvent, 
+								onDone: function () {
+									// perform user login
+									// NOTE: no username is supplied
+									SR.sendEvent('USER_LOGIN', {}, onResponse);
+								}
+							   });
+			
+            // define game logic
+            logic = {
+                inputCell: function (idx) {
+                    SR.sendEvent('USER_INPUT', {index: idx}, onResponse);
+                }
+            }                
+        }
+  
+    });    
+                
+// -->
+</script>
+
+</head>
+
+<body>
+<noscript>You need to enable Javascript in your browser for this page to display properly.</noscript>
+<center>
+name: <input id="titleArea"  type="text" value="Single Player" size="10" maxlength="10"/>
+mouse_x: <input id="mouse_x" type="text" value="" size="4" maxlength="5"/>
+mouse_y: <input id="mouse_y" type="text" value="" size="4" maxlength="5"/>
+<br />
+<canvas id="canvasArea" width="500" height="500" onclick=""></canvas>
+<textarea id="messageArea" rows="25" cols="30" ></textarea>
+</center>
+</body>
+
+</html>

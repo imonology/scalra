@@ -1,0 +1,18 @@
+
+  export SR_USER=/home/scalra/users
+  export SR_PATH=$SR_USER/syhu/Scalra
+  export SRPM_PATH=$SR_USER/mrmoneyc/icpm
+
+ulimit -a
+
+echo SR_USER
+ls $SR_USER
+
+echo SR_PATH
+ls $SR_PATH
+
+echo SRPM_PATH
+ls $SRPM_PATH
+
+screen -ls 
+

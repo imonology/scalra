@@ -1,0 +1,188 @@
+
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="/lib/sockjs/sockjs.min.js"></script>
+<script src="/lib/SR_REST.js"></script>
+<script type="text/javascript" src="display.js"></script>
+<script type="text/javascript">
+<!--
+	/*
+		Demo for spatial publish/subscribe (SPS) services
+		author: Shun-Yun Hu
+		
+		history:  
+			2014-07-29	revised
+			2014-12-30  adapt for new SR_REST
+			2015-01-29	simplify & refactor
+	*/
+
+    //
+    // config & initial data
+    //
+    var WORLD_SIZE = {x: 500, y: 500};		// world canvas size
+    var UPDATE_INTERVAL = 1000;				// how long to send in position events
+	var MOVE_DELTA = 5;						// how many pixels to move at once
+	
+	// local list of neighbors
+	var neighbors = {};
+	
+	// self info
+	var self = {
+		id: 'u' + Math.floor(Math.random() * 10000),
+		x: Math.floor(Math.random() * WORLD_SIZE.x),
+		y: Math.floor(Math.random() * WORLD_SIZE.y),
+		r: 100
+	};
+		
+	//
+	// local UI update
+	//
+	
+	var showMessageUpdate = function (message, channel) {
+		Display.writeText('[' + channel + '] ' + message);
+	}
+		
+	// format of each element in array 'updates':
+	// {id: 'string', x: 'number', y: 'number', r: 'number', layer: 'string'}
+	var showPositionUpdate = function (updates) {
+	
+		// update neighbor list, remove nodes departing (lacking x/y info)
+		for (var i=0; i < updates.length; i++) {
+			if (typeof updates[i].x === 'undefined')
+				delete neighbors[updates[i].id];
+			else
+				neighbors[updates[i].id] = updates[i];
+		}
+
+        // convert to array form (to draw self & neighbors)
+        var nodes = [];
+        nodes.push(self);
+		for (var id in neighbors)
+            nodes.push(neighbors[id]);
+
+        Display.update({circles: nodes});		
+	}
+	
+	var doPubSub = function () {
+		
+		//
+		// channel pub/sub example
+		//
+    
+		ic.subscribe({
+			channel: 'lobby',
+			last: 100,
+			onMessage: showMessageUpdate,
+			onDone: function () {
+				console.log('SR_REST subscribe success');
+				ic.publish({
+					channel: 'lobby',
+					message: "hello world!"			
+				});
+			}
+		});	
+		
+		//
+		// spatial pub/sub example
+		//
+    
+		// randomly change self position (50% chance choosing between up/down, left/right)
+		var move = function () {
+			self.x += (Math.random() * 100 < 50 ? MOVE_DELTA : -MOVE_DELTA);
+			self.y += (Math.random() * 100 < 50 ? MOVE_DELTA : -MOVE_DELTA);
+			ic.move({
+				id: self.id,
+				area: self
+			});
+		}
+		
+		// subscribe to an area given a position and radius
+		ic.subscribe({
+			id: self.id,
+			area: self,
+			layer: 'demo',
+			onMessage: showMessageUpdate,
+			onUpdate: showPositionUpdate,
+			onDone: function () {
+				showMessageUpdate('[' + self.id + '] subscribed');
+				
+				// perform an area publication
+				ic.publish({
+					id: self.id,
+					area: self,
+					message: 'hello from ' + self.id,
+					layer: 'common'
+				});
+				setInterval(move, UPDATE_INTERVAL);
+			}
+		});
+	}
+	
+	//
+	// init code
+	//
+	
+	var ic = SR.init({
+		api_key:	'scalra-demo',
+		onStatus: 	function (e) { if (e !== 'connect') alert(e); },
+		onDone:		doPubSub
+	});
+		
+    //
+    // User Interaction / Page Manipulation code
+    //
+	
+    // shutdown when page is closed
+    $(window).bind(
+        "beforeunload", 
+        function() { 
+			// perform shutdown actions
+        }
+    );
+	        
+    // perform action only after page is loaded
+    document.addEventListener ("DOMContentLoaded", function () {
+    
+        var canvasArea = document.getElementById ("canvasArea");
+		var textArea = document.getElementById('textArea');
+		
+        // reference to display position
+        var pos_x      = document.getElementById("pos_x");
+        var pos_y      = document.getElementById("pos_y");
+        var mouse_x    = document.getElementById("mouse_x");
+        var mouse_y    = document.getElementById("mouse_y");
+        var self_id    = document.getElementById("self_id");
+        var radius     = document.getElementById ("radius");
+        
+        // set initial values                
+        radius.value   = self.r;
+        self_id.value  = self.id;
+
+        // init display
+        Display.init(WORLD_SIZE, canvasArea, textArea, self_id);
+    });
+
+// -->
+</script>
+
+</head>
+
+<body>
+id: <input id="self_id" type="text" value="" size="20" maxlength="20"/>
+x:  <input id="pos_x" type="text" value="" size="4" maxlength="5"/>
+y:  <input id="pos_y" type="text" value="" size="4" maxlength="5"/>
+radius: <input id="radius" type="text" value="100" size="4" maxlength="5"/>
+mouse_x: <input id="mouse_x" type="text" value="" size="4" maxlength="5"/>
+mouse_y: <input id="mouse_y" type="text" value="" size="4" maxlength="5"/>
+<br />
+<noscript>You need to enable Javascript in your browser for this page to display properly.</noscript>
+<center>
+<canvas id="canvasArea" width="500" height="500" onclick=""></canvas>
+<textarea id="textArea" rows="25" cols="30" ></textarea>
+</center>
+</body>
+
+</html>

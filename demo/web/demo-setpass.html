@@ -1,0 +1,59 @@
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script src="/lib/sockjs/sockjs.min.js"></script>
+	<script type="text/javascript" src="/lib/SR_REST.js"></script>
+<script type="text/javascript" src="config.js"></script>
+<script>
+
+// retrieve account & password from HTML elements
+function getInput() {
+
+	return {password: document.getElementById('password').value, 
+			confirm: document.getElementById('confirm').value,
+			token:   SR.getParameterByName('token')};	
+}
+
+function login(type) {
+	SR.login(type, getInput(), function (result) {		
+		
+		// process login success
+		if (result.code === 0) {
+			alert('success, msg: ' + result.msg);
+				
+			var url = './demo-login.html';
+			alert('going to URL: ' + url);
+			window.location.href = url;			
+		}
+		else if (result.code === 1) {
+			alert('fail, msg: ' + result.msg);
+		}
+		else if (result.code === 2) {
+			alert('error, msg: ' + result.msg);
+		}
+		else if (result.code === 3) {
+			alert('data mismatch, msg: ' + result.msg);
+		}	
+		else {
+			alert('unknown error code: ' + result.code);
+		}
+	});
+}
+
+</script>
+</head>
+
+<body>
+
+<form name="SetPass" action="" method="GET">
+
+Password: <input type="text" value="" id="password">
+Confirm: <input type="text" value="" id="confirm">
+<br>
+<a href="javascript:login('setpass')">Reset</a><br>
+
+
+</form>
+</body>
+</html>

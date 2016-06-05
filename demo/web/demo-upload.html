@@ -1,0 +1,54 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<script src="/lib/jquery/2.1.4/jquery.min.js"></script>
+<script>
+function uploadFile(){
+	var formData = new FormData($("#frmUploadFile")[0]);
+	$.ajax({
+		url: '/upload',
+		type: 'POST',
+		data: formData,
+		async: false,
+		cache: false,
+		contentType: false,
+		processData: false,
+		success: function(data){
+			console.log(data);
+			if (200 === data.code) {
+				$("#imgShow").attr('src', data.msg.url);
+				$("#spanMessage").html("upload success");
+				console.log(data.upload);
+			} else {
+				$("#spanMessage").html("upload failure");
+			}
+			console.log('imgUploader upload success, data:', data);
+		},
+	    error: function(){
+			$("#spanMessage").html("failure to connect to server");
+		}
+	});
+}
+ </script>
+		
+</head>
+
+
+<body>
+<b>Upload Demo</b>
+<p>
+請選擇要上傳的檔案 (可同時選多個檔案), 再點選「上傳檔案」
+
+<form action="/upload" enctype="multipart/form-data" method="post" action='javascript:;' role = "form" id = "frmUploadFile">
+	<input type="file" name="upload" multiple="multiple">
+	<input type="submit" value="上傳檔案" />
+	<br>
+	<!-- <input type="radio" name="toPreserveFileName" value="true" checked>保留檔名<br> -->
+	<!-- <input type="radio" name="toPreserveFileName" value="false">不保留檔名 -->
+	<!-- <br>Options: <input type="text" name="firstOption"> -->
+
+</form>
+
+<!-- <button class = "btn btn-primary" onClick = "uploadFile()">upload by javascript</button> -->
+</body>
+</html>

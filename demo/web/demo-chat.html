@@ -1,0 +1,159 @@
+
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<!-- script type="text/javascript" src="/lib/socket.io/socket.io.min.js"></script> -->
+<script type="text/javascript" src="/lib/sockjs/sockjs.min.js"></script>
+<script type="text/javascript" src="/lib/SR_REST.js"></script>
+<script type="text/javascript" src="config.js"></script>
+<script type="text/javascript">
+<!--
+	/*
+		Scalra demo: chatroom
+	
+	*/
+	
+	var onConnect = function () {
+		SR.subscribe(channel, 100, onMessage);
+		SR.subscribe('lobby', 50, onMessage);
+				
+		// query current user's name, if available
+		SR.login('getaccount', {}, function (result) {
+			if (result.code === 0)
+				document.getElementById('nameArea').value = result.msg;
+		});			
+	}
+
+	// Handler for Scalra socket server connetion
+	var onSocketEvent = function (connectionResponse){
+		console.log( '*** connection response: '	+ connectionResponse);
+		
+		// check connection response returned by Scalra socket server
+		switch (connectionResponse){
+			// socket.io library loaded failed
+			case 'load_failed': {
+				alert('web socket library must be loaded');
+			}
+			break;
+			
+			// Scalra socket server connected successfully
+			case 'connect':	{
+				onConnect();
+			}
+			break;
+			
+			/*
+			// Scalra socket server reconnected successfully
+			case 'reconnect': {
+				SR.subscribe(channel, 0, onMessage);
+				SR.subscribe('lobby', 0, onMessage);
+			}
+			break;
+			*/
+				
+			case 'disconnect': {
+				alert('***disconnect, connection response: '  + connectionResponse);
+			}
+			break;
+			
+			// Scalra socket server connection failed
+			case 'error': {
+				alert('***error, connection response: '  + connectionResponse);
+			}
+            break;
+			
+			// Scalra socket server reconnected failed
+			case 'reconnect_failed': {
+                alert('***reconnect_fail, connection response: '  + connectionResponse);
+            }
+            break;
+			
+			// Scalra socket server reconnection error
+            case 'reconnect_error': {
+                 alert('***reconnect_error, connection response: '  + connectionResponse);
+            }
+            break;
+		}
+	};
+
+	// set default channel
+	var channel = 'main';
+	var textarea = undefined;
+
+	// show something
+	var show = function (msg) {
+		if (textarea) {
+        	textarea.value += (msg + '\n');
+        	textarea.scrollTop = textarea.scrollHeight;		
+		}
+		//console.log('show: ' + msg);
+	}
+
+	var onMessage = function (data, ch) {
+		// display message
+		show('[' + ch + '] ' + data.who + ' says: ' + data.msg);
+	}
+	
+	var chat = function () {
+		var name = document.getElementById('nameArea').value;
+		var ch =  document.getElementById('channelArea').value;
+		var msg =  document.getElementById('chatArea').value;
+		
+		// check if channel is updated
+		if (ch !== channel) {
+			// unsubscribe old channel
+			SR.unsubscribe(channel);
+			
+			// subscribe new channel
+			show('\nentering new channel: ' + ch + '...\n');
+			channel = ch;
+			SR.subscribe(channel, 100, onMessage);
+			SR.subscribe(channel + '_info', 0, onMessage);
+		}
+		
+		//alert(name + ' says: ' + msg);
+		SR.publish(channel, {who: name, msg: msg});
+		var cmd = msg.split(" ");
+		if (cmd[0].charAt(0) === "/") {
+			console.log(cmd[0]);
+			
+			var onResponse = function (type, para) {
+										
+				console.log(type);
+				console.log(para);
+				return true;
+			};
+			
+			SR.sendEvent(cmd[0].substr(1), {data: 'test 中文', age: 15}, onResponse);
+		}
+		
+		document.getElementById('chatArea').value = '';
+	}
+
+    // perform action only after page is loaded
+    document.addEventListener("DOMContentLoaded", function () {		
+		document.getElementById('channelArea').value = channel;
+		textarea = document.getElementById('messageArea');
+	});
+
+// -->
+</script>
+
+</head>
+
+<body>
+<noscript>You need to enable Javascript in your browser for this page to display properly.</noscript>
+
+<table>
+<tr><td>name:</td><td><input id="nameArea"  type="text" value="UserName" size="10" maxlength="10"/></td></tr>
+<tr><td>channel:</td><td><input id="channelArea"  type="text" value="" size="50" maxlength="50"/></td></tr>
+<tr><td>text:</td><td> <input id="chatArea"  type="text" value="Hello World!" size="100" maxlength="100" onkeydown="if (event.keyCode == 13) { chat(); return false; }"/>
+	<input type='button' value='chat' size="50" onclick="chat()">
+	</td></tr>
+</table>
+<p>
+<textarea id="messageArea" rows="15" cols="100" ></textarea>
+</body>
+
+</html>

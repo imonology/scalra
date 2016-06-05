@@ -1,0 +1,50 @@
+
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/></head>
+upload demo for SR
+<body>
+ <script src="http://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
+ <script>
+function uploadFile(){
+	var formData = new FormData($("#frmUploadFile")[0]);
+	$.ajax({
+		url: '/upload',
+		type: 'POST',
+		data: formData,
+		async: false,
+		cache: false,
+		contentType: false,
+		processData: false,
+		success: function(data){
+			console.log(data);
+			if(200 === data.code) {
+				$("#imgShow").attr('src', data.msg.url);
+				$("#spanMessage").html("upload success");
+				console.log(data.upload);
+			} else {
+				$("#spanMessage").html("upload failure");
+			}
+			console.log('imgUploader upload success, data:', data);
+		},
+	    error: function(){
+			$("#spanMessage").html("failure to connect to server");
+		}
+	});
+}
+ </script>
+<!-- <form action="/lib/uploaded_files.html" enctype="multipart/form-data" method="post"> -->
+
+<form action="/upload" enctype="multipart/form-data" method="post" action='javascript:;' role = "form" id = "frmUploadFile">
+
+<input type="radio" name="toPreserveFileName" value="true" checked> to preserve file name
+<br>
+<input type="radio" name="toPreserveFileName" value="false"> not to preserve file name
+<br>Options:
+<input type="text" name="firstOption">
+<br>
+<input type="file" name="upload" multiple="multiple">
+<input type="submit" value="Upload file" />
+</form>
+
+<button class = "btn btn-primary" onClick = "uploadFile()">upload by javascript</button>
+</body>
+</html>

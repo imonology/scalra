@@ -1,0 +1,5 @@
+#!/bin/bash
+screen -m -d -S e1 ./startOne 
+screen -m -d -S e2 ./startOne
+screen -m -d -S e3 ./startOne
+

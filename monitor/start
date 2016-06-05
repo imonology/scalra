@@ -1,0 +1,4 @@
+#!/bin/bash
+cd ..
+screen -m -d -S monitor node ./monitor/frontier.js ./monitor/settings.js 
+
