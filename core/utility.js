@@ -43,6 +43,7 @@ getLocalDomain
 validatePath					
 validateFile										// check if a file exists on file system or not (file size > 0)
 validateFileSync									// check if a file exists and is accessible (sync version)
+findValidFile										// search several directories to find a valid file
 getDirectoriesSync									// get a list of directories under a given path
 isPortOpen(port, onResponse)						// check whether a given port is still open
 getSystemInfo()										// get a current snapshot of system's hardware
@@ -719,7 +720,7 @@ exports.getDirectoriesSync = function (srcpath) {
 
 
 // check if a file exists on file system or not (file size > 0)
-exports.validateFile = function (path, onDone) {
+var l_validateFile = exports.validateFile = function (path, onDone) {
 	
 	// version 1: simply check existence (size 0 will return 'true')
 	//SR.fs.exists(path, onDone);
@@ -745,7 +746,31 @@ exports.validateFileSync = function (path) {
 	}
 }
 
+// search several directories to find a valid file
+exports.findValidFile = function (list, path, onDone) {
+	
+	list.forEach(function (base_path, i) {
 
+		if (!onDone)
+			return;
+
+		var fullpath = SR.path.resolve(base_path, path);		
+		l_validateFile(fullpath, function (result) {
+			if (result) {
+				if (onDone) {
+					//LOG.warn('findValidFile: ' + fullpath, l_name);
+					UTIL.safeCall(onDone, null, fullpath);
+					onDone = undefined;
+				}
+			}
+			
+			// nothing found
+			if (i === list.length-1) {
+				UTIL.safeCall(onDone, 'not found');	
+			}
+		});		
+	});	
+}
 
 // see: http://stackoverflow.com/questions/5802840/javascript-node-js-getting-line-number-in-try-catch
 // print out content of an error
