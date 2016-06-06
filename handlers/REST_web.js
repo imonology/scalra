@@ -37,24 +37,20 @@ var l_readFile = function (path, onDone) {
 var l_defaultFiles = SR.Settings.DEFAULT_FILES;
 
 
-var l_web = function (res, req, fullpath) {
+var l_web = function (res, req, base_path, relative_path) {
 	var cookie = SR.REST.getCookie(req);
-	LOG.warn('GET ' + fullpath, 'handlers.REST_web');
+	
+	LOG.warn('GET ' + relative_path, 'handlers.REST_web');
 	
 	var onNotFound = function () {
-		SR.REST.reply(res, {}, {not_found: fullpath, cookie: cookie});
+		//SR.REST.reply(res, {}, {not_found: relative_path, cookie: cookie});
+		SR.REST.reply(res, undefined, {not_found: relative_path, cookie: cookie});
 	}
 
 	var onReturnFile = function (data, options) {
-		// serve HTML page (with content type)		
-
+		// serve HTML page (with content type)
+		//LOG.warn(typeof data);
 		SR.REST.reply(res, data, options);
-		
-		/*
-		res.writeHead(200, headers);
-		res.write(data, "binary");
-		res.end();
-		*/
 	}
 	
 	// server a particular file, returns true/false
@@ -82,61 +78,77 @@ var l_web = function (res, req, fullpath) {
 		});		
 	}
 	
-	// try to serve files (including potential default files)
-	SR.fs.stat(fullpath, function (err, stats) {
+	var fullpath = SR.path.resolve(base_path, relative_path);
+	
+	//LOG.warn('base: ' + base_path + ' fullpath: ' + fullpath);
+	var list = [base_path].concat(SR.Settings.MOD_PATHS);
+	//LOG.warn('list: ');
+	//LOG.warn(list);
+	
+	UTIL.findValidFile(list, relative_path, function (err, fullpath) {
 		
-		// nothing found
+		//LOG.warn('findValidFile done, fullpath: ' + fullpath);
 		if (err) {
+			//LOG.error(err);
 			return onNotFound();
 		}
 		
-		// serve the file
-		if (stats.isFile()) {
-			serveFile(fullpath);
-		}
-		// if it's directory, try default pages
-		else if (stats.isDirectory()) {
+		// try to serve files (including potential default files)
+		SR.fs.stat(fullpath, function (err, stats) {
 			
-			LOG.sys(fullpath + ' is a directory', 'handlers.REST_web');
-			
-			// append '/' if not already there
-			if (fullpath.charAt(fullpath.length-1) !== '/')
-				fullpath += '/';
-
-			var filejob = function (name) {
-					
-				return function (onDone) {
-					serveFile(name, function (result) {
-						if (result === true) {
-							success = true;
-							onDone(false);
-						}
-						else
-							onDone(true);
-					});
-				};
+			// nothing found
+			if (err) {
+				return onNotFound();
 			}
-
-			// check each potential file by using a JobQueue
-			var jq = SR.JobQueue.createQueue();
-			var success = false;
+			
+			// serve the file
+			if (stats.isFile()) {
+				serveFile(fullpath);
+			}
+			// if it's directory, try default pages
+			else if (stats.isDirectory()) {
+				
+				LOG.sys(fullpath + ' is a directory', 'handlers.REST_web');
+				
+				// append '/' if not already there
+				if (fullpath.charAt(fullpath.length-1) !== '/')
+					fullpath += '/';
+	
+				var filejob = function (name) {
 						
-			for (var i=0; i < l_defaultFiles.length; i++) {
-				jq.add(filejob(fullpath + l_defaultFiles[i]), false);
+					return function (onDone) {
+						serveFile(name, function (result) {
+							if (result === true) {
+								success = true;
+								onDone(false);
+							}
+							else
+								onDone(true);
+						});
+					};
+				}
+	
+				// check each potential file by using a JobQueue
+				var jq = SR.JobQueue.createQueue();
+				var success = false;
+							
+				for (var i=0; i < l_defaultFiles.length; i++) {
+					jq.add(filejob(fullpath + l_defaultFiles[i]), false);
+				}
+				
+				// last job to return not found
+				jq.add(function () {
+					if (success !== true)
+						onNotFound();
+				});
+				
+				jq.run();
 			}
-			
-			// last job to return not found
-			jq.add(function () {
-				if (success !== true)
-					onNotFound();
-			});
-			
-			jq.run();
-		}
-		// return not found
-		else {
-			onNotFound();
-		}
+			// return not found
+			else {
+				onNotFound();
+			}
+		});
 	});	
 }
 
@@ -152,8 +164,8 @@ l_handles.web = function (path_array, res, JSONobj, req) {
 	}
 	
 	// reconstruct pathname
-	var fullpath = './web/' + path_array.slice(2).join('/');
-	l_web(res, req, fullpath);
+	var relative_path = 'web/' + path_array.slice(2).join('/');
+	l_web(res, req, './', relative_path);
 }
 
 
@@ -167,8 +179,11 @@ l_handles.lib = function (path_array, res, JSONobj, req) {
 	}
 	
 	// reconstruct pathname
-	var fullpath = __dirname + '/../lib/' + path_array.slice(2).join('/');
-	l_web(res, req, fullpath);
+	var relative_path = 'lib/' + path_array.slice(2).join('/');
+	
+	// find valid lib file (may exist in other modules's /lib path)
+	
+	l_web(res, req, SR.path.resolve(__dirname, '../'), relative_path);
 }
 
 SR.REST.addHandler(l_handles);

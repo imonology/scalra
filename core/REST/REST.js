@@ -225,8 +225,9 @@ exports.reply = function (res, res_obj, options, headers) {
 		res.end(res_obj, is_binary ? "binary" : undefined);
 	}
 	else {
-		res.status(404);
-		res.end('Not Found');
+		//res.status(404);
+		res.writeHead(404, header);
+		res.end('404 Not Found');
 	}
 	LOG.sys('(after) header sent: ' + res.headersSent, 'SR.REST');
 }
