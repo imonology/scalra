@@ -48,7 +48,7 @@ var settings = exports.settings = {
 	// monitor setting
 	//
 	//~ IP_MONITOR           : local_config.IP_MONITOR || local_config.IP_LOBBY,
-	PORT_MONITOR         : 37010,
+	PORT_MONITOR         : 37000,
 	PORT_EDITOR          : 443,
 	PORT_PROJECTS        : 37030,
 	PORT_APP_RANGE_START : 40000,				// start of the assigned port range for monitor
