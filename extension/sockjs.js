@@ -29,8 +29,11 @@ var l_convert = function (str) {
 // start server
 exports.start = function (http_server, onDone) {
 	
-	l_connHandler = SR.Settings.FRONTIER.getConnectionHandler();
+	//l_connHandler = SR.Settings.FRONTIER.getConnectionHandler();
 
+	var ss = SR.Call('socketserver.get');
+	l_connHandler = ss.getConnectionHandler();
+	
 	// create sockjs server
 	// NOTE: it's a local variable that will be passed to outside
 	var server = sockjs.createServer();
