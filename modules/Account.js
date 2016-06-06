@@ -151,9 +151,16 @@ UserPermissions.prototype.create = function (i_strAccount, i_data, o_onDone, o_o
 	//更新資料
 	if (i_strAccount != undefined)
 		this.strAccount = i_strAccount;
+	else {
+		LOG.error('no account provided to create permission');
+		LOG.stack();
+	}
 	aether.copyObj(this, i_data);
 
 	var that = this;
+	//LOG.warn('UserPermissions.create [' + i_strAccount + '] with:');
+	//LOG.warn(that);
+	
 	//新增會員資料
 	DB.insertValue('UserPermissions', that,
 		function () {
@@ -1678,7 +1685,9 @@ AccountPermissions.prototype.getGroupAccountInfo = function (i_data, o_onDone, o
 //sysEvent.evtServerOpen.register(function () {
 SR.Callback.onStart(function () {
 	LOG.warn("AccountPermissions::onServerOpen() Server開啟");
-	//
+	//LOG.stack();
+	
+	// TODO: should not fix account creation here
 	DB.selectValue('User_Account', {
 			'strAccount': "admin"
 		},
@@ -1692,7 +1701,9 @@ SR.Callback.onStart(function () {
 						'timeNew': AeDate.getAeDateNum()
 					},
 					function (iii_data) {
-						LOG.warn("AccountPermissions::onServerOpen iii_data", iii_data);
+						LOG.warn("AccountPermissions::onServerOpen iii_data");
+						LOG.warn(iii_data);
+						
 						var l_permissions = new UserPermissions();
 						var l_obj = {
 							'bVideo': true, //控制錄影權限
@@ -1706,7 +1717,8 @@ SR.Callback.onStart(function () {
 							'bLogin': true //軟體更新權限
 						};
 						//寫入權限
-						l_permissions.create(iii_data.strAccount, l_obj,
+						// TODO: very bad way to access strAccount
+						l_permissions.create('admin', l_obj,
 							function (i_permissions) {
 								if (i_permissions != null) {
 									LOG.warn("AccountPermissions::onServerOpen i_permissions", i_permissions);
@@ -2703,12 +2715,18 @@ l_handlers.Account_user_getInfo = function (i_event) {
 	/*
 	l_data = 不需要資料
 	*/
+	LOG.warn('session:');
+	LOG.warn(i_event.session);
+	
 	var l_user = SR.Account.getUserByUUID(i_event.session['_strUUID']);
 	if (l_user == undefined) { //未登入
+		LOG.warn('user is not logined... cannot get info', l_name);
 		i_event.done();
 		return;
 	}
-	//LOG.warn("handlerPermissions::Account_user_getInfo l_data", l_data);
+	LOG.warn("Account_user_getInfo l_user");
+	LOG.warn(l_user);
+	
 	//------------------------------------------------------------
 	SR.Account.user.getInfo(l_user.strAccount,
 		function (ii_data) {

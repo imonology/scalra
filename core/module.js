@@ -65,7 +65,13 @@ var l_buildStep = function (module) {
 		config : {},
 		
         start : function (onDone) {
-			module.start(step.config, onDone);
+			module.start(step.config, function () {
+				// NOTE: this is to prevent a project that calls onDone more than once by accident
+				if (onDone) {
+					onDone();
+					onDone = undefined;
+				}
+			});
         },
 
         stop : module.stop
