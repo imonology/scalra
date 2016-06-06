@@ -749,27 +749,31 @@ exports.validateFileSync = function (path) {
 // search several directories to find a valid file
 exports.findValidFile = function (list, path, onDone) {
 	
-	list.forEach(function (base_path, i) {
-
-		if (!onDone)
-			return;
-
-		var fullpath = SR.path.resolve(base_path, path);		
-		l_validateFile(fullpath, function (result) {
-			if (result) {
-				if (onDone) {
-					//LOG.warn('findValidFile: ' + fullpath, l_name);
-					UTIL.safeCall(onDone, null, fullpath);
-					onDone = undefined;
+	var build_task = function (base_path) {
+		return function (onTaskDone) {
+			var fullpath = SR.path.resolve(base_path, path);		
+			l_validateFile(fullpath, function (result) {
+				// if positive result found we just end the search
+				if (result) {
+					onTaskDone(fullpath);
+				} else {
+					onTaskDone(null);
 				}
-			}
-			
-			// nothing found
-			if (i === list.length-1) {
-				UTIL.safeCall(onDone, 'not found');	
-			}
-		});		
-	});	
+			});			
+		}
+	}
+	
+	var tasks = [];
+	for (var i in list) {
+		tasks.push(build_task(list[i]));
+	}
+	
+	SR.async.series(tasks, function (err, results) {
+		if (err) {
+			return UTIL.safeCall(onDone, null, err);
+		}
+		UTIL.safeCall(onDone, 'no files found');
+	});
 }
 
 // see: http://stackoverflow.com/questions/5802840/javascript-node-js-getting-line-number-in-try-catch
