@@ -4,7 +4,7 @@
   "description": "node.js framework to prototype and scale rapidly",
   "main": "index.js",
   "scripts": {
-    "test": "node t/*.js"
+    "test": "node test/*.js"
   },
   "repository": {
     "type": "git",
