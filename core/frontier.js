@@ -195,7 +195,7 @@ exports.icFrontier = function (config) {
 	// get connection handler
 	this.getConnectionHandler = function () {
 		LOG.error('getConnectionHandler: this method is obsolete, please remove its usage..', l_name);
-        //LOG.stack();
+        LOG.stack();
 		
 		var server = SR.Call('socketserver.get');
 		return (server ? server.getConnectionHandler() : undefined); 

@@ -319,10 +319,10 @@ var l_load = function (arr, name, model, cache, onDone) {
 					if (l_mappers.hasOwnProperty(name)) {
 						var key = l_mappers[name].key;
 						var mapping = l_mappers[name].mapping;
-						LOG.warn('storing to mapping for [' + name + '] with key: ' + key + ', mapping:', l_name);
-						LOG.warn(mapping, l_name);
-						LOG.warn('record: ', l_name);
-						LOG.warn(record);
+						//LOG.warn('storing to mapping for [' + name + '] with key: ' + key + ', mapping:', l_name);
+						//LOG.warn(mapping, l_name);
+						//LOG.warn('record: ', l_name);
+						//LOG.warn(record);
 						
 						if (record.hasOwnProperty(key) === false) {
 							LOG.error('new record stored does not have specified key [' + key + ']', l_name);
