@@ -59,11 +59,13 @@ l_module.start = function (config, onDone) {
 	/*
 		Web Frontend
 	*/
-	var express = require(SR.Settings.FRONTIER_PATH + '/../node_modules/express');
+	//var express = require(SR.Settings.FRONTIER_PATH + '/../node_modules/express');
+	var express = require('express');
 	var http = require('http');
 		
 	var app = express();
-	var cookieParser = require(SR.Settings.FRONTIER_PATH + '/../node_modules/cookie-parser')
+	//var cookieParser = require(SR.Settings.FRONTIER_PATH + '/../node_modules/cookie-parser')
+	var cookieParser = require('cookie-parser')
 	
 	// set view engine & directory
 	app.set('views', SR.Settings.FRONTIER_PATH + '/../views');	

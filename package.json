@@ -30,6 +30,8 @@
     "bluebird": "3.4.0",
     "bootstrap": "^3.3.6",
     "cookie": "0.2.4",
+    "cookie-parser": "^1.4.3",
+    "ejs": "^2.4.2",
     "emailjs": "1.0.4",
     "expect": "1.20.1",
     "express": "4.13.4",
