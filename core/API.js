@@ -41,11 +41,11 @@ var l_add = exports.add = function (name, func, checker) {
 	l_list[name] = func;
 	
 	// define wrapper function
-	var wrapper = function (args, onDone, conn) {
+	var wrapper = function (args, onDone, extra) {
 		
 		// if args are not provided then we shift the parameters
 		if (typeof args === 'function') {
-			conn = onDone;
+			extra = onDone;
 			onDone = args;	
 			args = {};
 		}
@@ -60,7 +60,7 @@ var l_add = exports.add = function (name, func, checker) {
 				LOG.error(err, l_name);
 			}
 			UTIL.safeCall(onDone, err, result);
-		}, conn);
+		}, extra);
 	};
 	
 	// store a new wrapper function for calling the specified API
@@ -93,7 +93,12 @@ var l_add = exports.add = function (name, func, checker) {
 				// normal processing
 				event.done({err: err, result: result});
 			}
-		}, event.conn);
+			
+		}, {
+			// NOTE: we also pass connection & session, as extra info
+			conn: event.conn,
+			session: event.session
+		});
 	}
 	var checkers = {};
 	if (typeof checker === 'object' || typeof checker === 'function') {
