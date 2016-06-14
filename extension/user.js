@@ -184,9 +184,9 @@ var l_updateUser = function (query, field, data, onDone) {
 //
 // public methods
 //
-
+// /*account, password, email, user_data, onDone*/
 // register new account
-exports.register = function (arg/*account, password, email, user_data, onDone*/) {
+exports.register = function (arg) {
 	
 	// print basic info to confirm
 	LOG.warn('register new account: ' + arg.account + ' pass: ' + arg.password + ' e-mail: ' + arg.email, 'user.register');
@@ -213,16 +213,18 @@ exports.register = function (arg/*account, password, email, user_data, onDone*/)
 				var enc_pass = l_encryptPass(arg.password);
 				
 				// NOTE: by default a user is a normal user, user 'role' can later be customized
-				var store_data = {uid: uid, 
-								  account: arg.account, 
-								  password: enc_pass, 
-								  pass_tokens: {}, 
-								  enc_type: l_enc_type, 
-								  email: arg.email, 
-								  groups: arg.groups, 
-								  data: arg.data, //application-level cannot modify except this data
-									lastStatus: arg.lastStatus,
-								};
+				var store_data = {
+					uid: uid, 
+					account: arg.account, 
+					password: enc_pass, 
+					pass_tokens: {}, 
+					enc_type: l_enc_type, 
+					email: arg.email, 
+					groups: arg.groups, 
+					permissions: arg.permissions,
+					data: arg.data, //application-level cannot modify except this data
+					lastStatus: arg.lastStatus
+				};
 
 				LOG.warn('store new account entry for: ' + arg.account);
 				SR.DB.setData(SR.Settings.DB_NAME_ACCOUNT, store_data,

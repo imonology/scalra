@@ -189,6 +189,26 @@ l_handlers.SR_UPDATE_USERDATA = function (event) {
 }
 
 
+// initialize session content based on registered or logined user data
+var l_initSession = function (login_id, session, data) {
+
+	// acknowledge as 'logined'	
+	l_loginID[login_id] = data.account;
+	
+	// init session
+	session['_account'] = data.account;
+	
+	// TODO: needs to fix this, should read "groups" from DB
+	session['_groups'] = data.groups;
+	session['_permissions'] = data.permissions;
+	session['lastStatus'] = data.lastStatus;
+	
+	// TODO: centralize handling of logined users?
+	//SR.User.addGroup(user_data.account, ['user', 'admin']);
+}
+
+
+
 // NOTE:
 // if testing SR_LOGIN_REGISTER by URL in browser, need to put parameters into following format:
 // ex.
@@ -224,7 +244,8 @@ l_handlers.SR_LOGIN_REGISTER = function (event) {
 		account:	event.data.data.account, 
 		password:	event.data.data.password, 
 		email:		event.data.data.email, 
-		groups:		event.data.data.groups, 
+		groups:		event.data.data.groups || [],		// by default there's no specific group
+		permissions: [],
 		data:		user_data, 
 		lastStatus: {loginIP: event.conn.host, time: event.conn.time, loginCount: 1}, 
 		onDone: function (err, result) {
@@ -232,19 +253,21 @@ l_handlers.SR_LOGIN_REGISTER = function (event) {
 			if (err) {
 				LOG.warn(err.toString());
 				result = {code: err.code, msg: err.message};
-			}
-			else {
+			} else {
 				// if success, record login_id to account mapping
 				if (result.code === 0) {
-					l_loginID[event.data.login_id] = event.data.data.account;
-
-					// acknowledge as 'logined'
-					event.session['_account'] = event.data.data.account;
+					l_initSession(event.data.login_id, event.session, reg);					
 				}
 			}
 			event.done('SR_LOGIN_RESPONSE', result);
 		}
 	};
+
+	// special handling (by default 'admin' account is special and will be part of the 'admin' group by default
+	if (reg.account === 'admin') {
+		reg.groups.push('admin');
+	}
+
 	SR.User.register(reg);
 }
 
@@ -299,25 +322,19 @@ l_handlers.SR_LOGIN_ACCOUNT = function (event) {
 			if (result.code === 0) {
 				LOG.warn('login success, result: ');
 				LOG.warn(result);
-				l_loginID[event.data.login_id] = user_data.account;
-				event.session['lastStatus'] = result.data.lastStatus;
 
-				// TODO: centralize handling of logined users?
-				//SR.User.addGroup(user_data.account, ['user', 'admin']);
+				var data = {
+					account: user_data.account,
+					groups: result.data.groups,
+					lastStatus: result.data.lastStatus,
+					permissions: []
+				}
+				
+				l_initSession(event.data.login_id, event.session, data);
 
-				// acknowledge as 'logined'
-				//event.session['_account'] = user_data.account;
-				event.session['_account'] = user_data.account;
-
-				// always provide 'user' group (for test purpose now)
-				// TODO: needs to fix this, should read "groups" from DB
-				//event.session['_groups'] = result.data.groups;
-				event.session['_groups'] = result.data.groups;
-
+				/*
 				// todo: read permssion from DB
 				//event.session['_permissions'] = result.data.permissions;
-				//console.log("event.session['_groups']");
-				//console.log(event.session['_groups']);
 				var xx = [];
 				var onSuccess = function(dat){
 					//console.log(dat.permission);
@@ -339,16 +356,16 @@ l_handlers.SR_LOGIN_ACCOUNT = function (event) {
 					//console.log("getting: " + event.session['_groups'][i]);
 					SR.DB.getData(groupPermissionDB, {"group": event.session['_groups'][i], part: "group"}, onSuccess, onFail);
 				}
-				event.session['_permissions'] = xx;
-
+				*/
+				
 				// TODO: login at once to all local accounts
 				// NOTE: need to query all local login account name & password, then perform individual logins
 				l_login_local_accounts(user_data.account);			
 			}
 		}
 
-		LOG.warn('event before sending login response:');
-		LOG.warn(event);
+		//LOG.warn('event before sending login response:');
+		//LOG.warn(event);
 		
 		//if (result.data) delete result.data;
 		// return response regardless success or fail

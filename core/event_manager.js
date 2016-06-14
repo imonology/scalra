@@ -416,6 +416,13 @@ exports.waitSocketsEmpty = function (socket, onDone) {
 	);
 }
 
+// get session content based on a token
+// returns empty collection if not found
+exports.getSession = function (token) {
+	var session_token = new Buffer(token).toString('base64').substring(0,150);	
+ 	return SR.State.get(session_token);
+}
+
 //
 // a Event object, for each incoming packet/request,
 // we turn it into a Event (with 'socket' and 'data') awaiting processing
@@ -445,6 +452,7 @@ function Event (data, conn, token) {
 	this.conn.session_token = new Buffer(token).toString('base64').substring(0,150);
 	
 	// need to de-allocate the sessions when no longer used
+	// TODO: set expire time?
  	this.session = SR.State.get(this.conn.session_token);
 	
 	// record client id (if available)
