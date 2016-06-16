@@ -153,7 +153,7 @@ var l_updateUser = function (query, field, data, onDone) {
 	console.log(data);
 	delete data.login_id;
 	
-	SR.DB.getData(SR.Settings.DB_NAME_ACCOUNT, {account: data.account}, function (dat){
+	SR.DB.getData(SR.Settings.DB_NAME_ACCOUNT, {account: data.account}, function (dat) {
 		console.log("dat");
 		console.log(dat);
 		
@@ -172,7 +172,7 @@ var l_updateUser = function (query, field, data, onDone) {
 					 	});	
 
 
-	}, function(dat){
+	}, function(dat) {
 		//LOG.warn("no existing data");
 	});
 }
@@ -579,18 +579,16 @@ exports.setEmail = function (account, new_email, onDone) {
 exports.getGroups = function (account, onDone) {
 	if (l_logins.hasOwnProperty(account) === true) {
 		UTIL.safeCall(onDone, null, l_logins[account].groups);
-	}
-	else {
+	} else {
 
-		// TODO: combine query with getUser?	
+		// TODO: combine query with getUser?
 		// query DB for the user
 		var query = {account: account};
 		var onSuccess = function (data) {
 			if (data !== null) {
 				// return user's data
 				UTIL.safeCall(onDone, null, data.groups);
-			}
-			else {
+			} else {
 				var err = new Error("account [" + account + "] does not exist, cannot get email");
 				err.name = "getEmail Error";
 				LOG.warn('account [' + account + '] does not exist, cannot get email');
@@ -611,16 +609,30 @@ exports.getGroups = function (account, onDone) {
 // set user permission
 exports.setGroups = function (account, new_groups, onDone) {
 	if (l_logins.hasOwnProperty(account) === false) {
-		var err = new Error("account [" + account + "] not login, cannot set user email");
-		err.name = "setEmail Error";
-		LOG.warn('account [' + account + '] not login, cannot set user email');
+		var err = new Error("account [" + account + "] not login");
+		err.name = "setGroups Error";
+		LOG.warn('account [' + account + '] not login');
 		return UTIL.safeCall(onDone, err);
 	}
-	
+
 	l_logins[account].groups = new_groups;
-	
+
+	var update_user_data = {
+		account: account,
+		data: new_groups
+	}
+
+	var update_user_onDone = function (err) {
+		if (err) {
+			LOG.error(err);
+			onDone(err);
+		} else {
+			onDone();
+		}
+	}
+
 	// store to DB
-	l_updateUser({account: account}, 'group', new_groups, onDone); 
+	l_updateUser({account: account}, 'groups', update_user_data, update_user_onDone);
 }
 
 
