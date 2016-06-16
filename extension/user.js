@@ -100,7 +100,7 @@ var l_addLogin = function (account, data, conn) {
 	LOG.warn('user [' + account + '] login success, total count: ' + Object.keys(l_logins).length, 'user');
 
 	delete data._conn;
-	console.log(data);
+	//console.log(data);
 	
 	// error check: make sure lastStatus field exists
 	if (data.hasOwnProperty('lastStatus') === false || data.lastStatus === null) 
@@ -109,14 +109,6 @@ var l_addLogin = function (account, data, conn) {
 	data.lastStatus.loginIP = conn.host;
 	data.lastStatus.loginCount = data.lastStatus.loginCount + 1;
 	data.lastStatus.time = conn.time;
-
-	//console.log("---------------------");
-	//console.log("account");
-	//console.log(account);
-	//console.log("data");
-	//console.log(data);
-	//console.log("conn");
-	//console.log(conn);
 
 	SR.DB.updateData(SR.Settings.DB_NAME_ACCOUNT, {account: account}, data,
 					 	function () {
@@ -437,6 +429,18 @@ exports.setPass = function (password, token, onDone) {
 	}
 }
 
+// get login data
+exports.getLogin = function (account, onDone) {
+
+	if (l_logins.hasOwnProperty(account) === true) {
+		UTIL.safeCall(onDone, null, l_logins[account]);
+		return l_logins[account];		
+	} else {
+		UTIL.safeCall(onDone, 'account not found');
+		return undefined;
+	}
+}
+
 // get user data for a given logined user (by account name)
 exports.getUser = function (account, onDone) {
 	
@@ -533,7 +537,6 @@ exports.getEmail = function (account, onDone) {
 	}
 	else {
 
-
 		// TODO: combine query with getUser?	
 		// query DB for the user
 		var query = {account: account};
@@ -608,14 +611,14 @@ exports.getGroups = function (account, onDone) {
 
 // set user permission
 exports.setGroups = function (account, new_groups, onDone) {
-	if (l_logins.hasOwnProperty(account) === false) {
+/*	if (l_logins.hasOwnProperty(account) === false) {
 		var err = new Error("account [" + account + "] not login");
 		err.name = "setGroups Error";
 		LOG.warn('account [' + account + '] not login');
 		return UTIL.safeCall(onDone, err);
-	}
+	}*/
 
-	l_logins[account].groups = new_groups;
+	// l_logins[account].groups = new_groups;
 
 	var update_user_data = {
 		account: account,
