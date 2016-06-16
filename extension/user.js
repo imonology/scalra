@@ -147,7 +147,7 @@ var l_removeLogin = function (account) {
 var l_updateUser = function (query, field, data, onDone) {
 
 	var action = {};
-	action[field] = data.data;
+	action[field] = (typeof data === 'string' ? data : data.data);
 
 	console.log("=========data account");
 	console.log(data);
@@ -573,6 +573,54 @@ exports.setEmail = function (account, new_email, onDone) {
 	
 	// store to DB
 	l_updateUser({account: account}, 'email', new_email, onDone); 
+}
+
+// get user permission
+exports.getGroups = function (account, onDone) {
+	if (l_logins.hasOwnProperty(account) === true) {
+		UTIL.safeCall(onDone, null, l_logins[account].groups);
+	}
+	else {
+
+		// TODO: combine query with getUser?	
+		// query DB for the user
+		var query = {account: account};
+		var onSuccess = function (data) {
+			if (data !== null) {
+				// return user's data
+				UTIL.safeCall(onDone, null, data.groups);
+			}
+			else {
+				var err = new Error("account [" + account + "] does not exist, cannot get email");
+				err.name = "getEmail Error";
+				LOG.warn('account [' + account + '] does not exist, cannot get email');
+				UTIL.safeCall(onDone, err);
+			}
+		};
+
+		var onFail = function () {
+			var err = new Error("accessing DB fail");
+			err.name = "getEmail Error";
+			UTIL.safeCall(onDone, err);
+		};
+
+		SR.DB.getData(SR.Settings.DB_NAME_ACCOUNT, query, onSuccess, onFail);
+	}
+}
+
+// set user permission
+exports.setGroups = function (account, new_groups, onDone) {
+	if (l_logins.hasOwnProperty(account) === false) {
+		var err = new Error("account [" + account + "] not login, cannot set user email");
+		err.name = "setEmail Error";
+		LOG.warn('account [' + account + '] not login, cannot set user email');
+		return UTIL.safeCall(onDone, err);
+	}
+	
+	l_logins[account].groups = new_groups;
+	
+	// store to DB
+	l_updateUser({account: account}, 'group', new_groups, onDone); 
 }
 
 

@@ -560,7 +560,7 @@ l_handlers.SR_UPDATE_EMAIL = function (event) {
 /////////////////////////////////////////
 
 l_handlers.SR_GROUP_PERMISSION = function (event) {
-  console.log(event.data); 
+	console.log(event.data); 
 	switch (event.data.action) {
 		case 'setGroup':
 			SR.DB.getData(groupPermissionDB, {"group": event.data.group, part: "group"}, function(data){
