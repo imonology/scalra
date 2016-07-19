@@ -1615,9 +1615,10 @@ exports.dispose = function (onDone) {
     LOG.sys('dispose DB...', 'SR.DB');
 
 	// wait a little, for callbacks to finish (if any), for example, DB write/read..
+	// TODO: can we detect if DB activities exist?
 	setTimeout(function () {
 
     	// all events should be finished now, so this action should be fine
     	SR.DB.disposeDB(onDone);
-	}, 500);
+	}, 1000);
 }
