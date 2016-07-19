@@ -666,7 +666,7 @@ var l_logger = exports.logger = function (msg, caller) {
 		*/
 
 	// perform event log
-	this.event = function (type, data) {
+	this.event = function (type, data, onDone) {
 
 		// record timestamp event to DB
 		SR.DB.setData(SR.Settings.DB_NAME_SYS_EVENT, {
@@ -676,9 +676,11 @@ var l_logger = exports.logger = function (msg, caller) {
 			},
 			function () {
 				LOG.sys('server event [' + type + '] record success', 'SR.LOG');
+				UTIL.safeCall(onDone);
 			},
 			function () {
 				LOG.error('server event [' + type + '] record fail', 'SR.LOG');
+				UTIL.safeCall(onDone, 'server event [' + type + '] record fail');
 			}
 		);
 	}
