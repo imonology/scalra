@@ -140,14 +140,12 @@ var l_updateUser = function (query, field, data, onDone) {
 
 	var action = {};
 	action[field] = (typeof data === 'string' ? data : data.data);
-
-	console.log("=========data account");
-	console.log(data);
-	delete data.login_id;
+	
+	if (typeof data === 'object' && data.login_id) {
+		delete data.login_id;
+	}
 	
 	SR.DB.getData(SR.Settings.DB_NAME_ACCOUNT, {account: data.account}, function (dat) {
-		console.log("dat");
-		console.log(dat);
 		
 		// TODO: remove lastStatus here? 
 		if (dat) {
@@ -188,8 +186,6 @@ exports.register = function (arg) {
 	
         // DB query success
         function (data) {
-			//LOG.warn('query success, data:');
-			//LOG.warn(data);
 			
             if (data !== null) {
 				var err = new Error("ACCOUNT_EXISTS: " + arg.account);
@@ -410,8 +406,8 @@ exports.setPass = function (password, token, onDone) {
 		var uid = l_resets[token];
 		var enc_pass = l_encryptPass(password);
 
-		var l_updateUserDone = function (l_updateUser_err) {
-			if (l_updateUser_err) {
+		var onUpdated = function (error) {
+			if (error) {
 				var err = new Error("ACCOUNT_SETPASS_ERROR: " + uid);
 				err.name = "setPass Error";
 				err.code = 2;
@@ -425,7 +421,7 @@ exports.setPass = function (password, token, onDone) {
 				UTIL.safeCall(onDone, null, {code: 0, msg: 'ACCOUNT_SETPASS_SUCCESS: ' + uid});		
 			}	
 		};
-		l_updateUser({uid: uid}, 'password', enc_pass, l_updateUserDone);
+		l_updateUser({uid: uid}, 'password', enc_pass, onUpdated);
 	}
 }
 
@@ -514,9 +510,9 @@ exports.setUser = function (account, data, onDone) {
 	l_logins[account].data = data;
 	
 	// perform DB write-back
-	var l_updateUserDone = function (l_updateUser_err) {
+	var onUpdated = function (error) {
 
-		if (l_updateUser_err) {
+		if (error) {
 			var err = new Error("set custom data for account [" + account + "] fail");
 			err.name = "setUser Error";
 			LOG.error('set custom data for account [' + account + '] fail', 'user');
@@ -527,7 +523,7 @@ exports.setUser = function (account, data, onDone) {
 			UTIL.safeCall(onDone, null);
 		}	
 	};
-	l_updateUser({account: account}, 'data', l_logins[account], l_updateUserDone);
+	l_updateUser({account: account}, 'data', l_logins[account], onUpdated);
 }
 
 // get user e-mail
@@ -580,6 +576,11 @@ exports.setEmail = function (account, new_email, onDone) {
 
 // get user permission
 exports.getGroups = function (account, onDone) {
+
+	if (typeof account !== 'string' || account === '') {
+		return UTIL.safeCall(onDone, 'account not provided');
+	}	
+	
 	if (l_logins.hasOwnProperty(account) === true) {
 		UTIL.safeCall(onDone, null, l_logins[account].groups);
 	} else {
@@ -619,23 +620,36 @@ exports.setGroups = function (account, new_groups, onDone) {
 	}*/
 
 	// l_logins[account].groups = new_groups;
-
-	var update_user_data = {
-		account: account,
-		data: new_groups
+	// check for correctness
+	if (typeof account === 'undefined' || account === '') {
+		return onDone('account not provided');
 	}
-
-	var update_user_onDone = function (err) {
+	
+	if (new_groups instanceof Array === false) {
+		return onDone('no groups provided');
+	}
+	
+	// remove empty groups
+	var groups = [];
+	for (var i=0; i < new_groups.length; i++) {
+		if (new_groups[i] !== '')
+			groups.push(new_groups[i]);
+	}
+	
+	var onUpdated = function (err) {
 		if (err) {
 			LOG.error(err);
 			onDone(err);
-		} else {
-			onDone();
+		} else {			
+			UTIL.safeCall(onDone);
 		}
 	}
 
 	// store to DB
-	l_updateUser({account: account}, 'groups', update_user_data, update_user_onDone);
+	l_updateUser({account: account}, 'groups', {
+		account: account,
+		data: groups
+	}, onUpdated);
 }
 
 
@@ -670,8 +684,8 @@ exports.addLocal = function (account, local, onDone) {
 		// ref: http://stackoverflow.com/questions/11133912/how-to-use-a-variable-as-a-field-name-in-mongodb-native-findandmodify		
 		var field = 'data.accounts.' + server + '.' + uid;
 		
-		var l_updateUserDone = function (l_updateUser_err) {
-			if (l_updateUser_err) {
+		var onUpdated = function (error) {
+			if (error) {
 				var err = new Error("ADD_LOCAL_ACCOUNT_FAIL: " + account);
 				err.name = "addLocal Error";
 				err.code = 1;
@@ -681,7 +695,7 @@ exports.addLocal = function (account, local, onDone) {
 				UTIL.safeCall(onDone, null, {code: 0, msg: 'ADD_LOCAL_ACCOUNT_SUCCESS: ' + account});
 			}
 		};
-		l_updateUser({account: account}, field, token, l_updateUserDone);
+		l_updateUser({account: account}, field, token, onUpdated);
 	}	
 	
 	// NOTE: by sending the optional 'requester' at the end, this will enable remote server to return a login token back
@@ -720,9 +734,9 @@ var l_createToken = function (uid, token_source, onDone) {
 	var token = UTIL.createToken();
 	
 	// store token back to DB
-	var l_updateUserDone = function (l_updateUser_err) {
-		if (l_updateUser_err) {
-			var err = new Error(l_updateUser_err.toString());
+	var onUpdated = function (error) {
+		if (error) {
+			var err = new Error(error.toString());
 			err.name = "l_createToken Error";
 			UTIL.safeCall(onDone, err);
 		}
@@ -731,7 +745,7 @@ var l_createToken = function (uid, token_source, onDone) {
 			UTIL.safeCall(onDone, null, token);			
 		}
 	};
-	l_updateUser({uid: uid}, 'pass_tokens.' + token, token_source, l_updateUserDone);
+	l_updateUser({uid: uid}, 'pass_tokens.' + token, token_source, onUpdated);
 }
 
 var l_revokeToken = exports.revokeToken = function (uid, token, onDone) {

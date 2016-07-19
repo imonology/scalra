@@ -250,7 +250,7 @@ SR.Callback.onStart(function () {
 
 SR.Callback.onStop(function () {
 	// record system shutdown event
-	LOG.event('SYSTEM_DOWN', SR.Settings.SERVER_INFO);		
+	LOG.event('SYSTEM_DOWN', SR.Settings.SERVER_INFO);
 });
 
 
