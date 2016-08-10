@@ -6,7 +6,7 @@ if [ $# -eq 0 ]
 else
   echo Showing all \'$2\' under directory \'$1\' ...
   
-  grep -R -n --exclude-dir=node_modules --exclude-dir=lib --color=always "$2" "$1"
+  grep -R -n --exclude-dir=log --exclude-dir=node_modules --exclude-dir=lib --color=always "$2" "$1"
 fi
 
 

@@ -168,13 +168,13 @@ exports.create = function (args, onDone) {
 		return UTIL.safeCall(onDone, 'object [' + args.name + '] not defined');	
 	}
 	
-	if (SR.Load.check(l_loadtype, 1) === false) {
-		return UTIL.safeCall(onDone, 'DB creation overload');	
-	}
+	//if (SR.Load.check(l_loadtype, 1) === false) {
+	//	return UTIL.safeCall(onDone, 'DB creation overload');	
+	//}
 	
 	var obj = l_obj[args.name];
 	obj.create(args.data, function (err, result) {
-		SR.Load.check(l_loadtype, -1);
+		//SR.Load.check(l_loadtype, -1);
 		UTIL.safeCall(onDone, err, result);	
 	});	
 }
@@ -225,13 +225,13 @@ exports.update = function (args, onDone) {
 		LOG.warn('result after update:', l_name);
 		l_print(result[0]);
 		
-		if (SR.Load.check(l_loadtype, 1) === false) {
-			return UTIL.safeCall(onDone, 'DB update overload');	
-		}
+		//if (SR.Load.check(l_loadtype, 1) === false) {
+		//	return UTIL.safeCall(onDone, 'DB update overload');	
+		//}
 				
 		// save result
 		result[0].save(function (err, result) {
-			SR.Load.check(l_loadtype, -1);
+			//SR.Load.check(l_loadtype, -1);
 			UTIL.safeCall(onDone, err, result);	
 		});
 	});
@@ -247,9 +247,9 @@ exports.delete = function (args, onDone) {
 		return UTIL.safeCall(onDone, 'object [' + args.name + '] not defined');	
 	}
 	
-	if (SR.Load.check(l_loadtype, 1) === false) {
-		return UTIL.safeCall(onDone, 'DB deletion overload');	
-	}
+	//if (SR.Load.check(l_loadtype, 1) === false) {
+	//	return UTIL.safeCall(onDone, 'DB deletion overload');	
+	//}
 	
 	LOG.warn('ORM.delete args:', l_name);
 	LOG.warn(args, l_name);
@@ -263,13 +263,13 @@ exports.delete = function (args, onDone) {
 		LOG.warn('result found:', l_name);
 		LOG.warn(result, l_name);
 		
-		if (SR.Load.check(l_loadtype, 1) === false) {
-			return UTIL.safeCall(onDone, 'DB deletion overload');	
-		}
+		//if (SR.Load.check(l_loadtype, 1) === false) {
+		//	return UTIL.safeCall(onDone, 'DB deletion overload');	
+		//}
 		
 		// remove this item
 		result[0].remove(function (err, result) {
-			SR.Load.check(l_loadtype, -1);
+			//SR.Load.check(l_loadtype, -1);
 			UTIL.safeCall(onDone, err, result);	
 		});
 	});

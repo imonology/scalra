@@ -617,6 +617,7 @@ var l_map = exports.map = function (args, onDone) {
 			continue;
 		
 		var record = arr[i];
+		
 		if (record.hasOwnProperty(key) === false) {
 			errmsg = '[' + args.name + '] no key [' + key + '] can be found to build mapper';
 			LOG.error(errmsg, l_name);
@@ -624,8 +625,13 @@ var l_map = exports.map = function (args, onDone) {
 			return undefined;
 		}
 		
+		if (record[key] === '') {
+			LOG.error('[' + args.name + '] record has empty key value!', l_name);
+			continue;
+		}
+		
 		if (map.hasOwnProperty(record[key]) === true) {
-			LOG.error('key [' + record[key] + '] already exists in records, duplicate keys found!', l_name);
+			LOG.error('[' + args.name + '] key [' + record[key] + '] already exists in records, duplicate keys found!', l_name);
 		}
 		map[record[key]] = record;
 	}
