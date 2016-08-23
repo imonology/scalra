@@ -113,8 +113,8 @@ exports.createToken = function () {
 }
 
 // create a numerical ID number between 0 and 10,000
-exports.createID = function () {
-	return SR._kit.rand(0, 10000);
+exports.createID = function (limit) {
+	return SR._kit.rand(0, ((typeof limit === 'number' && limit > 0) ? limit : 10000));
 }
 
 exports.getTrimedByteStringByLength = function (pString, trimedByteSz) {
