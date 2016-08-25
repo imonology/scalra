@@ -11,6 +11,9 @@
 	
 	*/
 	
+	// use websocket
+	var connectType = 'sockjs';
+	
 	var onConnect = function () {
 		SR.subscribe(channel, 100, onMessage);
 		SR.subscribe('lobby', 50, onMessage);

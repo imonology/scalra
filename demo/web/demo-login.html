@@ -29,9 +29,15 @@ function login(type) {
 		if (result.code === 0) {
 			alert('success, msg: ' + result.msg);
 			
-			// do not redirect if it's just to reset password
-			if (type !== 'getpass')
-				window.location = 'demo-lobby.html';
+			// do not redirect if it's just to reset password or register
+			if (type === 'getpass')
+				return;
+			else if (type === 'register') {
+				login('account');
+				return;
+			}
+			
+			window.location = 'demo-lobby.html';
 		}
 		else if (result.code === 1) {
 			alert('fail, msg: ' + result.msg);
