@@ -66,7 +66,7 @@ exports.start = function (type, route, port, keys) {
 					if (content_type.startsWith('application/x-www-form-urlencoded'))
 						JSONobj = qs.parse(data);
 					else if (content_type.startsWith('application/json'))
-						JSONobj = UTIL.convertJSON(decodeURSRomponent(data));
+						JSONobj = UTIL.convertJSON(decodeURIComponent(data));
 					else if (content_type.startsWith('application/sdp')) {
 						JSONobj = data;
 					}
@@ -81,7 +81,7 @@ exports.start = function (type, route, port, keys) {
 				}
 			}
 			catch (e) {
-				var msg = 'JSON parsing error for data: ' + data;
+				var msg = 'JSON parsing error for data: ' + data + '\n content_type: ' + content_type;
 				LOG.error(msg, 'SR.REST');
 				//res.writeHead(200, {'Content-Type': 'text/plain'});
 				//res.end(msg);
