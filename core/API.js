@@ -112,4 +112,9 @@ var l_add = exports.add = function (name, func, checker) {
 	return true;
 }
 
+// add first API (allow querying of API name from client-side)
+l_add('SR_API_QUERY', function (args, onDone) {
+	// return a list of registered API directly
+	onDone(null, Object.keys(l_list));
+});
 
