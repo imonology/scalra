@@ -2,9 +2,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<script src="/lib/sockjs/sockjs.min.js"></script>
-<script type="text/javascript" src="/lib/SR_REST.js"></script>
-<script type="text/javascript" src="config.js"></script>
+<script type="text/javascript" src="/lib/scalra.js"></script>
 <script>
 
 // retrieve account & password from HTML elements
@@ -48,6 +46,17 @@ function login(type) {
 			alert('unknown error code: ' + result.code);
 		}
 	});
+}
+
+var onConnect = function () {
+	console.log('connected to scalra server');
+	
+	SR.API.HelloWorld({name: 'john'}, function (err, result) {
+		if (err) {
+			return alert(err);
+		}
+		console.log(result);
+	});	
 }
 
 </script>
