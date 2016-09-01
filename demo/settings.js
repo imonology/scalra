@@ -39,7 +39,7 @@ var settings = exports.settings = {
 		max: 3,
 		overload:  100,
 		//underload: 0
-	}	
+	}
 };
 
 // project-specific MongoDB settings

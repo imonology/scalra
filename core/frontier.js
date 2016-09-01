@@ -43,7 +43,10 @@
 var l_name = 'SR.Frontier';
 
 exports.icFrontier = function (config) {
-		
+	
+	// default to empty config
+	config = config || {components: []};
+	
 	LOG.warn('path in SR: ' + __dirname, l_name);
 	
 	// reference to still access current object despite going into callbacks
@@ -278,6 +281,22 @@ exports.icFrontier = function (config) {
 	    	
 	// NOTE: this has to be loaded here (cannot load in initServer, because Log needs to be init before initServer)
 	// TODO: change this...
+	
+	// load default components
+	SR.Module.addStep(SR.Component.REST());
+	SR.Module.addStep(SR.Component.SockJS());
+	
+	// determine if we should load AppManager or AppConnector components depending on server type
+	if (SR.Settings.ENABLE_CLUSTER_MODE) {		
+		if (SR.Settings.SERVER_INFO.type === 'lobby')
+			SR.Module.addStep(SR.Component.AppManager());
+		else if (SR.Settings.SERVER_INFO.type === 'app')
+			SR.Module.addStep(SR.Component.AppConnector());
+	} else {
+		// make this server 'lobby'-style
+		SR.Settings.SERVER_INFO.type = 'lobby';	
+	}	
+	
 	// add components, if available	
     if (config.components && config.components instanceof Array) {
 		LOG.warn('loading components from Frontier config...', l_name);
@@ -292,23 +311,20 @@ exports.icFrontier = function (config) {
 			if (config.components[i].name === 'AppConnector') {
 				LOG.warn('AppConnector is now auto-loaded, please remove it from config.components', l_name);
 				continue;
-			}			
+			}
+			if (config.components[i].name === 'REST') {
+				LOG.warn('REST is now auto-loaded, please remove it from config.components', l_name);
+				continue;
+			}					
+			if (config.components[i].name === 'SockJS') {
+				LOG.warn('SockJS is now auto-loaded, please remove it from config.components', l_name);
+				continue;
+			}
 			
         	SR.Module.addStep(config.components[i]);
 		}
     }
-	
-	// determine if we should load AppManager or AppConnector components depending on server type
-	if (SR.Settings.ENABLE_CLUSTER_MODE) {		
-		if (SR.Settings.SERVER_INFO.type === 'lobby')
-			SR.Module.addStep(SR.Component.AppManager());
-		else if (SR.Settings.SERVER_INFO.type === 'app')
-			SR.Module.addStep(SR.Component.AppConnector());
-	} else {
-		// make this server 'lobby'-style
-		SR.Settings.SERVER_INFO.type = 'lobby';	
-	}
-	
+		
 	// add modules, if available
 	// NOTE: config.modules contains module 'name' and 'config' ONLY
 	if (config.modules) {

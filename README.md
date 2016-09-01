@@ -12,6 +12,8 @@ SR.API.add('HelloWorld', {
 	onDone(null, {hello: args.name});
 });
 
+var l_frontier = new SR.Frontier();
+l_frontier.init();
 ```
 Then called at server:
 
