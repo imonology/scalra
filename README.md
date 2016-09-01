@@ -16,7 +16,6 @@ SR.API.add('HelloWorld', {
 Then called at server:
 
 ```js
-
 SR.API.HelloWorld({name: 'John'}, function (err, result) {
 	LOG.debug('positive test result: ');
 	if (err) {
@@ -24,21 +23,16 @@ SR.API.HelloWorld({name: 'John'}, function (err, result) {
 	}
 	LOG.warn(result);
 });
-
 ```
 
 Or at clients:
 
 ```html
-
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<html><head>
 <script type="text/javascript" src="/lib/scalra.js"></script>
 <script>
 
 var onConnect = function () {
-	console.log('connected to Scalra server');
 
 	SR.API.HelloWorld({name: 'world'}, function (err, result) {
 		if (err) {
@@ -50,13 +44,16 @@ var onConnect = function () {
 }
 
 </script>
-</head>
-<body>
-</body>
-</html>
+</head></html>
+```
+
+Or request from URL:
 
 ```
 
+http://127.0.0.1:37070/event/HelloWorld?name=world
+
+```
 
 
 ## Installation
@@ -113,7 +110,7 @@ $ npm start
 
 ## People
 
-Scalra is created by [Imonology Inc.] (http://www.imonology.com/) [[github] (https://github.com/imonology)] 																						   
+Scalra is created by [Imonology Inc.](http://www.imonology.com/) [[github](https://github.com/imonology)] 																						   
 
 ## License
 
