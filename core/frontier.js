@@ -321,6 +321,10 @@ exports.icFrontier = function (config) {
 
 	// load default modules
 	SR.Module.load('system', config);
-	SR.Module.load('reporting', config);
+	
+	// load monitor-related functions if specified
+	if (SR.Settings.CONNECT_MONITOR_ONSTART) {
+		SR.Module.load('reporting', config);
+	}
 	
 } // end icFrontier

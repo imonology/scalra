@@ -154,6 +154,9 @@ var settings = exports.settings = {
 	// list of event types excluded from showing in debug messages 
 	HIDDEN_EVENT_TYPES : {'SR_PUBLISH' : true},
 	
+	// automatically connect to localhost monitor server for clustering and liveness check
+	CONNECT_MONITOR_ONSTART:	false,
+	
 	// 
 	// email server config
 	//

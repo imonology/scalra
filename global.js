@@ -155,7 +155,7 @@ process.maxTickDepth = 1000000;
 var SR_version = 'unknown';
 
 try {
-	var data = SR.fs.readFileSync('../package.json', 'utf-8');
+	var data = SR.fs.readFileSync(BASE_DIR + '/package.json', 'utf-8');
 	var package = JSON.parse(data);	
 	SR_version = package.version;
 } catch (e) {
