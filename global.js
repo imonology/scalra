@@ -4,8 +4,6 @@
 // global definitions of common variables and helper functions
 //
 
-// Scalra version number
-var SR_version = '1.0.0';
 var NODE_version = '4.4.3 (LTS)';
 
 //-----------------------------------------
@@ -46,7 +44,6 @@ SR.Tags.WARN =   	SR.Tags.YELLOW;
 SR.Tags.RCV =    	SR.Tags.GREEN + '[RCV] ';
 SR.Tags.SND =    	SR.Tags.GREEN + '[SND] ';
 
-SR.version = 				SR_version;
 SR.Settings =               require(BASE_DIR + 'settings').settings;
 //SR.systemPath = __dirname;
 
@@ -153,4 +150,18 @@ process.maxTickDepth = 1000000;
 // DB query exceeds this depth, then recursive process.nextTick() will happen
 
 
+
+// define & show Scalra version
+var SR_version = 'unknown';
+
+try {
+	var data = SR.fs.readFileSync('../package.json', 'utf-8');
+	var package = JSON.parse(data);	
+	SR_version = package.version;
+} catch (e) {
+	LOG.error(e);
+}
+
+SR.version = SR_version;
 console.log(SR.Tags.YELLOW + 'Scalra ' + SR_version + ' (Node.js ' + NODE_version + ' required)' + SR.Tags.WHITE);
+
