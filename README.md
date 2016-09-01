@@ -1,4 +1,4 @@
-# Scalra (scalable library for real-time API)
+# Scalra
 
   [node](http://nodejs.org) framework to prototype and scale API servers rapidly.
 
@@ -13,6 +13,51 @@ SR.API.add('HelloWorld', {
 });
 
 ```
+Then called at server:
+
+```js
+
+SR.API.HelloWorld({name: 'John'}, function (err, result) {
+	LOG.debug('positive test result: ');
+	if (err) {
+		return LOG.error(err);
+	}
+	LOG.warn(result);
+});
+
+```
+
+Or at clients:
+
+```html
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="/lib/scalra.js"></script>
+<script>
+
+var onConnect = function () {
+	console.log('connected to scalra server');
+	
+	SR.API.HelloWorld({name: 'john'}, function (err, result) {
+		if (err) {
+			return alert(err);
+		}
+		document.write(result);
+		console.log(result);
+	});	
+}
+
+</script>
+</head>
+<body>
+</body>
+</html>
+
+```
+
+
 
 ## Installation
 
