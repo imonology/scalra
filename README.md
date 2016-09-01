@@ -1,6 +1,4 @@
-# scalra
-(Scalable Cooperative Adaptive Library for Real-time API)
-
+# Scalra (scalable library for real-time API)
 
   [node](http://nodejs.org) framework to prototype and scale API servers rapidly.
 
@@ -25,11 +23,11 @@ $ npm install scalra
 ## Features
 
   * Write one API logic for any connection types (HTTP/HTTPS/websocket/socket)
-  * Logic can be called in the same style both in client and server
-  * Shared session data between HTTP and WebSocket requests
-  * publish / subscribe (pub/sub) as messaging layer
+  * Logic is called in the same style at both client and server
+  * Shared sessions between HTTP and WebSocket requests
+  * Publish / subscribe (pub/sub) as messaging layer
   * Auto-reload of modified logic scripts
-  * works out-of-box with [MongoDB](https://www.mongodb.com) and [Express](https://expressjs.com)
+  * Works out-of-box with [MongoDB](https://www.mongodb.com) and [Express](https://expressjs.com)
   
 
 ## Docs & Community
@@ -43,11 +41,6 @@ $ npm install scalra
 
 ```bash
 $ npm install scalra
-```
-
-  Create the app:
-
-```bash
 $ cp -R node_modules/scalra/demo /tmp/foo && cd /tmp/foo
 ```
 
@@ -70,12 +63,12 @@ $ npm start
   the server's reliability, security, and scalability is automatically covered without
   having to worry about re-writing code when the service is under heavy workload. 																						   
 																						   
-  Additional functionalities can be added with Scalra modules that are pluggable. 
+  Additional functionalities can be added with pluggable Scalra modules. 
 																						   
 
 ## People
 
-Scalra is created by the team at [Imonology Inc.] (http://www.imonology.com/) [[github] (https://github.com/imonology)] 																						   
+Scalra is created by [Imonology Inc.] (http://www.imonology.com/) [[github] (https://github.com/imonology)] 																						   
 
 ## License
 
