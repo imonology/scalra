@@ -157,6 +157,9 @@ var settings = exports.settings = {
 	// automatically connect to localhost monitor server for clustering and liveness check
 	CONNECT_MONITOR_ONSTART:	false,
 	
+	// whether to enable app/lobby mode (default to false)
+	ENABLE_CLUSTER_MODE:		false,
+	
 	// 
 	// email server config
 	//

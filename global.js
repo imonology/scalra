@@ -149,7 +149,11 @@ process.maxTickDepth = 1000000;
 // NOTE =  this will limit how big a cursor item can perform toArray(), if # of items returned by cursor in
 // DB query exceeds this depth, then recursive process.nextTick() will happen
 
+// default to be verbose in log messages
+LOG.show('all');
 
+// show debug / warning / error messages
+LOG.setLevel(3);
 
 // define & show Scalra version
 var SR_version = 'unknown';

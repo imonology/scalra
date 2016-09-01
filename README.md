@@ -50,9 +50,7 @@ var onConnect = function () {
 Or request from URL:
 
 ```
-
 http://127.0.0.1:37070/event/HelloWorld?name=world
-
 ```
 
 

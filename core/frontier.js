@@ -43,13 +43,7 @@
 var l_name = 'SR.Frontier';
 
 exports.icFrontier = function (config) {
-	
-	// check required components
-	if (config.path === undefined)
-		return LOG.error('required fields in frontier config missing: path', l_name);
-	else
-		LOG.sys('config.path: ' + config.path, l_name);
-	
+		
 	LOG.warn('path in SR: ' + __dirname, l_name);
 	
 	// reference to still access current object despite going into callbacks
@@ -61,7 +55,7 @@ exports.icFrontier = function (config) {
 	var setting_file = ((process.argv[2] === undefined || process.argv[2].indexOf('settings') === -1) ? 'settings.js' : process.argv[2]);
 	
 	// NOTE: we assume setting file is one level above the frontier directory
-	var setting_path = config.path + SR.Settings.SLASH + '..' + SR.Settings.SLASH + setting_file;
+	var setting_path = SR.path.join(SR.FRONTIER_PATH, '..', setting_file);
 	
 	if (SR.fs.existsSync(setting_path)) {
 		LOG.sys('requiring: ' + setting_path, l_name);
@@ -102,10 +96,9 @@ exports.icFrontier = function (config) {
 
 		// extract frontier name from path
 		// NOTE: the split here may need to 
-		//var words = config.path.split(SR.Settings.DEPLOY_ENV === 'windows' ? '\\' : '/');
-		var words = config.path.split(SR.Settings.SLASH);
+		var words = SR.Settings.FRONTIER_PATH.split(SR.Settings.SLASH);
 		
-		LOG.sys('config.path split:', l_name);
+		LOG.sys('path split:', l_name);
 		LOG.sys(words, l_name);		
 		
 		var owner   = words[words.length-3];
@@ -150,11 +143,11 @@ exports.icFrontier = function (config) {
 		
 		LOG.warn('server: ' + l_frontierName + ' type: ' + SR.Settings.SERVER_INFO.type, l_name);
 	}
-
-	l_createServerInfo();
 	
 	// store frontier path
-	SR.Settings.FRONTIER_PATH = config.path;
+	SR.Settings.FRONTIER_PATH = SR.FRONTIER_PATH;
+
+	l_createServerInfo();
 	
 	// TODO: remove this if possilbe/
 	// right now is used by SR.Component
@@ -207,7 +200,7 @@ exports.icFrontier = function (config) {
 	}
 	
     // enable logging
-	var stepLog = SR.Component.Log(config.path, SR.Settings.SERVER_INFO.name);
+	var stepLog = SR.Component.Log(SR.Settings.FRONTIER_PATH, SR.Settings.SERVER_INFO.name);
 	
     // init necessary data for server execution
     this.init = function (onDone) {
@@ -280,7 +273,7 @@ exports.icFrontier = function (config) {
 		
 		// add handlers, if available
 		for (var i=0; i < config.handlers.length; i++)	
-			SR.Handler.addByFile(config.handlers[i], config.path);
+			SR.Handler.addByFile(config.handlers[i], SR.Settings.FRONTIER_PATH);
 	}	
 	    	
 	// NOTE: this has to be loaded here (cannot load in initServer, because Log needs to be init before initServer)
@@ -306,10 +299,15 @@ exports.icFrontier = function (config) {
     }
 	
 	// determine if we should load AppManager or AppConnector components depending on server type
-	if (SR.Settings.SERVER_INFO.type === 'lobby')
-		SR.Module.addStep(SR.Component.AppManager());
-	else if (SR.Settings.SERVER_INFO.type === 'app')
-		SR.Module.addStep(SR.Component.AppConnector());
+	if (SR.Settings.ENABLE_CLUSTER_MODE) {		
+		if (SR.Settings.SERVER_INFO.type === 'lobby')
+			SR.Module.addStep(SR.Component.AppManager());
+		else if (SR.Settings.SERVER_INFO.type === 'app')
+			SR.Module.addStep(SR.Component.AppConnector());
+	} else {
+		// make this server 'lobby'-style
+		SR.Settings.SERVER_INFO.type = 'lobby';	
+	}
 	
 	// add modules, if available
 	// NOTE: config.modules contains module 'name' and 'config' ONLY
