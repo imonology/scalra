@@ -1,8 +1,7 @@
 //
 //  frontier.js
 //
-//  code for main lobby server
-//  (basic demo for Scalra's functions)
+//  code for main lobby server (basic demo for Scalra's functions)
 //
 
 // Scalra allows specifying a particular version number, for example:
@@ -53,6 +52,7 @@ var config = {
 		{file: 'example/API.js'},
 		//{file: 'example/DHT.js'},
     ],
+	// TODO: init core SR functions without using components		
     components: [
         SR.Component.REST(),                    // start a HTTP server,
 		//SR.Component.REST('HTTPS'),             // start a HTTPS server,
@@ -62,13 +62,12 @@ var config = {
 		//SR.Component.SocketIO('HTTPS'),			// start a socketio HTTPS server		
     ],
 	modules: {
-		// TODO: wish-list init core SR functions without using components
-		'DB': {collections: collections, shutdown_if_fail: true},
+		// disable DB usage by default, uncomment if DB (currently MongoDB) is installed
+		//'DB': {collections: collections, shutdown_if_fail: true},
 		'chat': {limit: 1000, backup: true},
 		'pubsub': {}
 	}
 };
-
 
 // TODO: wish-list (to init a SR function without using Frontier)
 //SR.Module.init('DB', {collections: collections, shutdown_if_fail: true}, onDone);
