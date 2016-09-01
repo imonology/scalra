@@ -1,0 +1,25 @@
+{
+  "name": "scalra-demo",
+  "version": "0.0.1",
+  "description": "demo for the Scalra node.js framework",
+  "scripts": {
+    "start": "node lobby/frontier.js"
+  },
+  "keywords": [
+    "prototyping",
+    "prototype",
+    "server",
+    "scaling",
+    "scalability",
+    "API"
+  ],
+  "author": "Imonology Inc. (dev@imonology.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/imonology/scalra/issues"
+  },
+  "homepage": "https://github.com/imonology/scalra",
+  "dependencies": {
+    "scalra": "*"
+  }
+}

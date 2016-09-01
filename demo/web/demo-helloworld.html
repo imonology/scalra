@@ -1,0 +1,22 @@
+<html>
+<head>
+<script type="text/javascript" src="/lib/scalra.js"></script>
+<script>
+
+var onConnect = function () {
+	console.log('connected to Scalra server');
+
+	SR.API.HelloWorld({name: 'world'}, function (err, result) {
+		if (err) {
+			return alert(err);
+		}
+		document.write('Hello: ' + result.hello);
+		console.log(result);
+	}); 
+}
+
+</script>
+</head>
+<body>
+</body>
+</html>

@@ -17,10 +17,10 @@ var settings = exports.settings = {
 	// app server's settings
 	apps: {
 		'app': {
-			local_name: '應用伺服器'
+			local_name: 'AppServer'
 		},
 		'lobby': {
-			local_name: '應用伺服器'
+			local_name: 'LobbyServer'
 		}	
 	},
 
@@ -30,13 +30,16 @@ var settings = exports.settings = {
 		certificate: __dirname + '/keys/certificate.pem'
 	},
 
-	// settings for starting servers
+	// whether to connect to monitor server by default		
+	CONNECT_MONITOR_ONSTART:	false,
+
+	// settings for load balancing servers
 	servers: {
 		min: 0,
 		max: 3,
 		overload:  100,
 		//underload: 0
-	}	
+	}
 };
 
 // project-specific MongoDB settings

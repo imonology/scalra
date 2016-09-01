@@ -1,12 +1,12 @@
 module.exports = function (version) {
-
+	
 	// check if Scalra is already loaded and provide warning
 	if (typeof SR !== 'undefined') {
 		LOG.error('Scalra version [' + SR.version + '] already loaded...please avoid double-loading');
 		LOG.stack();
 		return;
 	}
-	
+
 	var fs = require('fs');
 	var ver = version || 'curr';
 	
@@ -22,4 +22,10 @@ module.exports = function (version) {
 			path = './global.js';
 	}
 	require(path);
+	
+	// record path to main server (frontier) file
+	// ref: http://stackoverflow.com/questions/13227489/how-can-one-get-the-file-path-of-the-caller-function-in-node-js
+	var dir = require('path').parse(module.parent.filename).dir;
+	//console.log('dir of caller: ' + dir);	
+	SR.FRONTIER_PATH = dir;
 }
