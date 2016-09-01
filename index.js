@@ -26,6 +26,6 @@ module.exports = function (version) {
 	// record path to main server (frontier) file
 	// ref: http://stackoverflow.com/questions/13227489/how-can-one-get-the-file-path-of-the-caller-function-in-node-js
 	var dir = require('path').parse(module.parent.filename).dir;
-	console.log('dir of caller: ' + dir);	
+	//console.log('dir of caller: ' + dir);	
 	SR.FRONTIER_PATH = dir;
 }

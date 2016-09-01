@@ -12,9 +12,10 @@ SR.API.add('HelloWorld', {
 	onDone(null, {hello: args.name});
 });
 
-var l_frontier = new SR.Frontier();
+var l_frontier = new SR.Frontier(37070);
 l_frontier.init();
 ```
+
 Then called at server:
 
 ```js

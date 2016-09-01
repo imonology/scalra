@@ -44,6 +44,11 @@ var l_name = 'SR.Frontier';
 
 exports.icFrontier = function (config) {
 	
+	// check for port only config
+	if (typeof config === 'number') {
+		config = {lobbyPort: config, components: []};	
+	}
+	
 	// default to empty config
 	config = config || {components: []};
 	
@@ -76,10 +81,14 @@ exports.icFrontier = function (config) {
 		}
 	}
 	
+	// TODO: should provide better defaults
 	if (typeof SR.Settings.Project !== 'object') {
-		LOG.error('project settings cannot be found, please check path: ' + setting_path, l_name);
-		return;
+		LOG.warn('project settings not found at \'' + setting_path + '\', use defaults...', l_name);
+		SR.Settings.Project = {};
 	}
+
+	// set lobby port
+	SR.Settings.Project.lobbyPort = config.lobbyPort || SR.Settings.Project.lobbyPort || 37070;
 
 	// override system settings if there are project-specific settings of same names
 	for (var key in SR.Settings.Project) {
