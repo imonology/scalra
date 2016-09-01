@@ -208,6 +208,12 @@ var l_initSession = function (login_id, session, data) {
 }
 
 
+l_handlers.SR_LOGIN_FB = function (event) {
+	SR.SNS.login(event.data.login_id, 'FB', event.data.app_name, function (result) {
+		LOG.warn(result);
+		event.done(result);
+	})
+}
 
 // NOTE:
 // if testing SR_LOGIN_REGISTER by URL in browser, need to put parameters into following format:
