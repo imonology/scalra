@@ -38,15 +38,15 @@ Or at clients:
 <script>
 
 var onConnect = function () {
-	console.log('connected to scalra server');
-	
-	SR.API.HelloWorld({name: 'john'}, function (err, result) {
+	console.log('connected to Scalra server');
+
+	SR.API.HelloWorld({name: 'world'}, function (err, result) {
 		if (err) {
 			return alert(err);
 		}
-		document.write(result);
+		document.write('Hello: ' + result.hello);
 		console.log(result);
-	});	
+	}); 
 }
 
 </script>
