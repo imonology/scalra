@@ -131,7 +131,7 @@ var settings = exports.settings = {
 	TIMEOUT_RELOAD_SCRIPT	: 1,
 	
 	// # of milliseconds before an event is considered timeout
-	TIMEOUT_EXECUTE		: 10000,
+	//TIMEOUT_EXECUTE		: 10000,
 	
 	// millisecond limit before an incoming client event is considered timeout (combined with TIMEOUT_EXECUTE?)
 	TIMEOUT_EVENTHANDLE	: 10000,

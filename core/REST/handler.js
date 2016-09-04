@@ -16,7 +16,6 @@ var url = require('url');
 // for form processing
 var formidable = require("formidable");
 
-var l_timeoutExecute = SR.Settings.TIMEOUT_EXECUTE;
 var l_name = 'SR.REST';
 
 //
@@ -338,7 +337,7 @@ exports.SR = function(path_array, res, JSONobj, req) {
 	}
 
 	// will definitely return something after a timeout
-	var callback = UTIL.timeoutCall(reply_func, l_timeoutExecute, 'executing ' + fullname + ' timeout');
+	var callback = UTIL.timeoutCall(reply_func, SR.Settings.TIMEOUT_EVENTHANDLE, 'executing ' + fullname + ' timeout');
 
 	// prepare callback when done
 	// NOTE: callback may not necessarily return, if the number of arguments passed is incorrect
