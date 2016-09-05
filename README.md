@@ -1,3 +1,5 @@
+[![Build Status - master](https://travis-ci.org/imonology/scalra.svg?branch=master)](https://travis-ci.org/imonology/scalra) [![Build Status - dev](https://travis-ci.org/imonology/scalra.svg?branch=dev)](https://travis-ci.org/imonology/scalra)
+
 # Scalra
 
   [node](http://nodejs.org) framework to prototype and scale API servers rapidly.
