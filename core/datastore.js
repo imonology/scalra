@@ -290,6 +290,12 @@ var l_load = function (arr, name, model, cache, onDone) {
 			// attach function to sync in-memory data to DB
 			// TODO: use prototype not dynamic function?
 			// external dependency: name, arr, l_mappers
+			
+			// returns the size of the data items stored
+			arr.size = function () {
+				return arr.length;
+			}
+			
 			arr.add = function (data, onAddDone) {
 			
 				LOG.warn('add new [' + name + '] entry:', l_name);
@@ -406,12 +412,15 @@ var l_load = function (arr, name, model, cache, onDone) {
 					name: name,
 					key: cache.key,
 					map: cache.map
+				}, function () {
+					// return after mapping is built
+					UTIL.safeCall(onDone, null, {name: name, array: arr});
 				});
+			} else {
+				// return immediately
+				//LOG.warn('[' + name + '] load success with length: ' + arr.length, l_name);	
+				UTIL.safeCall(onDone, null, {name: name, array: arr});
 			}
-			
-			//LOG.warn('[' + name + '] load success with length: ' + arr.length, l_name);
-			
-			UTIL.safeCall(onDone, null, {name: name, array: arr});
 		});
 	});
 }
@@ -568,6 +577,7 @@ var l_get = exports.get = function (args, onDone) {
 	// NOTE: this works even if select is specified and the attributes returned is only a subset
 	result.add = arr.add;
 	result.remove = arr.remove;
+	result.size = arr.size;
 		
 	//LOG.warn('result after select:');
 	//LOG.warn(result);
@@ -639,6 +649,7 @@ var l_map = exports.map = function (args, onDone) {
 	// append add/remove element functions
 	map.add = arr.add;
 	map.remove = arr.remove;
+	map.size = arr.size;
 	
 	// store the mapping relations & the key name used
 	l_mappers[args.name] = {
