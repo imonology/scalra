@@ -73,9 +73,9 @@ exports.route = function (req, res, JSONobj) {
 				LOG.sys(data, 'SR.REST');
 
 				data = UTIL.convertJSON(data);
-				LOG.sys('data=', 'SR.REST');
 				LOG.sys(typeof data, 'SR.REST');
-				LOG.sys(data, 'SR.REST');
+				LOG.debug('_data=', 'SR.REST');				
+				LOG.debug(data, 'SR.REST');
 
 				JSONobj = UTIL.mixin(JSONobj, data);
 			} else {
