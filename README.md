@@ -101,6 +101,13 @@ $ npm install scalra
 $ npm start
 ```
 
+  Verify server is up with:
+						
+```
+http://127.0.0.1:37070/event/HelloWorld?name=world
+```
+
+									
 ## Philosophy
 
   Scalra is designed to allow server developers to focus on logic development instead 
