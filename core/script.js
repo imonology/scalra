@@ -120,7 +120,7 @@ exports.monitor = function (name, fullpath, args) {
 		return undefined;
 	}
 		
-	LOG.debug('requiring: ' + fullpath, l_name);
+	LOG.sys('requiring: ' + fullpath, l_name);
 	// perform require, pass in optional arguments as well
 	try {
 		if (typeof args !== 'undefined') {

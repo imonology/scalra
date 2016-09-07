@@ -321,12 +321,12 @@ exports.icFrontier = function (config) {
 				LOG.warn('AppConnector is now auto-loaded, please remove it from config.components', l_name);
 				continue;
 			}
-			if (config.components[i].name === 'REST') {
-				LOG.warn('REST is now auto-loaded, please remove it from config.components', l_name);
+			if (config.components[i].name === 'REST-HTTP') {
+				LOG.warn('REST (HTTP) is now auto-loaded, please remove it from config.components', l_name);
 				continue;
 			}					
-			if (config.components[i].name === 'SockJS') {
-				LOG.warn('SockJS is now auto-loaded, please remove it from config.components', l_name);
+			if (config.components[i].name === 'SockJS-HTTP') {
+				LOG.warn('SockJS (HTTP) is now auto-loaded, please remove it from config.components', l_name);
 				continue;
 			}
 			

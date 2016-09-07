@@ -105,7 +105,7 @@ var l_add = exports.add = function (name, func, checker) {
 		checkers[name] = checker;	
 	}
 
-	LOG.warn('transforming [' + name + '] as handler...', l_name);
+	LOG.sys('transforming [' + name + '] as handler...', l_name);
 	SR.Handler.add({handlers: handlers, 
 					checkers: checkers});
 	

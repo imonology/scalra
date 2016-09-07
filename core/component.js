@@ -234,16 +234,16 @@ l_components['AppConnector'] = exports.AppConnector = function () {
 
 // REST Service
 l_components['REST'] = exports.REST = function (type, handle_list, port) {
-    
+
+	// default to HTTP
+	type = type || 'HTTP';
+		
 	var stepRESTService = {
 
-		name: 'REST',		
+		name: 'REST-' + type,
 		
         start : function (onDone) {
 
-			// default to HTTP
-			type = type || 'HTTP';
-			
 			// convert port to numerical value
 			if (port && typeof port === 'string')
 				port = parseInt(port);
@@ -358,13 +358,13 @@ l_components['FB'] = exports.FB = function () {
 // socket.io Service
 l_components['SocketIO'] = exports.SocketIO = function (type) {
 
+	type = type || 'HTTP';
+		
     var step = {
 
-		name: 'SocketIO',
+		name: 'SocketIO-' + type, 
 		
         start : function (onDone) {
-
-			type = type || 'HTTP';
 
 			var port = SR.Settings.FRONTIER.getHostAddress().port + SR.Settings.PORT_INC_SOCKETIO;
 
@@ -423,14 +423,14 @@ l_components['SocketIO'] = exports.SocketIO = function (type) {
 // SockJS Service
 l_components['SockJS'] = exports.SockJS = function (type) {
 
+	type = type || 'HTTP';
+	
     var step = {
 		
 		created : false,
-		name: 'SockJS',
+		name: 'SockJS-' + type,
 		
         start : function (onDone) {
-
-			type = type || 'HTTP';
 
 			var http_server = undefined;
 			
