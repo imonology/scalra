@@ -396,7 +396,8 @@ l_components['SocketIO'] = exports.SocketIO = function (type) {
 			
             // pass frontier's event dispatcher to handle incoming events
             // TODO: better approach?
-			SR.SocketIO.start(server_or_port, SR.Settings.FRONTIER.getConnectionHandler(), function () {
+			//SR.SocketIO.start(server_or_port, SR.Settings.FRONTIER.getConnectionHandler(), function () {
+			SR.SocketIO.start(server_or_port, function () {
 				UTIL.safeCall(onDone);
 			}, options); 
         },

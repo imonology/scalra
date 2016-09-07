@@ -44,8 +44,14 @@ var l_createEventHandler = function (conn) {
 }
 
 // start server
-exports.start = function (server_or_port, conn_handler, onDone, options) {
+exports.start = function (server_or_port, onDone, options) {
 
+	// record connection handler
+	//l_connHandler = conn_handler;
+	
+	var ss = SR.Call('socketserver.get');
+	l_connHandler = ss.getConnectionHandler();	
+	
 	// create listen server
 	io = require('socket.io').listen(server_or_port, options);
 	
@@ -78,10 +84,7 @@ exports.start = function (server_or_port, conn_handler, onDone, options) {
 	//var err_level = LOG.getLevel();
 	//LOG.warn('set error level to: ' + err_level, 'SR.SocketIO');
 	//io.set('log level', 2);
-	
-	// record connection handler
-	l_connHandler = conn_handler;
-	
+		
 	//var handlers = SR.Handler.get().getHandlers();
 	
 	// set auth method & get cookie
