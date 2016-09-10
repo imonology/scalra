@@ -18,7 +18,7 @@ This also allows Scalra to create DB on the fly for you.
 ```sudo apt-get install mongodb-clients```  
 
 2. Setup MongoDB admin account 
-```$mongo```
+`$mongo`
 
 then type:
 ```
