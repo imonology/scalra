@@ -18,7 +18,6 @@ This also allows Scalra to create DB on the fly for you.
 ```
 sudo apt-get install mongodb-clients
 ```  
-
 2. Setup MongoDB admin account 
 ```
 $mongo
@@ -45,18 +44,15 @@ note: please change user / pwd to your preferred DB admin account and password (
 ```
 git clone https://github.com/your_org/your_project.git
 ```
-
 2. create local copy of settings.js
 ```
 cd your_project
 cp settings.js.example settings.js
 ```
-
 3. install required libs
 ```
 npm install
 ```
-
 4. (optional) setup SSH keys
 If you need to run HTTPS services, make sure you've put the correct & relevant files under the /keys directory, for example:
 ```
