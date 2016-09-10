@@ -4,7 +4,7 @@ Step-by-step instructions to setup a Scalra system from scratch on a Ubuntu Syst
 	
 ## Environment
 
-1. Install node.js LTS (4.5.0)
+1. Install [node.js](https://nodejs.org) LTS (4.5.0)
 `sudo apt-get install node`
 
 2. Install [MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
