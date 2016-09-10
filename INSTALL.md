@@ -5,19 +5,24 @@ Step-by-step instructions to setup a Scalra system from scratch on a Ubuntu Syst
 ## Environment
 
 1. Install [node.js](https://nodejs.org) LTS (4.5.0)
-`sudo apt-get install node`
+```sudo apt-get install node```
 
 2. Install [MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
-or type	`sudo apt install mongodb`
+or type	```sudo apt install mongodb```
  
 ## Setup DB Admin Password
 MongoDB by default does not have an admin account, but it is better for security measures.
 This also allows Scalra to create DB on the fly for you.
 
 1. Install Mongo client
-`sudo apt-get install mongodb-clients`  					  
+```
+sudo apt-get install mongodb-clients
+```  
+
 2. Setup MongoDB admin account 
-`$mongo`
+```
+$mongo
+```
 
 then type:
 ```
@@ -37,13 +42,20 @@ note: please change user / pwd to your preferred DB admin account and password (
 ## Setup Project Repo
 
 1. clone the project's git repo
-  ```git clone https://github.com/your_org/your_project.git```
+```
+git clone https://github.com/your_org/your_project.git
+```
 
 2. create local copy of settings.js
-  ```cp settings.js.example settings.js```
+```
+cd your_project
+cp settings.js.example settings.js
+```
 
 3. install required libs
-  ```npm install```
+```
+npm install
+```
 
 4. (optional) setup SSH keys
 If you need to run HTTPS services, make sure you've put the correct & relevant files under the /keys directory, for example:
