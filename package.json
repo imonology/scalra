@@ -33,6 +33,7 @@
     "cookie": "0.2.4",
     "cookie-parser": "^1.4.3",
     "ejs": "^2.4.2",
+    "ejs-mate": "^2.3.0",
     "emailjs": "1.0.4",
     "expect": "1.20.1",
     "express": "4.13.4",
