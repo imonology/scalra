@@ -44,9 +44,6 @@ SR.Tags.WARN =   	SR.Tags.YELLOW;
 SR.Tags.RCV =    	SR.Tags.GREEN + '[RCV] ';
 SR.Tags.SND =    	SR.Tags.GREEN + '[SND] ';
 
-SR.Settings =               require(BASE_DIR + 'settings').settings;
-//SR.systemPath = __dirname;
-
 // wrappers to node.js modules
 SR.net =                    require('net'); 
 SR.sys =                    require('util');
@@ -60,6 +57,9 @@ SR.async =					require('async');
 
 SR._kit =                   require(CORE_DIR + '_basekit');
 SR._uuid =                  require(CORE_DIR + 'uuid');
+
+// main settings
+SR.Settings =               require(BASE_DIR + 'settings').settings;
 
 // basic tools
 SR.Callback =               require(CORE_DIR + 'callback');

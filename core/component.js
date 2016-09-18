@@ -41,7 +41,7 @@ l_components['Log'] = exports.Log = function (path, log_name) {
 			var log_id = UTIL.localISOString(new Date());
 			log_id = log_id.replace(/:/g, '-');
             
-			var fullpath = path + SR.Settings.SLASH + '..' + SR.Settings.SLASH + 'log';
+			var fullpath = SR.path.join(path, '..', 'log');
             LOG.sys('log path: ' + fullpath, 'SR.Component');
 			
 			// store for later use (useful in notifying monitor)

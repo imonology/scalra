@@ -270,22 +270,20 @@ var _localIP = undefined;
 // method 
 var net = require('net');
 
-function getNetworkIP(callback) {
+function getNetworkIP (onDone) {
 	var socket = net.createConnection(80, 'www.google.com');
 	socket.on('connect', function () {
-		callback(undefined, socket.address().address);
+		onDone(undefined, socket.address().address);
 		socket.end();
 	});
 	socket.on('error', function (e) {
-		callback(e, 'error');
+		onDone(e, 'error');
 	});
 }
 
 // return the host IP for the current machine
 exports.getLocalIP = function (onDone) {
-
-	//return l_safeCall(onDone, SR.Settings.IP_LOBBY);
-
+	
 	// if already available, return directly
 	if (_localIP)
 		return l_safeCall(onDone, _localIP);
@@ -1239,7 +1237,7 @@ exports.mixin = require('merge');
 // read a JSON file as js object
 exports.readJSON = function (path, onDone) {
 	var fs = require('fs');
-	var file = __dirname + SR.Settings.SLASH + path;
+	var file = SR.path.join(__dirname, path);
 
 	if (typeof onDone !== 'function')
 		onDone = undefined;
@@ -1277,7 +1275,7 @@ exports.parsePath = function (path) {
 // read scalra files (relative to scalra core directory)
 var l_readFile = exports.readFile = function (path, onDone) {
 
-	path = __dirname + SR.Settings.SLASH + path;
+	path = SR.path.join(__dirname, path);
 	LOG.sys('reading file: ' + path, l_name);
 	SR.fs.readFile(path, 'utf-8', function (err, data) {
 		if (err) {
@@ -1294,7 +1292,7 @@ var l_readFile = exports.readFile = function (path, onDone) {
 // write scalra files (relative to scalra core directoy)
 var l_writeFile = exports.writeFile = function (path, file, onDone) {
 
-	path = __dirname + SR.Settings.SLASH + path;
+	path = SR.path.join(__dirname, path);
 	LOG.sys('writing file: ' + path, l_name);
 	SR.fs.writeFile(path, file, 'utf-8', function (err) {
 		if (err) {
@@ -1310,12 +1308,12 @@ var l_writeFile = exports.writeFile = function (path, file, onDone) {
 
 // read scalra config
 exports.readSystemConfig = function (onDone) {
-	l_readFile('..' + SR.Settings.SLASH + '..' + SR.Settings.SLASH + 'config.js', onDone);
+	l_readFile(SR.path.join('..', '..', 'config.js'), onDone);
 }
 
 // write scalra config
 exports.writeSystemConfig = function (file, onDone) {
-	l_writeFile('..' + SR.Settings.SLASH + '..' + SR.Settings.SLASH + 'config.js', file, onDone);
+	l_writeFile(SR.path.join('..', '..', 'config.js'), file, onDone);
 }
 
 ///////////////////////////////////
@@ -1449,7 +1447,7 @@ var walk = function (dir, done) {
 
 		list.forEach(function (file) {
 			//file = dir + '/' + file;
-			file = dir + SR.Settings.SLASH + file;
+			file = SR.path.join(dir, file);
 			fs.stat(file, function (err, stat) {
 				if (stat && stat.isDirectory()) {
 					walk(file, function (err, res) {

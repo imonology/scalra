@@ -109,15 +109,15 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 	// build path, first try relative, then try absolute
 	var valid_path = false;
 	
-	var path = '.' + SR.Settings.SLASH;
-	var frontier_path = path + server_info.name + SR.Settings.SLASH + 'frontier.js';
-	var log_path = path + 'log' + SR.Settings.SLASH + 'screen.out';
+	var path = '.';
+	var frontier_path = SR.path.join('.', server_info.name, 'frontier.js');
+	var log_path = SR.path.join('.', 'log', 'screen.out');
 
 	LOG.warn('relative frontier path: ' + frontier_path, 'SR.Execute');
 	
 	if (SR.fs.existsSync(frontier_path) === false) {
-		path = SR.Settings.PATH_USERBASE + server_info.owner + SR.Settings.SLASH + server_info.project + SR.Settings.SLASH;
-		frontier_path = path + server_info.name + SR.Settings.SLASH + 'frontier.js';
+		path = SR.path.join(SR.Settings.PATH_USERBASE, server_info.owner, server_info.project);
+		frontier_path = SR.path.join(path, server_info.name, 'frontier.js');
 		LOG.warn('absolute frontier path: ' + frontier_path, 'SR.Execute');
 		if (SR.fs.existsSync(frontier_path) === true)
 			valid_path = true;
@@ -457,7 +457,7 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 	
 	/* screen version
 	var new_proc = spawn('screen', 
-						 ['-m', '-d', '-S', info.name, '.' + SR.Settings.SLASH + 'run', info.name],
+						 ['-m', '-d', '-S', info.name, SR.path.join('.', 'run'), info.name],
 						 {cwd: exec_path}		
 	*/
 	
@@ -467,7 +467,7 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 	
 		// execute directly
 		// TODO: execute under a given linux user id? (probably too complicated)
-		var new_proc = spawn('.' + SR.Settings.SLASH + 'run',
+		var new_proc = spawn(SR.path.join('.', 'run'),
 							 [info.name],
 							 {cwd: exec_path}
 		);

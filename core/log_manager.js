@@ -53,7 +53,7 @@ exports.createLog = function (path, filename, onSuccess, onFail) {
 		return;
 	}
 
-	var log_path = path + SR.Settings.SLASH + filename;
+	var log_path = SR.path.join(path, filename);
 
 	// ensure path exists (or create directory if not)
 	UTIL.validatePath(path);

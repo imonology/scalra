@@ -161,10 +161,10 @@ icFile.prototype.open = function (filename, onDone, to_cache, direct_path) {
 //          null  (file open fail)
 icFile.prototype.openSync = function (filename, to_cache) {
     
-	var path = SR.Settings.FRONTIER_PATH + SR.Settings.SLASH + '..' + SR.Settings.SLASH + 'log' + SR.Settings.SLASH;
+	var path = SR.path.join(SR.Settings.FRONTIER_PATH, '..', 'log');
 	
 	// check if file already exists
-	var filepath = path + filename;
+	var filepath = SR.path.join(path, filename);
 	
 	//LOG.warn('filepath:  ' + filepath);
 	var file_exist = SR.fs.existsSync(filepath);
