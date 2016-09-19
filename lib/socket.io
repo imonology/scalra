@@ -1,1 +1,1 @@
-socket.io-1.0.6
+socket.io-1.4.8

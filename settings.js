@@ -179,17 +179,18 @@ var settings = exports.settings = {
 
 // OS Specific
 console.log("process.platform: " + process.platform);
+settings.SLASH = SR.path.sep;
 
-if (process.platform === 'linux') {
-	settings.SLASH = '/';
-} else if (process.platform === 'win32') {
-	settings.SLASH = '\\';
-} else if (process.platform === 'darwin') {
-	settings.SLASH = '/';
-} else {
-	console.log('Unknown or incompatible OS. Currently support: linux, win32, darwin');
-	process.exit(99);
-}
+//if (process.platform === 'linux') {
+//	settings.SLASH = '/';
+//} else if (process.platform === 'win32') {
+//	settings.SLASH = '\\';
+//} else if (process.platform === 'darwin') {
+//	settings.SLASH = '/';
+//} else {
+//	console.log('Unknown or incompatible OS. Currently support: linux, win32, darwin');
+//	process.exit(99);
+//}
 
 // merge system default (should not change easily) with local config (may be machine-specific)
 // NOTE: this needs to happen before the following environment-specific defaults are applied
@@ -214,11 +215,15 @@ else if (settings.MODE === 'prod') {
 	settings.LOG_LEVEL 				= 2;
 };
 
+settings.IP_MONITOR	= settings.IP_MONITOR || settings.IP_LOBBY;
+settings.IP_S_ENTRY	= settings.IP_S_ENTRY || settings.IP_LOBBY;
+
 // Module-specific settings
 // TODO: should move this elsewhere?
 settings.PHP_BASE		= 'http://' + settings.DOMAIN_LOBBY + '/';
 
-settings.PATH_LIB	= settings.PATH_USERBASE + 'lib' + settings.SLASH;	// path to user projects (for starting servers in SR.Execute)
-settings.IP_MONITOR	= settings.IP_MONITOR || settings.IP_LOBBY;
-settings.IP_S_ENTRY	= settings.IP_S_ENTRY || settings.IP_LOBBY;
-
+// path to user projects (for starting servers in SR.Execute)
+// NOTE: should not be here (TODO: move to icpm)
+if (settings.PATH_USERBASE) {
+	settings.PATH_LIB	= SR.path.join(settings.PATH_USERBASE, 'lib');	
+}

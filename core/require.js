@@ -9,12 +9,16 @@
 // include user library
 exports.lib = function (user, file) {
 	//LOG.warn('lib path: ' + SR.Settings.PATH_LIB);
-	var fullpath = SR.Settings.PATH_LIB + user + SR.Settings.SLASH + file;
+	if (SR.Settings.hasOwnProperty('PATH_LIB') === false) {
+		return undefined;
+	}
+	
+	var fullpath = SR.path.join(SR.Settings.PATH_LIB, user, file);
 	//LOG.warn('full path: ' + fullpath);
 	return require(fullpath);
 }
 
 // include system extensions
 exports.ext = function (file) {
-	return require('../extension/' + file);
+	return require(SR.path.join('..', 'extension', file));
 }

@@ -76,13 +76,13 @@ exports.addHandler = function (handler) {
 		// TODO: merge this with a generalized addHandler or SR.Handler module
 
 		// produce a valid fullpath, check current directory first, then check SR's handlers directory
-		var fullpath = SR.Settings.FRONTIER_PATH + SR.Settings.SLASH + filename;
+		var fullpath = SR.path.join(SR.Settings.FRONTIER_PATH, filename);
 		LOG.sys('checking for REST handlers locally: ' + fullpath, 'SR.REST');
 		
 		// check if file exists
 		// TODO: better way to check? (possibly multiple directories)
 		if (SR.fs.existsSync(fullpath) === false) {
-			fullpath = SR.Settings.SR_PATH + SR.Settings.SLASH + 'handlers' + SR.Settings.SLASH + filename;
+			fullpath = SR.path.join(SR.Settings.SR_PATH, 'handlers', filename);
 		
 			LOG.sys('checking for REST handlers in system: ' + fullpath, 'SR.REST');
 			if (SR.fs.existsSync(fullpath) === false)

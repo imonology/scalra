@@ -65,6 +65,8 @@ http://127.0.0.1:37070/event/HelloWorld?name=world
 $ npm install scalra
 ```
 
+see [Installation Guide](INSTALL.md) for full instructions to setup a Scalra system on empty systems.
+		  
 ## Features
 
   * Write one API logic for any connection types (HTTP/HTTPS/websocket/socket)

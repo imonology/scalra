@@ -106,9 +106,8 @@ exports.icFrontier = function (config) {
 	// lobby_port_opened: true/false
 	var l_createServerInfo = function () {
 
-		// extract frontier name from path
-		// NOTE: the split here may need to 
-		var words = SR.Settings.FRONTIER_PATH.split(SR.Settings.SLASH);
+		// extract frontier name from path, avoid unusable characters
+		var words = SR.Settings.FRONTIER_PATH.replace(':', ']').split(SR.path.sep);
 		
 		LOG.sys('path split:', l_name);
 		LOG.sys(words, l_name);		
@@ -123,8 +122,8 @@ exports.icFrontier = function (config) {
 			
 			// also obtain proper project name if not for 'demo' project
 			// TODO: hard-coded now, find a better approach?
-			if (project !== 'demo')
-				project = words[words.length-3];
+			//if (project !== 'demo')
+			//	project = words[words.length-3];
 		}		
 		
 		LOG.warn('extracting server info from path... \n[owner]:  ' + owner + '\n[project]: ' + project + '\n[name]:  ' + name, l_name);
@@ -142,7 +141,7 @@ exports.icFrontier = function (config) {
 		l_frontierName = (owner + '-' + project + '-' + name);
 				
 		// determine server type
-		if (project === 'scalra' || project === 'scalra') {
+		if (project === 'scalra') {
 			// for monitor or entry servers
 			// NOTE: we take only the name before the first '.' as type
 			SR.Settings.SERVER_INFO.type = name.split('.')[0];
@@ -161,7 +160,7 @@ exports.icFrontier = function (config) {
 
 	l_createServerInfo();
 	
-	// TODO: remove this if possilbe/
+	// TODO: remove this if possible/
 	// right now is used by SR.Component
 	SR.Settings.FRONTIER = this;
 	SR.Settings.SR_PATH = SR.path.resolve(__dirname, '..');
@@ -171,7 +170,7 @@ exports.icFrontier = function (config) {
 	// store paths to modules	
 	SR.Settings.MOD_PATHS = [];
 	var root_path = SR.path.resolve(SR.Settings.SR_PATH, '..');	
-	var arr = SR.Settings.SR_PATH.split('/');
+	var arr = SR.Settings.SR_PATH.split(SR.path.sep);
 	var prefix = arr[arr.length-1] + '-';
 	var dirs = UTIL.getDirectoriesSync(root_path);
 	
@@ -302,7 +301,7 @@ exports.icFrontier = function (config) {
 		else if (SR.Settings.SERVER_INFO.type === 'app')
 			SR.Module.addStep(SR.Component.AppConnector());
 	} else {
-		// make this server 'lobby'-style
+		// force this server as a standalone 'lobby' (for single-file servers)
 		SR.Settings.SERVER_INFO.type = 'lobby';	
 	}	
 	

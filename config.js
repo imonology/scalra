@@ -24,11 +24,11 @@ exports.config = {
 	
 	// mail server config
 	EMAIL_CONFIG: {
-		user:    "<account>", 
-		password:"<password>", 
-		host:    "smtp.gmail.com", 
-		ssl:     true
-	},
+		user:		'',
+		password:	'',
+		host:		'smtp.gmail.com',
+		ssl:		true
+	},		
 	
 	DEFAULT_FILES:	['index.htm', 'index.html', 'default.htm', 'default.html'],
 	EMAIL_ADMIN:	'',

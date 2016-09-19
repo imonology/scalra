@@ -69,6 +69,9 @@ l_module.start = function (config, onDone) {
 	
 	// set view engine & directory
 	app.set('views', SR.Settings.FRONTIER_PATH + '/../views');	
+	
+	var engine = require('ejs-mate');
+	app.engine('ejs', engine);
 	app.set('view engine', 'ejs');
 	
 	// set directory to serve static files
@@ -111,7 +114,9 @@ l_module.start = function (config, onDone) {
 	});
 
 	// set up script monitor, so we may hot-load router
-	var router_path = SR.Settings.FRONTIER_PATH + '/' + (config.router || 'router.js'); 
+	//var router_path = SR.Settings.FRONTIER_PATH + '/' + (config.router || 'router.js'); 
+	var router_path = SR.path.join(SR.Settings.FRONTIER_PATH, (config.router || 'router.js')); 
+
 	var err = undefined;
 	if (SR.Script.monitor('router', router_path, app) === undefined) {
 		err = 'cannot load router!';

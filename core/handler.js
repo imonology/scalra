@@ -61,15 +61,15 @@ var l_addByFile = exports.addByFile = function (handler_info, path) {
 		// if owner is specified
 		if (owner) {
 			if (owner === 'SR' || owner === 'scalra') {
-				fullpath = __dirname + SR.Settings.SLASH + '..' + SR.Settings.SLASH + 'handlers' + SR.Settings.SLASH + filename;
+				fullpath = SR.path.join(__dirname, '..', 'handlers', filename);
 			}
-			else {
-				fullpath = SR.Settings.PATH_LIB + owner + SR.Settings.SLASH + filename;				
+			else if (SR.Settings.PATH_LIB) {
+				fullpath = SR.path.join(SR.Settings.PATH_LIB, owner, filename);				
 			}
 		}
 		// otherwise we assume in same directory
 		else if (path)
-			fullpath = path + SR.Settings.SLASH + filename;		
+			fullpath = SR.path.join(path, filename);		
 	}
 						 
 	// set up script monitor, so we may hot-load handler functions
