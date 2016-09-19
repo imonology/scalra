@@ -48,7 +48,7 @@
     "orm": "3.1.0",
     "os-utils": "0.0.14",
     "parse-filepath": "1.0.1",
-    "socket.io": "1.4.6",
+    "socket.io": "1.4.8",
     "sockjs": "0.3.17"
   }
 }
