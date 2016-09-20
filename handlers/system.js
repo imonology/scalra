@@ -214,7 +214,7 @@ SR.Callback.onStop(function () {
 	
 	l_states.lastUpdate = new Date();
 
-    // check existing users
+    // store states back to DB
 	SR.DB.setData(SR.Settings.DB_NAME_SYSTEM, l_states, 
 				  	// success
 				  	function (data) {
