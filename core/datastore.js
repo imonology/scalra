@@ -36,7 +36,6 @@ var l_types = {
 
 var l_rebuildObjects = function (obj) {
 
-	
 	// ver 3: both objects & strings
 	for (var key in obj) {
 		
@@ -140,7 +139,7 @@ var l_createSync = function (name, src) {
 		//l_remakeArray(src);
 		
 		// make sure object items have new structure
-		// TODO: investigate why this is necessary or are there better ways to do it
+		// FIXME TODO: investigate why this is necessary or are there better ways to do it
 		src = l_rebuildObjects(src);
 		
 		// direct save version
@@ -151,7 +150,6 @@ var l_createSync = function (name, src) {
 		//src.save(function (err) {
 		//	UTIL.safeCall(onSyncDone, err);
 		//});
-
 
 		// save twice version
 		src.save(function (err) {
@@ -279,6 +277,7 @@ var l_load = function (arr, name, model, cache, onDone) {
 
 			// store to memory cache
 			// TODO: check do we need to clone/copy value? or simply use reference is fine?
+			// right now we only use references
 			for (var i=0; i < result.length; i++) {
 				
 				result[i].sync = l_createSync(name, result[i]);
@@ -325,10 +324,6 @@ var l_load = function (arr, name, model, cache, onDone) {
 					if (l_mappers.hasOwnProperty(name)) {
 						var key = l_mappers[name].key;
 						var mapping = l_mappers[name].mapping;
-						//LOG.warn('storing to mapping for [' + name + '] with key: ' + key + ', mapping:', l_name);
-						//LOG.warn(mapping, l_name);
-						//LOG.warn('record: ', l_name);
-						//LOG.warn(record);
 						
 						if (record.hasOwnProperty(key) === false) {
 							LOG.error('new record stored does not have specified key [' + key + ']', l_name);
@@ -408,14 +403,19 @@ var l_load = function (arr, name, model, cache, onDone) {
 			
 			// cache it to memory	
 			if (typeof cache.map === 'object') {
-				l_map({
+				var map = l_map({
 					name: name,
 					key: cache.key,
 					map: cache.map
-				}, function () {
-					// return after mapping is built
-					UTIL.safeCall(onDone, null, {name: name, array: arr});
 				});
+				
+				if (map) {
+					UTIL.safeCall(onDone, null, {name: name, array: arr, map: map});
+				} else {
+					// only array is built, map is not built successfully
+					UTIL.safeCall(onDone, 'build mapping failed', {name: name, array: arr});
+				}
+				
 			} else {
 				// return immediately
 				//LOG.warn('[' + name + '] load success with length: ' + arr.length, l_name);	
@@ -466,10 +466,34 @@ var l_init = exports.init = function (args, onDone) {
 
 	var total = Object.keys(models).length;
 	var curr = 0;
-	
+
+	// first check for unique key indication (by * in front of name)
+	var keys = {};
 	for (var name in models) {
 		var model = models[name];
-		var cache = caches[name] || {};
+		for (var key in model) {
+			var type = model[key];
+			if (type.charAt(0) === '*') {
+				if (keys.hasOwnProperty(name)) {
+					LOG.error('duplicate attribute name [' + type + '] are indicated as key, ignore it...', l_name);
+					continue;
+				}
+				// record key index
+				keys[name] = key;
+				
+				// remove the '*'
+				model[key] = type.substring(1);
+			}
+		}
+	}
+	
+	// references to loaded models, key is model name, value is an array or map
+	// of the loaded model
+	var ref = {};
+	
+	// go through and load each model
+	for (var name in models) {
+		var model = models[name];
 		
 		if (typeof model !== 'object') {
 			LOG.error('model is not specified in object form', l_name);
@@ -477,7 +501,19 @@ var l_init = exports.init = function (args, onDone) {
 		}
 
 		// get reference to states in array format
-		var arr = SR.State.get(name, 'array');
+		var arr = SR.State.get(name + 'Array', 'array');
+
+		// get reference to states in key-value map format
+		var map = undefined;
+		
+		// use specified cache reference or build one from '*' if exists
+		var cache = caches[name] || {};
+		
+		if (Object.keys(cache).length === 0 && keys[name]) {
+			map = SR.State.get(name + 'Map');
+			cache = {key: keys[name], map: map};
+		}
+		
 		var errmsg = [];
 		l_load(arr, name, model, cache, function (err, result) {
 			if (err) {
@@ -485,11 +521,14 @@ var l_init = exports.init = function (args, onDone) {
 				errmsg.push(err);
 			} else {
 				LOG.warn('[' + result.name + '] model init successfully with ' + result.array.length + ' records.', l_name);
+				// store successfully initialized model
+				// NOTE: result contains name, array, map (optional) attributes
+				ref[result.name] = (result.map ? result.map : result.array);	
 			}
-						
+
 			// check if all are loaded
 			if (++curr === total) {
-				return UTIL.safeCall(onDone, (errmsg.length === 0 ? null : errmsg));
+				return UTIL.safeCall(onDone, (errmsg.length === 0 ? null : errmsg), ref);
 			}
 		});	
 	}
@@ -510,7 +549,7 @@ var l_get = exports.get = function (args, onDone) {
 	
 	// try to get it from memory first, if not found then try to get it from DB	
 	// TODO: get from DB
-	var arr = SR.State.get(name, 'array');
+	var arr = SR.State.get(name + 'Array', 'array');
 	
 	// filter query content to be only valid parameters
 	// TODO: better approach?
@@ -617,7 +656,7 @@ var l_map = exports.map = function (args, onDone) {
 	var errmsg = null;
 	
 	// get data in array form first
-	var arr = SR.State.get(args.name, 'array');
+	var arr = SR.State.get(args.name + 'Array', 'array');
 	
 	var map = args.map || {};
 	var key = args.key;
@@ -657,6 +696,6 @@ var l_map = exports.map = function (args, onDone) {
 		key: key
 	};
 	
-	UTIL.safeCall(onDone, null, map);	
+	UTIL.safeCall(onDone, null, map);
 	return map;
 }
