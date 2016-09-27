@@ -358,7 +358,7 @@ var EventHandler = function () {
 
 		// will look up for connection name & pass in 
 		if (event.conn !== undefined)
-			conn_name = SR.Conn.getConnName(event.conn.connID);
+			conn_name = SR.Conn.getSessionName(event.conn);
 
 		// log incoming message type
 		// append '\n' at end to indicate message end

@@ -138,7 +138,8 @@ var l_removeLogin = function (account) {
 	// remove login name from connection (if any)
 	var data = l_logins[account];
 	if (data.hasOwnProperty('_conn')) {
-		SR.Conn.setConnName(data._conn.connID, '');
+		//SR.Conn.setConnName(data._conn.connID, '');
+		SR.Conn.unsetSessionName(data._conn);
 		delete data['_conn'];
 	}
 	

@@ -10,12 +10,17 @@
 // Functions:
 //		isConnected(connID)		// check if a connection still exists
 //		getConnObject(connID)
-//		getConnName(connID)
 //		getConnections(conn || name)				// get all connections associated with a connection object or name
-//		setConnName(connID, newName, oldName)
 //		getConnCount()
 //		createConnObject(type, conn_obj, from) 
 //		destroyConnObject(connID)
+//		setSessionName(conn, name)					// link a session_token with a login name					
+//		unsetSessionName(conn)						// unlink a session_token with a login name
+//		getSessionName(conn)						
+
+// retired Functions:
+//		setConnName(connID, newName, oldName)
+//		getConnName(connID)
 
 // objects:
 // 		ConnHandler(conn_module) 
@@ -37,7 +42,7 @@ var l_timeoutWaitDispose = 1000;
 // data storing connection info, indexed by connID (uuid)
 var l_conn = {};
 
-// mapping from connection name to conn obj
+// mapping from account name to session_token
 var l_names = {};
 
 var l_name = 'SR.Conn';
@@ -69,10 +74,8 @@ exports.getConnections = function (conn) {
 		return list;
 	}
 	
-	// convert to conn object if connection name's provided
+	// if connection name's provided, lookup session token directly
 	if (typeof conn === 'string') {
-		LOG.warn('name list size: ' + Object.keys(l_names).length, l_name);
-		LOG.warn(l_names, l_name);
 		if (l_names.hasOwnProperty(conn) === false) {
 			LOG.warn('no connection object associated with name: ' + conn, l_name);
 			return list;
@@ -96,32 +99,32 @@ exports.getConnections = function (conn) {
 }
 
 // get a connection name from connection ID
-exports.getConnName = function (connID) {
+//exports.getConnName = function (connID) {
     
-	var name = (l_conn.hasOwnProperty(connID) ? l_conn[connID].name : undefined);
-    return name;
-}
+//	var name = (l_conn.hasOwnProperty(connID) ? l_conn[connID].name : undefined);
+//    return name;
+//}
 
 // set user account given a connection ID
-exports.setConnName = function (connID, newName, oldName) {
+//exports.setConnName = function (connID, newName, oldName) {
 
-    // first check if connection exists
-    if (l_conn.hasOwnProperty(connID) === false)
-        return false;
+//    // first check if connection exists
+//    if (l_conn.hasOwnProperty(connID) === false)
+//        return false;
     	
-    // if old account is provided, check if it matches with the one on record
-    if (oldName && l_conn[connID].name !== oldName)
-        return false;
+//    // if old account is provided, check if it matches with the one on record
+//    if (oldName && l_conn[connID].name !== oldName)
+//        return false;
 	
-	var conn = l_conn[connID];
+//	var conn = l_conn[connID];
 	
-    // change is successful
-    conn.name = newName;
+//    // change is successful
+//    conn.name = newName;
 			
-    return true;
-}
+//    return true;
+//}
 
-// set user's session to a name so we may lookup all connections associated with a given session
+// set user's session_token to a name so we may lookup all connections associated with a given session
 // this is useful when the incoming request may not have a persistent connection (such as HTTP)
 exports.setSessionName = function (conn, name) {
 
@@ -132,9 +135,28 @@ exports.setSessionName = function (conn, name) {
 	return true;
 }
 
+// opposite of setSessionName
+exports.unsetSessionName = function (conn) {
+
+	if (!conn || typeof conn.session_token === 'undefined')
+		return false;
+	
+	for (var name in l_names) {
+		if (l_names[name] === conn.session_token)
+			delete l_names[name];
+	}
+
+	return true;
+}
+
+
 // get the name for current session
 exports.getSessionName = function (conn) {
-
+	for (var name in l_names) {
+		if (l_name[name] === conn.session_token)
+			return name;
+	}
+	return undefined;
 }
 
 // get number of connections currently registered
