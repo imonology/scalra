@@ -24,6 +24,7 @@ localISOString(date, includeSeconds)				// convert a date to local ISO string
 dumpError											// print out content of an error
 isBinary(str)										// test if a string is binary (non-printable characters)
 mixin()												// mix two objects into the same object
+merge()												// mix two objects into the same object
 
 // config-related
 userSettings										// get project-specific settings
@@ -1232,7 +1233,7 @@ exports.getEntryServer = function (secured) {
 }
 
 // mix two objects into same object
-exports.mixin = require('merge');
+exports.mixin = exports.merge = require('merge');
 
 // read a JSON file as js object
 exports.readJSON = function (path, onDone) {
