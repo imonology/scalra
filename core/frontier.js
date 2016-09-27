@@ -119,11 +119,7 @@ exports.icFrontier = function (config) {
 		// get one level deeper for scalra system servers (monitor, entry...)
 		if (owner === 'scalra') {
 			owner = words[words.length-4];
-			
-			// also obtain proper project name if not for 'demo' project
-			// TODO: hard-coded now, find a better approach?
-			//if (project !== 'demo')
-			//	project = words[words.length-3];
+			project = words[words.length-3];
 		}		
 		
 		LOG.warn('extracting server info from path... \n[owner]:  ' + owner + '\n[project]: ' + project + '\n[name]:  ' + name, l_name);
