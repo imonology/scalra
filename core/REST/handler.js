@@ -252,9 +252,13 @@ exports.event = function (path_array, res, JSONobj, req) {
 	var event_name = path_array[2];
 
 	// build event object, also determine if coming from http or https
-	// ref: http://stackoverflow.com/questions/10348906/how-to-know-if-a-request-is-http-or-https-in-node-js	
+	// ref: http://stackoverflow.com/questions/10348906/how-to-know-if-a-request-is-http-or-https-in-node-js
+
+	var host = req.connection.remoteAddress.split(':');
+	host = host[host.length-1];
+	
 	var from = {
-		host: req.connection.remoteAddress,
+		host: host,
 		port: req.connection.remotePort,
 		type: (req.connection.encrypted ? 'HTTPS' : 'HTTP'),
 		cookie: cookie

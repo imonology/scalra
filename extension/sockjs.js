@@ -62,7 +62,10 @@ exports.start = function (http_server, onDone) {
 					LOG.warn('cookie received: ', 'SR.SockJS');
 					LOG.warn(cookie, 'SR.SockJS');
 					
-					var from = {host: sock_conn.remoteAddress, 
+					var host = sock_conn.remoteAddress.split(':');
+					host = host[host.length-1];
+					
+					var from = {host: host, 
 								port: sock_conn.remotePort,
 								cookie: cookie};
 					
