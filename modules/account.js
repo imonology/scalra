@@ -269,8 +269,8 @@ SR.API.add('_ACCOUNT_LOGIN', {
 		// that does not have a persistent connection record in SR.Conn
 		SR.Conn.setSessionName(extra.conn, account);
 
-		// record login-related info to session
-		// NOTE: control info may change during the session
+		// init session by recording login-related info
+		// NOTE: 'control' info may change during the session
 		extra.session._user = {
 			account: account,
 			control: user.control,
@@ -289,7 +289,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 // logout by account
 SR.API.add('_ACCOUNT_LOGOUT', {
 	account:	'string'
-}, function (args, onDone) {
+}, function (args, onDone, extra) {
 
 	var account = args.account;
 	if (l_logins.hasOwnProperty(account) === false) {
@@ -309,11 +309,14 @@ SR.API.add('_ACCOUNT_LOGOUT', {
 			return onDone(err);	
 		}
 		
-		// remove login name from connection (if any)
+		// remove login name from connection (if any)	
 		var conn = l_logins[account];
 		SR.Conn.unsetSessionName(conn);
-		
 		delete l_logins[account];
+			
+		// clear session
+		delete extra.session['_user'];
+							
 		LOG.warn('[' + account + '] logout success, total logins: ' + Object.keys(l_logins).length, l_name);
 		onDone(null);
 	});
@@ -397,7 +400,8 @@ SR.API.add('_ACCOUNT_GETDATA', {
 		return onDone('field [' + args.type + '] invalid');
 	}	
 	
-	var value = {};
+	// prepare return value, including 'account'
+	var value = {account: args.account};
 	value[args.type] = data[args.type];
 	onDone(null, value);
 });
