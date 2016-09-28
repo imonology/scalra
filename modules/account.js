@@ -420,12 +420,14 @@ l_models[l_name] = {
 	data:			'object'			// custom account-specific data
 };
 
-IC.DS.init({models: l_models}, function (err, ref) {
-	if (err) {
-		LOG.error(err, l_name);	
-		return;
-	}
-	
-	l_accounts = ref[l_name];	
-	LOG.warn('l_accounts initialized with size: ' + l_accounts.size());
+IC.Callback.onStart(function () {
+	IC.DS.init({models: l_models}, function (err, ref) {
+		if (err) {
+			LOG.error(err, l_name);	
+			return;
+		}
+		
+		l_accounts = ref[l_name];	
+		LOG.warn('l_accounts initialized with size: ' + l_accounts.size());
+	});
 });
