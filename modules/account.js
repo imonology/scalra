@@ -164,7 +164,7 @@ SR.API.add('_ACCOUNT_REGISTER', {
 	account:	'string',
 	password:	'string',
 	email:		'string',
-	data:		'object'
+	data:		'+object'
 }, function (args, onDone, extra) {
 
 	// print basic info to confirm
@@ -190,7 +190,7 @@ SR.API.add('_ACCOUNT_REGISTER', {
 			tokens: 	{reset: '', pass: {}},
 			enc_type:	l_enc_type,
 			control:	{groups: [], permissions: []}, 
-			data: 		args.data,
+			data: 		args.data || {},
 			login: 		{IP: extra.conn.host, time: extra.conn.time, count: 1}
 		};
 		
