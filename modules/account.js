@@ -420,8 +420,8 @@ l_models[l_name] = {
 	data:			'object'			// custom account-specific data
 };
 
-IC.Callback.onStart(function () {
-	IC.DS.init({models: l_models}, function (err, ref) {
+SR.Callback.onStart(function () {
+	SR.DS.init({models: l_models}, function (err, ref) {
 		if (err) {
 			LOG.error(err, l_name);	
 			return;
