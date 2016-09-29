@@ -89,7 +89,7 @@ var l_add = exports.add = function (name, module) {
 	if (typeof module !== 'object' ||
 		typeof module.start !== 'function' || 
 		typeof module.stop  !== 'function') {
-		LOG.error('module [' + name + '] does not have start or stop functions', l_name);
+		LOG.warn('module [' + name + '] does not have start or stop functions, skip converting handlers...', l_name);
 		return undefined;
 	}
 	

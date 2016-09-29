@@ -16,7 +16,7 @@ var url = require('url');
 // for form processing
 var formidable = require("formidable");
 
-var l_name = 'SR.REST';
+var l_name = 'REST';
 
 //
 // execution code
@@ -39,7 +39,7 @@ var _checkRequester = function (req, res) {
 	var requesterIP = req.connection.remoteAddress;
 
 	//~ if (SR.Settings.MODE !== 'dev' && serverIP != requesterIP) {
-		//~ LOG.warn('requests from non-local host: ' + requesterIP, 'SR.REST');
+		//~ LOG.warn('requests from non-local host: ' + requesterIP, l_name);
 		//~ res.writeHead(200, {'Content-Type': 'text/plain'});
 		//~ res.end('invalid queries from non-local hosts');
 		//~ return false;
@@ -97,7 +97,7 @@ exports.event = function (path_array, res, JSONobj, req) {
 		if (res_obj[SR.Tags.UPDATE] === 'SR_REDIRECT' && res_obj[SR.Tags.PARA].url) {
 
 			var url = res_obj[SR.Tags.PARA].url;
-			LOG.warn('redirecting to: ' + url, 'SR.REST');
+			LOG.warn('redirecting to: ' + url, l_name);
 
 			/*
 			res.writeHead(302, {
@@ -137,7 +137,7 @@ exports.event = function (path_array, res, JSONobj, req) {
 		if (res_obj[SR.Tags.UPDATE] === 'SR_DOWNLOAD' && res_obj[SR.Tags.PARA].data && res_obj[SR.Tags.PARA].filename) {
 
 			var filename = res_obj[SR.Tags.PARA].filename;
-			LOG.warn('allow client to download file: ' + filename, 'SR.REST');
+			LOG.warn('allow client to download file: ' + filename, l_name);
 
 			var data = res_obj[SR.Tags.PARA].data;
 			res.writeHead(200, {
@@ -160,7 +160,7 @@ exports.event = function (path_array, res, JSONobj, req) {
 				var resHeader = typeof res_obj[SR.Tags.PARA].header === 'object' ? res_obj[SR.Tags.PARA].header : {};
 				
 				if (err) {			
-					LOG.error(err, 'SR.REST');
+					LOG.error(err, l_name);
 					res.writeHead(404, resHeader);
 					res.end();
 					return;
@@ -193,14 +193,14 @@ exports.event = function (path_array, res, JSONobj, req) {
 					end = parseInt(range[2] || stats.size - 1);
 					
 					if (start > end) {
-						LOG.error('stream file start > end. start: ' + start + ' end: ' + end, 'SR.REST');
+						LOG.error('stream file start > end. start: ' + start + ' end: ' + end, l_name);
 						var resHeader = typeof res_obj[SR.Tags.PARA].header === 'object' ? res_obj[SR.Tags.PARA].header : {};
 						res.writeHead(404, resHeader);
 						res.end();
 						return;  // abnormal if we've reached here
 					}
 					
-					LOG.debug('requesting bytes ' + start + ' to ' + end + ' for file: ' + file, 'SR.REST');
+					LOG.debug('requesting bytes ' + start + ' to ' + end + ' for file: ' + file, l_name);
 							 
 					resHeader['Connection'] = 'close';
 					resHeader['Content-Length'] = end - start + 1;
@@ -242,7 +242,7 @@ exports.event = function (path_array, res, JSONobj, req) {
 			});
 		}
 		else {
-			LOG.error('HTTP request has already responded (cannot respond twice)', 'SR.REST');
+			LOG.error('HTTP request has already responded (cannot respond twice)', l_name);
 			LOG.stack();
 		}
 
@@ -305,8 +305,8 @@ exports.SR = function(path_array, res, JSONobj, req) {
 
 	var msg = 'not found';
 
-	LOG.debug('args recv: ', 'SR.REST');
-	LOG.debug(args, 'SR.REST');
+	LOG.debug('args recv: ', l_name);
+	LOG.debug(args, l_name);
 
 	// check for function availability
 	if (SR.hasOwnProperty(svc_name) === false || SR[svc_name].hasOwnProperty(func_name) === false) {
@@ -324,7 +324,7 @@ exports.SR = function(path_array, res, JSONobj, req) {
 
 	if (valid_func === false) {
 		msg = 'invalid access to ' + fullname + ', incident will be reported';
-		LOG.error(msg, 'SR.REST');
+		LOG.error(msg, l_name);
 		SR.REST.reply(res, msg);
 		return;
 	}
@@ -347,8 +347,8 @@ exports.SR = function(path_array, res, JSONobj, req) {
 	// NOTE: callback may not necessarily return, if the number of arguments passed is incorrect
 	var onDone = function(result) {
 
-		LOG.warn('execute ' + fullname + ' result: ', 'SR.REST');
-		LOG.warn(result, 'SR.REST');
+		LOG.warn('execute ' + fullname + ' result: ', l_name);
+		LOG.warn(result, l_name);
 
 		var res_obj = {
 			func: fullname,
@@ -371,7 +371,7 @@ exports.payment = function(path_array, res, JSONobj) {
 
 	var op_type = path_array[2];
 	var service_type = path_array[3];
-	LOG.warn('service is: ' + service_type + ' op type: ' + op_type, 'SR.REST');
+	LOG.warn('service is: ' + service_type + ' op type: ' + op_type, l_name);
 
 	if (SR.Payment.hasOwnProperty(op_type) === false) {
 		SR.REST.reply(res, 'invalid operation: ' + op_type);
@@ -381,7 +381,7 @@ exports.payment = function(path_array, res, JSONobj) {
 	// check if parameters exist
 	if (JSONobj === undefined) {
 		var msg = 'parameters are empty for operation [' + op_type + '], should not happen';
-		LOG.error(msg, 'SR.REST');
+		LOG.error(msg, l_name);
 		SR.REST.reply(res, msg);
 		return;
 	}
@@ -390,7 +390,7 @@ exports.payment = function(path_array, res, JSONobj) {
 	var config = UTIL.userSettings('Payment', service_type);
 	if (config === undefined) {
 		var msg = 'invalid payment settings for [' + service_type + '] in project setting';
-		LOG.error(msg, 'SR.REST');
+		LOG.error(msg, l_name);
 		SR.REST.reply(res, msg);
 		return;
 	}
@@ -428,7 +428,7 @@ exports.SNS = function(path_array, res, para, req) {
 	if (SR.SNS.hasOwnProperty(SNS_type) === false) {
 		return SR.REST.reply(res, 'SNS type not supported: ' + SNS_type);
 	}
-	LOG.warn(path_array, 'SR.REST');
+	LOG.warn(path_array, l_name);
 
 	// remove 'SNS' & specific SNS (e.g., 'FB') keyword
 	path_array.splice(0, 3);
@@ -456,13 +456,20 @@ exports.login = function(path_array, res, para, req) {
 		// obtain a unique login ID for a given app
 		var login_id = SR.SNS.registerLogin(app_name);
 		var redirect_uri = app_url + '?login_id=' + login_id;
-		LOG.warn('login request redirecting to: ' + redirect_uri, 'SR.REST');
+		LOG.warn('login request redirecting to: ' + redirect_uri, l_name);
 		res.writeHead(302, {
 			'Location': redirect_uri
 		});
 		res.end();
 	}
 }
+
+SR.Callback.onStart(function () {
+	// validate upload path
+	SR.Settings.UPLOAD_PATH = SR.path.resolve(SR.Settings.FRONTIER_PATH, '..', 'upload');
+	LOG.warn('validating upload path: ' + SR.Settings.UPLOAD_PATH, l_name);
+	UTIL.validatePath(SR.Settings.UPLOAD_PATH);
+});
 
 // handle file upload requests
 exports.upload = function (path_array, res, para, req) {
@@ -485,9 +492,13 @@ exports.upload = function (path_array, res, para, req) {
 		if (req.headers['content-type']) {
 			if (req.headers['content-type'].startsWith('multipart/form-data; boundary=')) {
 				var form = new formidable.IncomingForm();
-				form.on('end', function () {
-					console.log("on end");
-					LOG.warn("file uploaded", 'SR.REST');
+				form.on('end', function (err, result) {
+					if (err) {
+						LOG.error(err);	
+						return SR.Callback.notify('onUpload', {result: false, msg: err});
+					}
+					LOG.warn("file uploaded", l_name);
+					LOG.warn(result, l_name);
 					SR.Callback.notify('onUpload', {result: true, file: 'filepath'});
 					return;
 				});
@@ -502,7 +513,6 @@ exports.upload = function (path_array, res, para, req) {
 				});
 
 				form.on('error', function (err) { 
-					//console.log("on error" + err);
 					SR.Callback.notify('onUpload', {result: false, msg: 'fail reason: error'});
 					var result = {
 						message: 'error',
@@ -510,23 +520,23 @@ exports.upload = function (path_array, res, para, req) {
 					SR.REST.reply(res, result);
 				});
  
-				form.on('file', function (name, file) {
-					//console.log("on file: name " + name + ", file " + JSON.stringify(file));
-				});
-
 				form.on('fileBegin', function (name, file) {
-					console.log("on fileBegin: name " + name + ", file " + JSON.stringify(file));
+					LOG.debug("fileBegin: name " + name + ", file " + JSON.stringify(file));
 				});
 
+				form.on('file', function (name, file) {
+					//LOG.debug("on file: name " + name + ", file " + JSON.stringify(file));
+				});				
+				
 				form.on('field', function (name, value) {
-					//console.log("on field: name " + name + ", value " + value);
+					//LOG.debug("on field: name " + name + ", value " + value);
 				});
 
 				form.on('progress', function (bytesReceived, bytesExpected) { 
-					//console.log("on progress: bytesReceived " + bytesReceived + ", bytesExpected " + bytesExpected);
+					//LOG.debug("on progress: bytesReceived " + bytesReceived + ", bytesExpected " + bytesExpected);
 				});
 
-				form.uploadDir = SR.Settings.FRONTIER_PATH + "/../upload/";
+				form.uploadDir = SR.Settings.UPLOAD_PATH;
 				form.keepExtensions = true;
 				form.multiples = true;
 				form.parse(req, function (error, fields, files) {
@@ -559,26 +569,24 @@ exports.upload = function (path_array, res, para, req) {
 					// modify uploaded file to have original filename
 					var renameFile = function (upload) {
 
-						LOG.warn('renameFile, upload obj: ', l_name);
-						LOG.warn(upload, l_name);
-						
 						if (!upload || !upload.path || !upload.name || !upload.size) {
 							LOG.error('upload object incomplete:', l_name);
 							return;
 						}
 						
-						LOG.warn("The file " + upload.name + " was uploaded. size: " + upload.size, 'SR.REST');
+						LOG.warn("The file " + upload.name + " was uploaded. size: " + upload.size, l_name);
 						uploaded.push({name: upload.name, size: upload.size, type: upload.type});
 						
- 						SR.fs.rename(upload.path, form.uploadDir + upload.name, function (err) {
-							LOG.warn("File " + upload.name + " was uploaded. size: " + upload.size);
+						var new_name = SR.path.resolve(form.uploadDir, upload.name);
+ 						SR.fs.rename(upload.path, new_name, function (err) {
 							if (err) {
-								LOG.error('rename fail', 'SR.REST');
-								// remove old
-								SR.fs.unlink(from.uploadDir + d.name);
-								SR.fs.rename(upload.path, form.uploadDir + upload.name);
+								return LOG.error('rename fail: ' + new_name, l_name);
+								// remove old (no need?)
+								//SR.fs.unlink(form.uploadDir + d.name);
+								//SR.fs.rename(upload.path, new_name);
 							}
-						});			
+							LOG.warn("File " + upload.name + " was uploaded. size: " + upload.size);							
+						});
 					};
 
 					// check if we might need to re-name

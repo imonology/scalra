@@ -689,7 +689,7 @@ exports.getDateTimeString = function () {
 exports.validatePath = function (path) {
 
 	if (SR.fs.existsSync(path) === false) {
-		SR.sys.puts(SR.Tags.WARN + 'creating new directory: ' + path + SR.Tags.ERREND, l_name);
+		LOG.warn('creating new directory: ' + path + SR.Tags.ERREND, l_name);
 		SR.fs.mkdirSync(path);
 		return false;
 	}
