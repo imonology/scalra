@@ -428,6 +428,6 @@ SR.Callback.onStart(function () {
 		}
 		
 		l_accounts = ref[l_name];	
-		LOG.warn('l_accounts initialized with size: ' + l_accounts.size());
+		//LOG.warn('l_accounts initialized with size: ' + l_accounts.size());
 	});
 });

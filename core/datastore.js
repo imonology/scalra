@@ -261,7 +261,7 @@ var l_load = function (arr, name, model, cache, onDone) {
 			return UTIL.safeCall(onDone, err);
 		}
 		
-		LOG.warn('[' + settings.DB_name + '] init success, read to cache...', l_name); 
+		//LOG.warn('[' + settings.DB_name + '] init success, read to cache...', l_name); 
 		
 		// read existing data 
 		SR.ORM.read({
@@ -272,7 +272,7 @@ var l_load = function (arr, name, model, cache, onDone) {
 				return UTIL.safeCall(onDone, err);
 			}
 			
-			LOG.warn(result.length + ' records found for [' + name + '] in DB...', l_name);
+			//LOG.debug(result.length + ' records found for [' + name + '] in DB...', l_name);
 			//LOG.warn(result, l_name);
 
 			// store to memory cache
