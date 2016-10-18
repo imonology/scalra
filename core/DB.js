@@ -446,6 +446,14 @@ var l_addCollectionAsync = exports.addCollectionAsync = function (name) {
 //
 //-----------------------------------------
 
+exports.isEnabled = function () {
+	// first check if DB is not loaded/inited at all
+	if (Object.keys(l_DBconn).length === 0) {
+		return false;
+	}
+	return true;
+}
+
 //-----------------------------------------
 // convert a string to objectID
 var l_toObjectID = exports.toObjectID = function (s) {

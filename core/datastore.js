@@ -212,7 +212,7 @@ var l_createSync = function (name, src) {
 
 // load DB data to memory cache in array form
 var l_load = function (arr, name, model, cache, onDone) {
-	
+		
 	// DB schema definition
 	var names = {};
 	
@@ -457,6 +457,12 @@ var l_load = function (arr, name, model, cache, onDone) {
 */
 // load initial DB content to memory
 var l_init = exports.init = function (args, onDone) {
+
+	// check if DB module is enabled
+	if (SR.DB.isEnabled() === false) {
+		return onDone('Datastore cannot init: DB module is not loaded');	
+	}
+
 	var models = args.models;
 	var caches = args.caches || {};
 
