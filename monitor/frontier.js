@@ -40,6 +40,26 @@ var l_frontier = new SR.Frontier(config);
 // set custom REST handlers
 SR.REST.addHandler('REST_handle.js');
 
+//
+// define API
+//
+
+// API to get system paths
+SR.API.add('_SYS_PATH', {
+	type:	'string'
+}, function (args, onDone) {
+	switch (args.type) {
+		case 'demo': {
+			var path = SR.path.resolve(SR.Settings.SR_PATH, 'demo');
+			return onDone(null, path);
+		}
+		default:
+			return onDone('unknown type [' + args.type + ']');
+	}
+});
+
+
+
 // execute all the steps for running a server
 l_frontier.init(function () {
     // callback when lobby is started
