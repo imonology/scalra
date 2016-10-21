@@ -5,10 +5,13 @@
 //
 //  history:
 //  2016-04-14		first version
+//	2016-10-21		adds 'addRemote' 'remote'
 //
 //	functions:
 //
-//	add(name, func)	add an API by 'name' that will be processed by function func (passing args and onDone) 
+//	add(name, func)						add an API by 'name', processed by function 'func' (takes: 'args', 'onDone') 
+//	addRemote(host, hostinfo)			add a remote API endpoint. hostinfo: {IP: 'string', port: 'number'}
+//	['host'](name, args, onDone)	calls a remote API by its host's name
 //
 
 var l_name = 'SR.API';
@@ -49,9 +52,6 @@ var l_add = exports.add = function (name, func, checker) {
 			onDone = args;	
 			args = {};
 		}
-		
-		//LOG.sys('wrapper args:', l_name);
-		//LOG.sys(args, l_name);
 		
 		// make actual call to user-defined function
 		UTIL.safeCall(l_list[name], args, function (err, result) {
@@ -118,3 +118,37 @@ l_add('SR_API_QUERY', function (args, onDone) {
 	onDone(null, Object.keys(l_list));
 });
 
+// list of remote hosts
+var l_hosts = {};
+
+l_add('addRemote', {
+	name:		'string',
+	host:		'object',
+	secured:	'+boolean'
+}, function (args, onDone) {
+	
+	if (l_hosts.hasOwnProperty(args.name)) {
+		return onDone('remote host [' + args.name + '] already registered');	
+	}
+	
+	l_hosts[args.name] = args.host;
+	
+	// add a remote host calling function
+	exports[args.name] = function (name, remote_args, onRemoteDone) {
+				
+		// call through HTTP post request
+		var url_request = (args.secured ? 'https' : 'http') + '://' + 
+						l_hosts[args.name].IP + ':' + l_hosts[args.name].port + '/event/' + name;
+		
+		UTIL.HTTPpost(url_request, remote_args, function (err, res, res_obj) {
+			if (err) {
+				return UTIL.safeCall(onRemoteDone, err);
+			}
+			
+			// return error code & result directly
+			UTIL.safeCall(onRemoteDone, res_obj[SR.Tags['PARA']].err, res_obj[SR.Tags['PARA']].result);
+		});
+	};
+	
+	onDone(null);
+});
