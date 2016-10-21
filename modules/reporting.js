@@ -54,6 +54,17 @@ l_module.start = function (config, onDone) {
 				ports:  UTIL.getLocalPort()
 			}
 		});
+
+		// add monitor as a remote API endpoint		
+		SR.API.addRemote({name: 'monitor', host: {IP: ip, port: SR.Settings.PORT_MONITOR}});
+		
+		// get parameters from monitor, if available
+		SR.API['monitor']('_SYS_PATH', {type: 'PATH_LIB'}, function (err, result) {
+			if (!err) {
+				LOG.warn('PATH_LIB: ' + result, l_name);
+				SR.Settings.PATH_LIB = result;
+			}
+		});
 		
 		UTIL.safeCall(onDone);		
 	});
@@ -313,4 +324,3 @@ SR.Handler.add(exports);
 
 // register this module
 SR.Module.add('reporting', l_module);
-
