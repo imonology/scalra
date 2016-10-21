@@ -372,7 +372,7 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 	}
 	// NOTE: we default to 'application/json' type for the request parameters
 	else {
-		data = encodeURSRomponent(JSON.stringify(data_obj));
+		data = encodeURIComponent(JSON.stringify(data_obj));
 		content_type = 'application/json';
 	}
 
