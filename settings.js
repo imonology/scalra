@@ -220,10 +220,5 @@ settings.IP_S_ENTRY	= settings.IP_S_ENTRY || settings.IP_LOBBY;
 
 // Module-specific settings
 // TODO: should move this elsewhere?
-settings.PHP_BASE		= 'http://' + settings.DOMAIN_LOBBY + '/';
+//settings.PHP_BASE		= 'http://' + settings.DOMAIN_LOBBY + '/';
 
-// path to user projects (for starting servers in SR.Execute)
-// NOTE: should not be here (TODO: move to icpm)
-if (settings.PATH_USERBASE) {
-	settings.PATH_LIB	= SR.path.join(settings.PATH_USERBASE, 'lib');	
-}
