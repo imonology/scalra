@@ -116,14 +116,17 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 	LOG.warn('relative frontier path: ' + frontier_path, 'SR.Execute');
 	
 	if (SR.fs.existsSync(frontier_path) === false) {
-		path = SR.path.join(SR.Settings.PATH_USERBASE, server_info.owner, server_info.project);
-		frontier_path = SR.path.join(path, server_info.name, 'frontier.js');
-		LOG.warn('absolute frontier path: ' + frontier_path, 'SR.Execute');
-		if (SR.fs.existsSync(frontier_path) === true)
-			valid_path = true;
+		if (SR.Settings.PATH_USERBASE) {
+			path = SR.path.join(SR.Settings.PATH_USERBASE, server_info.owner, server_info.project);
+			frontier_path = SR.path.join(path, server_info.name, 'frontier.js');
+			LOG.warn('absolute frontier path: ' + frontier_path, 'SR.Execute');
+			if (SR.fs.existsSync(frontier_path) === true)
+				valid_path = true;		
+		}
 	}
-	else
+	else {
 		valid_path = true;
+	}
 
 	// check if frontier file exists
 	if (valid_path === false) {
