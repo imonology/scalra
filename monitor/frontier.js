@@ -53,15 +53,41 @@ SR.API.add('_SYS_PATH', {
 			var path = SR.path.resolve(SR.Settings.SR_PATH, 'demo');
 			return onDone(null, path);
 		}
-		default:
+		default: {
+			// check if the requested path exists in settings
+			if (SR.Settings.hasOwnProperty(args.type)) {
+				return onDone(null, SR.Settings[args.type]);	
+			}
 			return onDone('unknown type [' + args.type + ']');
+		}
 	}
 });
 
+// API to set system paths
+SR.API.add('_SET_SYS_PATH', {
+	type:	'string',
+	path:	'string'
+}, function (args, onDone) {
+	
+	if (SR.Settings.hasOwnProperty(args.type) === true) {
+		return onDone('[' + args.type + '] already set');
+	}
+	SR.Settings[args.type] = args.path;
+	l_buildPaths();
+	onDone(null);
+});
 
+var l_buildPaths = function () {
+	
+	// (re-)build path settings
+	if (SR.Settings.PATH_USERBASE) {
+		SR.Settings.PATH_LIB = SR.path.join(SR.Settings.PATH_USERBASE, 'lib');	
+	}	
+}
 
 // execute all the steps for running a server
 l_frontier.init(function () {
+		
     // callback when lobby is started
     LOG.warn('monitor started successfully', l_name);
 });
