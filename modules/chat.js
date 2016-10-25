@@ -1,232 +1,105 @@
-//
-//  chat.js
-//
-//	a simple chat module
-//
-//	history:
-//		2014-06-21	convert from /handlers to /modules and take init parameters
-//
-// module object
-var l_module = {};
-
-// a pool for all message handlers
-var l_handlers = exports.handlers = {};
-var l_checkers = exports.checkers = {};
-var l_api = exports.api = {};
-
-//-----------------------------------------
-// define handlers (format checkers and event handlers)
-//
-//-----------------------------------------
 
 // create a new message queue
 var l_msgqueue = new SR.MsgQueue();
 
-// set the upper limit of the message queue's size
-l_checkers.SR_SET_QUEUESIZE = {
-	size: 'number'
-};
+SR.API.add('SR_SET_QUEUESIZE', {
+	size:	'number'	
+}, function (args, onDone) {
+	l_msgqueue.setLimit(args.size);
+	onDone();	
+});
 
-l_handlers.SR_SET_QUEUESIZE = function (event) {
-	l_msgqueue.setLimit(event.data.size);
-	event.done();
-}
-
-l_api.SR_PUBLISH = { //Begin of SR-API
-		fullname: 'SR.Module.chat.SR_PUBLISH',
-		name: 'SR_PUBLISH',
-		desc: 'publish a JSON message to a given channel',
-		input: {
-			channel: {
-				desc: 'name of the channel to publish',
-				type: 'string',
-				example: 'main'
-			},
-			msg: {
-				desc: 'a message in the form of a JSON object',
-				type: 'object',
-				example: '{who: "john", say: "hello"}'
-			}
-		},
-		output: {}
-	} //End of SR-API
-
-// publish a particular message object
-l_checkers.SR_PUBLISH = {
+SR.API.add('SR_PUBLISH', {
 	channel: 'string',
 	msg: 'object'
-};
-
-l_handlers.SR_PUBLISH = function (event) {
+}, function (args, onDone, extra) {
 
 	// TODO: remove following code when this function is stable
 	if (SR.Settings.MODE != 'prod') {
-		LOG.warn(event, 'SR.Module.chat');
-		LOG.warn('connection duration: ' + event.conn.getDuration(), 'SR.Module.chat');
+		LOG.warn(args);
+		LOG.warn('connection duration: ' + extra.conn.getDuration());
 
 		// session function test, store speaker ('who' parameter)
-		if (event.session['_account']) {
-			event.session['who'] = event.session['_account'];
-		} else if (event.data.msg.who && event.data.msg.who !== '') {
-			LOG.warn('store speaker [' + event.data.msg.who + '] into session', 'SR.Module.chat');
-			event.session['who'] = event.data.msg.who;
+		if (extra.session['_account']) {
+			extra.session['who'] = extra.session['_account'];
+		} else if (args.msg.who && args.msg.who !== '') {
+			LOG.warn('store speaker [' + args.msg.who + '] into session');
+			extra.session['who'] = args.msg.who;
 		}
 
 		// load it from session
-		if (event.session['who'])
-			event.data.msg.who = event.session['who'];
+		if (extra.session['who'])
+			args.msg.who = extra.session['who'];
 	}
 
 	// publish the message
-	SR.Comm.publish(event.data.channel, event.data, 'SR_MSG');
+	SR.Comm.publish(args.channel, args, 'SR_MSG');
 
 	// store to queue
-	l_msgqueue.add(event.data.msg, event.data.channel);
+	l_msgqueue.add(args.msg, args.channel);
 
 	// no response
-	event.done();
-}
+	onDone();
+});
 
-l_api.SR_SUBSCRIBE = { //Begin of SR-API
-		fullname: 'SR.Module.chat.SR_SUBSCRIBE',
-		name: 'SR_SUBSCRIBE',
-		desc: 'subscribe to a given channel with options',
-		input: {
-			channel: {
-				desc: 'name of the channel to subscribe',
-				type: 'string',
-				example: 'main'
-			},
-			para: {
-				desc: 'optional parameters when subscribing to a channel',
-				last: {
-					desc: 'how many recent messages to pull from the channel',
-					type: 'number',
-					example: '15'
-				}
-			}
-		},
-		output: {},
-		notes: 'will not return any message, howver, if "para.last" is specified, then will return SR_MSG for any previous messages'
-
-	} //End of SR-API
-
-// channel: 'string'
-// [para: {last: 'number'}]
-
-// subscribe a given message channel
-l_checkers.SR_SUBSCRIBE = {
-	channel: 'string'
-};
-
-l_handlers.SR_SUBSCRIBE = function (event) {
+SR.API.add('SR_SUBSCRIBE', {
+	channel:	'string',
+	para:		'+object'
+}, function (args, onDone, extra) {
 
 	// id, channel, conn
-	SR.Comm.subscribe(event.conn.connID, event.data.channel, event.conn);
-	/*
-		if (event.data.	
-		// notify interested parties about this subscription
-		var info_channel = channel + '_info';
-			if (l_channels.hasOwnProperty(channel_info)) {
-				l_publish(info_channel, {channel: channel, size: Object.keys(ch).length, join: sub_id});
-			}	
-	*/
-	// close event
-	event.done();
+	SR.Comm.subscribe(extra.conn.connID, args.channel, extra.conn);
 
+	// close 
+	onDone();
+
+	if (!args.para)
+		return;
+		
 	// check if additional parameters are provided
-	if (typeof event.data.para === 'object') {
-		var msgqueue_para = event.data.para;
-
-		// if we want the last X messages
-		if (typeof msgqueue_para.last === 'number' && msgqueue_para.last > 0) {
-			// get last X messages from queue
-			var msg_list = l_msgqueue.get(msgqueue_para, event.data.channel);
-
-			if (msg_list.length > 0) {
-				event.send('SR_MSGLIST', {
-					channel: event.data.channel,
-					msgs: msg_list
-				});
-				return;
-			}
+	var msgqueue_para = args.para;
+	
+	// if we want the last X messages
+	if (typeof msgqueue_para.last === 'number' && msgqueue_para.last > 0) {
+		// get last X messages from queue
+		var msg_list = l_msgqueue.get(msgqueue_para, args.channel);
+		
+		if (msg_list.length > 0) {
+			SR.EventManager.send('SR_MSGLIST', {
+				channel: args.channel,
+				msgs: msg_list
+			}, [extra.conn]);
+			return;
 		}
 	}
-}
+});
 
-// unsubscribe from a given message channel
-l_checkers.SR_UNSUBSCRIBE = {
+SR.API.add('SR_UNSUBSCRIBE', {
 	channel: 'string'
-};
-
-l_handlers.SR_UNSUBSCRIBE = function (event) {
-	SR.Comm.unsubscribe(event.conn.connID, event.data.channel);
-	event.done();
-}
+}, function (args, onDone, extra) {
+	SR.Comm.unsubscribe(extra.conn.connID, args.channel);
+	onDone();
+});
 
 // get number of subscribers to a channel
-l_checkers.SR_SUBSCRIBERS = {
+SR.API.add('SR_SUBSCRIBERS', {
 	channel: 'string'
-};
-
-l_handlers.SR_SUBSCRIBERS = function (event) {
-	var count = SR.Comm.count(event.data.channel);
-	event.done('SR_SUBSCRIBERS_R', {
-		channel: event.data.channel,
+}, function (args, onDone) {
+	var count = SR.Comm.count(args.channel);
+	onDone(null, {
+		channel: args.channel,
 		count: count
 	});
-}
-
-/*
-SR.Handlers.add('SR_PUBLISH',
-	function (event) {
-		event.done('SR_PUBLISH_RES', {result: true});
-	}
-);
-
-SR.Handlers.SR_PUBLISH.before = function (event, callback) {
-	...
-	event.data..
-	callback(true);
-};
-
-SR.Handlers.SR_PUBLISH.after = function (event) {
-	
-	event.done(true);
-};
-
-
-function (
-
-before(in, main(in, after(in, done)));
-
-var final = after(in, done);
-var s-1 = main(in, final);
-	var s-2 = before(in, s-1);
-	
-	s-2:	before	main(data);
-	s-1:	main	after(data);
-	final:	after	done(ret);
-*/
-
-//-----------------------------------------
-// Server Event Handling
-//
-//-----------------------------------------
-
-
-// when server starts
-SR.Callback.onStart(function () {});
-
-// when server starts
-SR.Callback.onStop(function () {});
+});
 
 // do something when a user disconnects
 SR.Callback.onDisconnect(function (conn) {
 	SR.Comm.unsubscribe(conn.connID);
 });
 
-// start the chat module
+// module object
+var l_module = {};
+
 l_module.start = function (config, onDone) {
 
 	// do config checking & init
