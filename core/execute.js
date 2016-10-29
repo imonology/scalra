@@ -65,7 +65,7 @@ var l_started = {};
 //   name:    'string'}
 // NOTE: path needs to be relative to the executing environment, which is where the calling frontier resides
 /// SR-API
-/// SR.Execute.start 
+/// l_name.start 
 /// start a certain number (size) of servers of a particular type
 /// Input
 ///   server_info 
@@ -84,7 +84,7 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 	var errmsg;
 	if (SR.Settings.hasOwnProperty('SERVER_INFO') === false) {
 		errmsg = 'SR.Settings.SERVER_INFO not set';
-		LOG.error(errmsg, 'SR.Execute');
+		LOG.error(errmsg, l_name);
 		return UTIL.safeCall(onDone, errmsg);
 	}
 	
@@ -96,13 +96,13 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 	server_info.owner   = server_info.owner   || SR.Settings.SERVER_INFO.owner;
 	server_info.project = server_info.project || SR.Settings.SERVER_INFO.project;
 	
-	LOG.warn('start ' + size + ' server(s), info: ', 'SR.Execute');
-	LOG.warn(server_info, 'SR.Execute');
+	LOG.warn('start ' + size + ' server(s), info: ', l_name);
+	LOG.warn(server_info, l_name);
 	
 	// if no owner / project specified, use default value in SERVER_INFO
 	if (server_info.owner === undefined || server_info.project === undefined || server_info.name === undefined) {
 		errmsg = 'server_info incomplete';
-		LOG.error(errmsg, 'SR.Execute');
+		LOG.error(errmsg, l_name);
 		return UTIL.safeCall(onDone, errmsg);
 	}
 
@@ -113,13 +113,15 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 	var frontier_path = SR.path.join('.', server_info.name, 'frontier.js');
 	var log_path = SR.path.join('.', 'log', 'screen.out');
 
-	LOG.warn('relative frontier path: ' + frontier_path, 'SR.Execute');
+	LOG.warn('relative frontier path: ' + frontier_path, l_name);
+	LOG.warn('log path: ' + log_path, l_name);
 	
 	if (SR.fs.existsSync(frontier_path) === false) {
+		LOG.warn('frontier_path does not exist, try absolute. PATH_USERBASE: ' + SR.Settings.PATH_USERBASE, l_name);
 		if (SR.Settings.PATH_USERBASE) {
 			path = SR.path.join(SR.Settings.PATH_USERBASE, server_info.owner, server_info.project);
 			frontier_path = SR.path.join(path, server_info.name, 'frontier.js');
-			LOG.warn('absolute frontier path: ' + frontier_path, 'SR.Execute');
+			LOG.warn('absolute frontier path: ' + frontier_path, l_name);
 			if (SR.fs.existsSync(frontier_path) === true)
 				valid_path = true;		
 		}
@@ -131,7 +133,7 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 	// check if frontier file exists
 	if (valid_path === false) {
 		errmsg = 'frontier not found: ' + frontier_path;
-		LOG.error(errmsg, 'SR.Execute');
+		LOG.error(errmsg, l_name);
 		return UTIL.safeCall(onDone, errmsg);
 	}
 	
@@ -139,7 +141,7 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 	server_info.exec_path = path;
 	
 	var server_type = server_info.owner + '-' + server_info.project + '-' + server_info.name;
-	LOG.warn('starting ' + size + ' [' + server_type + '] servers', 'SR.Execute');
+	LOG.warn('starting ' + size + ' [' + server_type + '] servers', l_name);
 	
 	var existing_count = 0;
 
@@ -147,7 +149,7 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 	if (server_info.name !== 'lobby')
 		existing_count = Object.keys(SR.AppConn.queryAppServers(server_info.name)).length;
 	
-	LOG.warn('there are ' + existing_count + ' existing [' + server_type + '] servers', 'SR.Execute');
+	LOG.warn('there are ' + existing_count + ' existing [' + server_type + '] servers', l_name);
 
 	// store an entry for the callback when all servers are started as requested
 	// TODO: if it takes too long to start all app servers, then force return in some interval
@@ -162,14 +164,14 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 	// notify if a server process has started
 	var onStarted = function (id) {
 					  
-		LOG.warn('server started: ' + server_type, 'SR.Execute');
+		LOG.warn('server started: ' + server_type, l_name);
     
 		// check if we should notify start server request
 		for (var i=0; i < l_pendingStart.length; i++) {
 		
 			var task = l_pendingStart[i];
 		
-			LOG.warn('pending type: ' + task.server_type, 'SR.Execute');
+			LOG.warn('pending type: ' + task.server_type, l_name);
 			if (task.server_type === server_type) {
 									
 				// record server id, check for return
@@ -202,7 +204,7 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 		count++;
 		existing_count++;
 		var name = server_type + existing_count;
-		LOG.warn('starting [' + server_type + '] Server #' + count + ' ' + name, 'SR.Execute');
+		LOG.warn('starting [' + server_type + '] Server #' + count + ' ' + name, l_name);
 			
 		var id = UTIL.createToken();			
 		l_run(id, server_info, onStarted, onOutput);
@@ -218,7 +220,7 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 
 // shutdown a given or a number of servers               
 /// SR-API                     
-/// SR.Execute.stop     
+/// l_name.stop     
 /// stop the execution of some servers given server IDs 
  /// Input                   
 ///   list    
@@ -241,14 +243,14 @@ var l_stop = exports.stop = function (list, onDone) {
 			list.push(id);
 	}
 
-	LOG.warn('attempt to stop ' + list.length + ' servers in total', 'SR.Execute');
+	LOG.warn('attempt to stop ' + list.length + ' servers in total', l_name);
 	LOG.warn(list);
 	
     // send shutdown signal
 	var shut_count = 0;
     for (var i = 0; i < list.length; i++) {
 		var id = list[i];
-		LOG.warn('id: ' + id, 'SR.Execute');
+		LOG.warn('id: ' + id, l_name);
 		
 		// check if this is process_id and needs translation to serverID
 		if (l_id2server.hasOwnProperty(id))
@@ -259,13 +261,13 @@ var l_stop = exports.stop = function (list, onDone) {
 		// get server info
 		SR.Call('reporting.getStat', id, function (list) {
 			if (list.length === 0) {
-				LOG.warn('server info for id [' + id + '] does not exist', 'SR.Execute');				
+				LOG.warn('server info for id [' + id + '] does not exist', l_name);				
 				return;
 			}
 			stat = list[0];
 			
-			LOG.warn('info for server to be shutdown: ', 'SR.Execute');
-			LOG.warn(stat, 'SR.Execute');
+			LOG.warn('info for server to be shutdown: ', l_name);
+			LOG.warn(stat, l_name);
 			
 			shut_count++;
 					
@@ -283,9 +285,9 @@ var l_stop = exports.stop = function (list, onDone) {
 				
 				var info = stat;
 				var url = 'http://' + info.IP + ':' + (info.port + SR.Settings.PORT_INC_HTTP) + '/stop/self';
-				LOG.warn('stop a lobby, url: ' + url, 'SR.Execute');
+				LOG.warn('stop a lobby, url: ' + url, l_name);
 				UTIL.HTTPget(url, function () {
-					LOG.warn('stop lobby HTTP request done', 'SR.Execute');
+					LOG.warn('stop lobby HTTP request done', l_name);
 				});
 			}
 		});		
@@ -301,7 +303,7 @@ var l_stop = exports.stop = function (list, onDone) {
 //   name:    'string'}
 // NOTE: path needs to be relative to the executing environment, which is where the calling froniter resides                
 /// SR-API                   
-/// SR.Execute.query          
+/// l_name.query          
 /// get a list of currently started and live servers                     
 /// Input                   
 ///   server_info  
@@ -336,7 +338,7 @@ var l_startAll = exports.startAll = function () {
 			
 			var servers = re.allservers;
 			
-            LOG.warn(servers, 'SR.Execute');
+            LOG.warn(servers, l_name);
             for (var c in servers) {
 				if (servers[c].server.type === 'entry')
 					continue;
@@ -347,16 +349,16 @@ var l_startAll = exports.startAll = function () {
                         };
 				
                 l_start(obj, 1, function (re){
-                        //LOG.warn('The project server is started.', 'SR.Execute');
-                        //LOG.warn(obj, 'SR.Execute');
+                        //LOG.warn('The project server is started.', l_name);
+                        //LOG.warn(obj, l_name);
                     }, function (re){
-                        //LOG.warn('The project server is not started.', 'SR.Execute');
-                        //LOG.warn(obj, 'SR.Execute');
+                        //LOG.warn('The project server is not started.', l_name);
+                        //LOG.warn(obj, l_name);
                     });
             }
         }, 
         function (re) {
-			LOG.warn('DB read error', 'SR.Execute');
+			LOG.warn('DB read error', l_name);
 		});
 };
 
@@ -372,9 +374,9 @@ var l_stopAll = exports.stopAll = function () {
 		}
 				
         SR.DB.setData(SR.Settings.DB_NAME_SYSTEM, {'allservers': allServers});
-        LOG.warn('I am going to shut all servers.', 'SR.Execute');
+        LOG.warn('I am going to shut all servers.', l_name);
 	    for (var c in allServers) {
-	        LOG.warn(allServers[c].server.id, 'SR.Execute');
+	        LOG.warn(allServers[c].server.id, l_name);
 	        l_stop(allServers[c].server.id);
     	}
     });
@@ -396,7 +398,7 @@ info: {
 
 // record server info (IP & port) when server starts
 SR.Callback.onAppServerStart(function (info) {
-	//LOG.warn('an app server has started:', 'SR.Execute');
+	//LOG.warn('an app server has started:', l_name);
 	//LOG.warn(info);
 	
 	// store server info to SR.Report (so app server info is stored consistently regardless at lobby or monitor)
@@ -411,7 +413,7 @@ SR.Callback.onAppServerStart(function (info) {
 		if (id_list.length > 0) {
 			l_id2server[id_list[0]] = info.id;
 			
-			LOG.warn('server [' + server_type + '] was started with process id: ' + id_list[0], 'SR.Execute');
+			LOG.warn('server [' + server_type + '] was started with process id: ' + id_list[0], l_name);
 			
 			// remove process id
 			id_list.splice(0, 1);
@@ -419,16 +421,16 @@ SR.Callback.onAppServerStart(function (info) {
 		}
 	}
 	else {
-		LOG.warn('server [' + server_type + '] was started manually, cannot terminate it with process id', 'SR.Execute');
+		LOG.warn('server [' + server_type + '] was started manually, cannot terminate it with process id', l_name);
 	}
 	
 });
 
 SR.Callback.onAppServerStop(function (info) {
-	//LOG.warn('an app server has stopped:', 'SR.Execute');
-	//LOG.warn(info, 'SR.Execute');
+	//LOG.warn('an app server has stopped:', l_name);
+	//LOG.warn(info, l_name);
 	
-	LOG.warn('removing pending delete record for server [' + info.id + ']', 'SR.Execute');
+	LOG.warn('removing pending delete record for server [' + info.id + ']', l_name);
 	
 	// delete pending requests for app server deletion
 	delete l_pendingDelete[info.id];
@@ -454,9 +456,9 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 	var exec_name = info.owner + '-' + info.project + '-' + info.name;
 	var log_path = exec_path;
 	
-	LOG.warn(info, 'SR.Execute');
-	LOG.warn('exec_path: ' + exec_path, 'SR.Execute');
-	LOG.warn('log_path: ' + log_path, 'SR.Execute');
+	LOG.warn(info, l_name);
+	LOG.warn('exec_path: ' + exec_path, l_name);
+	LOG.warn('log_path: ' + log_path, l_name);
 	
 	/* screen version
 	var new_proc = spawn('screen', 
@@ -514,15 +516,15 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 		new_proc.stderr.setEncoding('utf8');
 		new_proc.stderr.on('data', function (data) {
   	  		if (/^execvp\(\)/.test(data)) {
-				LOG.error('Failed to execute: ' + exec_name + ' path: ' + exec_path, 'SR.Execute');
+				LOG.error('Failed to execute: ' + exec_name + ' path: ' + exec_path, l_name);
   	  		}
-			LOG.error(data, 'SR.Execute');		
+			LOG.error(data, l_name);		
 			onStdData(data);
 		});
 		
 		// NOTE: should we call some callback when process exits?
 		new_proc.on('exit', function (code) {
-			LOG.warn('program [' + exec_name + '] process exited with code ' + code, 'SR.Execute');
+			LOG.warn('program [' + exec_name + '] process exited with code ' + code, l_name);
 						
 			if (log_file) {
 				log_file.close(function () {
@@ -540,8 +542,8 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 	log_file.open('output.log',
 				  	onLogOpened, 
 					function (e) {
-						LOG.error('Failed to open log file: ' + exec_name, 'SR.Execute');
-						LOG.error(e, 'SR.Execute');
+						LOG.error('Failed to open log file: ' + exec_name, l_name);
+						LOG.error(e, l_name);
 					},
 					false,
 					log_path);
