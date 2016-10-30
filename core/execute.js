@@ -482,7 +482,7 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 		//LOG.warn('spawn cmd: ' + cmd, l_name);
 		var exe_file = info.name + '/frontier.js';
 		var new_proc = spawn('node',
-							 [exe_file],
+							 [exe_file, '--CONNECT_MONITOR_ONSTART=true'],
 							 {cwd: exec_path}
 		);
 		
