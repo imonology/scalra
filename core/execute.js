@@ -468,12 +468,21 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 	
 	var log_file = undefined;
 	
-	var onLogOpened = function () {
+	var onLogOpened = function (err, file_exists) {
+		
+		if (err) {
+			LOG.error('Failed to open log file: ' + exec_name, l_name);
+			LOG.error(err, l_name);
+			return;
+		}
 	
 		// execute directly
 		// TODO: execute under a given linux user id? (probably too complicated)
-		var new_proc = spawn(SR.path.join('.', 'run'),
-							 [info.name],
+		//var cmd = SR.path.join('.', 'run');
+		//LOG.warn('spawn cmd: ' + cmd, l_name);
+		var exe_file = info.name + '/frontier.js';
+		var new_proc = spawn('node',
+							 [exe_file],
 							 {cwd: exec_path}
 		);
 		
@@ -504,7 +513,7 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 		new_proc.stdout.on('data', function (data) {
 			
 			// notify the process run has been executed for once (but may or may not be successful)
-			if (typeof onDone === 'function') {			
+			if (typeof onDone === 'function') {	
         		UTIL.safeCall(onDone, id);
 				onDone = undefined;
 			}
@@ -532,6 +541,11 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 				});
 			}
 		});
+		
+		// catch errors
+		new_proc.on('error', function (err) {
+			LOG.error(err, l_name);
+		});
 	}
 	
 	// filename, onSuccess, onFail, to_cache
@@ -541,10 +555,6 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 	//log_file.open(	id + '.log',
 	log_file.open('output.log',
 				  	onLogOpened, 
-					function (e) {
-						LOG.error('Failed to open log file: ' + exec_name, l_name);
-						LOG.error(e, l_name);
-					},
 					false,
 					log_path);
 }
