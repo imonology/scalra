@@ -688,6 +688,7 @@ exports.getDateTimeString = function () {
 // check if a directory exists or create if not
 exports.validatePath = function (path) {
 
+	LOG.warn('validating path: ' + path, l_name);
 	if (SR.fs.existsSync(path) === false) {
 		LOG.warn('creating new directory: ' + path + SR.Tags.ERREND, l_name);
 		SR.fs.mkdirSync(path);

@@ -107,7 +107,7 @@ icFile.prototype.open = function (filename, onDone, to_cache, direct_path) {
 		// print error message and return failure
 		if (err) {
 			SR.sys.puts(SR.Tags.ERR + 'SR.fs.open() exception-' + err + SR.Tags.ERREND);
-			UTIL.safeCall(onDone);
+			UTIL.safeCall(onDone, 'cannot open');
 			return;
 		}
 
@@ -118,7 +118,7 @@ icFile.prototype.open = function (filename, onDone, to_cache, direct_path) {
 
 		// check whether to load existing file content to cache
 		if (to_cache !== true) {            
-			UTIL.safeCall(onDone, file_exist);
+			UTIL.safeCall(onDone, null, file_exist);
 			return;
 		}
 
@@ -150,7 +150,7 @@ icFile.prototype.open = function (filename, onDone, to_cache, direct_path) {
 			}
 
 			// return success
-			UTIL.safeCall(onDone, file_exist);
+			UTIL.safeCall(onDone, null, file_exist);
 		});
 	});
 }
