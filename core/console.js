@@ -133,7 +133,7 @@ l_add('log', 'set different display levels', function (para) {
 },
 'errorlevel (4: system, 3: debug, 2: warning, 1: error)');
 
-l_add('info', 'display current server info [channel, cpu, server]', function (para) {
+l_add('info', 'display current server info [channel, cpu, server, disks, settings]', function (para) {
 
 	switch (para[0]) {
 		case 'channel':
@@ -158,6 +158,10 @@ l_add('info', 'display current server info [channel, cpu, server]', function (pa
 		case 'disks':
 			var info = UTIL.getSystemInfo();
 			console.log(info.additional.disks);
+			break;
+			
+		case 'settings':
+			console.log(SR.Settings);
 			break;
 						
 		default:
