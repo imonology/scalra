@@ -96,7 +96,17 @@ exports.icFrontier = function (config) {
 			SR.Settings[key] = SR.Settings.Project[key];
 		}
 	}
-		
+	
+	// override system & project-specific settings with command line settings
+	var argv = require('minimist')(process.argv.slice(2));
+	//console.dir(argv);
+	for (var key in argv) {
+		if (key === '_' || SR.Settings.hasOwnProperty(key) === false)
+			continue;
+		LOG.warn('[' + key + ']: ' + argv[key], l_name);
+		SR.Settings[key] = argv[key];
+	}
+	
 	// set unique ID for this frontier
 	this.id = UTIL.createUUID();
 

@@ -43,6 +43,7 @@
     "humanize": "0.0.9",
     "memcached": "2.2.2",
     "merge": "1.2.0",
+    "minimist": "1.2.0",
     "mocha": "2.4.5",
     "mongodb": "2.1.19",
     "node-df": "0.1.1",
