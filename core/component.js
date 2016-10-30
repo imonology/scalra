@@ -179,7 +179,7 @@ l_components['AppConnector'] = exports.AppConnector = function () {
 			manager_ip_port.port += SR.Settings.PORT_INC_APP_MANAGER;
 
 			// prepare app server info (prepare default then see if we can overwrite)			
-			var para = SR._kit.clone(SR.Settings.SERVER_INFO);
+			var para = UTIL.clone(SR.Settings.SERVER_INFO);
 
 			// NOTE: currently, name is the server's directory name
 			//       local_name is specified in the project's settings.js

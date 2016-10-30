@@ -250,6 +250,14 @@ var l_checkout = exports.checkout = function (event, res_obj) {
 	l_send(res_obj, undefined, [event.conn], event.cid);
 };
 
+// generate an update packet
+var l_createUpdatePacket = exports.createUpdatePacket = function (type, data) {
+	var packet = {};
+	packet[SR.Tags.UPDATE] = type;
+	packet[SR.Tags.PARA] = data;
+	return packet;
+};
+
 //-----------------------------------------
 // send message to an array of connections
 var l_send = exports.send = function (packet_type, para, connections, cid) {
@@ -282,7 +290,7 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 
 		// default to empty parameter
 		para = para || {};
-		res_obj = SR._kit.update(packet_type, para);
+		res_obj = l_createUpdatePacket(packet_type, para);
 	} 
 	else if (typeof packet_type === 'object') {
 		res_obj = packet_type;
@@ -490,7 +498,7 @@ Event.prototype.done = function (packet_type, para, connections) {
 			}
 		}
 		
-		response = SR._kit.update(packet_type, para);
+		response = l_createUpdatePacket(packet_type, para);
 	}
 
   	// perform checkout first

@@ -113,9 +113,17 @@ exports.createToken = function () {
 	return rand() + rand(); // to make it longer
 }
 
+// generate a random number between a 'floor' and 'top' limits
+// (copied from _basekit originally)
+var l_rand = function () {
+	var f = (arguments[1]) ? arguments[0] : 0;
+	var t = (arguments[1]) ? arguments[1] : arguments[0];
+	return Math.floor((Math.random() * (t - f)) + f);
+}
+
 // create a numerical ID number between 0 and 10,000
 exports.createID = function (limit) {
-	return SR._kit.rand(0, ((typeof limit === 'number' && limit > 0) ? limit : 10000));
+	return l_rand(0, ((typeof limit === 'number' && limit > 0) ? limit : 10000));
 }
 
 exports.getTrimedByteStringByLength = function (pString, trimedByteSz) {
@@ -154,7 +162,7 @@ exports.getTrimedByteStringByLength = function (pString, trimedByteSz) {
 // public method
 var extend = require('util')._extend;
 
-// version 2 (copied from SR._kit originally)
+// version 2 (copied from _basekit originally)
 // ref: http://stackoverflow.com/questions/5055746/cloning-an-object-in-node-js
 // make a copy of an object
 var clone = exports.clone = function (src) {

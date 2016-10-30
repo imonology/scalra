@@ -57,7 +57,7 @@ l_handlers.SR_MASS_MAIL = function (event) {
 	
 	LOG.warn('prepare to send mass mail to ' + total + ' receivers, ' + size + ' mails at once, every: ' + timeout + ' seconds');
 	
-	var data = SR._kit.clone(event.data);
+	var data = UTIL.clone(event.data);
 	delete data.list;
 	delete data.size;
 	delete data.interval;

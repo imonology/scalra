@@ -229,7 +229,7 @@ l_checkers.SR_LOGIN_REGISTER = {
 l_handlers.SR_LOGIN_REGISTER = function (event) {
 
 	//var data = event.data;
-	var user_data = SR._kit.clone(event.data.data);
+	var user_data = UTIL.clone(event.data.data);
 	
 	//var account = user_data.account;
 	//var password = user_data.password;

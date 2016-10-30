@@ -499,7 +499,7 @@ var l_setData = exports.setData = function (clt_name, data_obj, onSuccess, onFai
 		LOG.sys('[' + clt_name + '] saving record: ' + JSON.stringify(data_obj), 'SR.DB');
 
 		// make a copy of data
-		var data = SR._kit.clone(data_obj);
+		var data = UTIL.clone(data_obj);
 
 		// TODO: to check how & when resursive DB write can happen
 		// NOTE: it seems like there's recursive DB write occur when performing
@@ -592,7 +592,7 @@ var l_updateData = exports.updateData = function (clt_name, query, data_obj, onS
 	try {
 
 		// make a copy of data for manipulation
-		var data = SR._kit.clone(data_obj);
+		var data = UTIL.clone(data_obj);
 
 		// check and remove _id field if exists, as update should not replace the _id field already in DB
 		if (data.hasOwnProperty('_id')) {

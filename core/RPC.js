@@ -77,7 +77,7 @@ var l_addServer = exports.addServer = function (name, info, conn) {
 	LOG.warn('remote server [' + name + '] connected, add to pool...', 'SR.RPC');
 	
 	// NOTE: we clone a copy of the object to avoid attaching conn object to it will complicate original info
-	l_servers[name] = SR._kit.clone(info);
+	l_servers[name] = UTIL.clone(info);
 	l_servers[name].conn = conn;
 	return true;
 }

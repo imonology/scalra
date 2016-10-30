@@ -133,7 +133,7 @@ var l_push = function () {
 	var now = new Date();
 	
 	for (var i = 0, l = arguments.length; i < l; i++ ) {
-		var item = SR._kit.clone(arguments[i]);
+		var item = UTIL.clone(arguments[i]);
 		
 		// put timestamp to element stored
 		if (item && item !== null) {
@@ -237,7 +237,7 @@ var l_load = function (arrays, config, onDone) {
 								var start = record.data.length - limit;
 																
 								for (var j=0; j < limit; j++)
-									arr[j] = SR._kit.clone(record.data[start+j]);
+									arr[j] = UTIL.clone(record.data[start+j]);
 								
 								// override array's default behavior
 								arr.push = l_push;
