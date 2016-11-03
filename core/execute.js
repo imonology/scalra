@@ -317,7 +317,7 @@ var l_stop = exports.stop = function (list, onDone) {
 var l_query = exports.query = function (server_info, onDone) {
 	
 	SR.Call('reporting.getStat', server_info, function (list) {
-		UTIL.safeCall(onDone, list);	
+		UTIL.safeCall(onDone, list);
 	});
 }
 
@@ -374,7 +374,7 @@ var l_stopAll = exports.stopAll = function () {
 		}
 				
         SR.DB.setData(SR.Settings.DB_NAME_SYSTEM, {'allservers': allServers});
-        LOG.warn('I am going to shut all servers.', l_name);
+        LOG.warn('shutting down all servers.', l_name);
 	    for (var c in allServers) {
 	        LOG.warn(allServers[c].server.id, l_name);
 	        l_stop(allServers[c].server.id);
