@@ -14,18 +14,17 @@ var onConnect = function () {
 	
 	console.log('onConnect called...');
 	
-	SR.API._ACCOUNT_GETDATA({type: 'email'}, function (err, result) {
+	SR.API._ACCOUNT_GETDATA({types: ['email', 'data']}, function (err, result) {
 		if (err) {
 			alert(err);	
 			document.location.href = 'demo-login.html';
 			return;
 		}
 		
-		//accountField.value = result.data.account; 
+		accountField.value = result.account; 
 		emailField.value = result.email;
-			
-		//var str = JSON.stringify(result.data.data, undefined, 2);
-		//dataArea.value = str;		
+		var str = JSON.stringify(result.data, undefined, 2);
+		dataArea.value = str;		
 	});
 	
 	/*

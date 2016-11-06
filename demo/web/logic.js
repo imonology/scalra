@@ -6,7 +6,7 @@ function login(type, page) {
 	var onDone = function (err, result) {
 		if (err) {
 			console.error(err);
-			alert('account/password incorrect or not exist \n 帳密不符或帳號不存在!');
+			alert(err);
 			return;
 		}
 
