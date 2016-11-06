@@ -230,8 +230,10 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	}
 	
 	// check if already logined
+	// NOTE: we allow multiple logins to exist for now
 	if (l_logins.hasOwnProperty(account)) {
-		return onDone('account [' + account + '] already logined');		
+		LOG.warn('account [' + account + '] already logined', l_name);
+		//return onDone('account [' + account + '] already logined');		
 	}
 	
 	var user = l_accounts[account];
@@ -288,16 +290,17 @@ SR.API.add('_ACCOUNT_LOGIN', {
 
 // logout by account
 SR.API.add('_ACCOUNT_LOGOUT', {
-	account:	'string'
+	_login:		true,
+	account:	'+string'
 }, function (args, onDone, extra) {
 
-	var account = args.account;
+	var account = args.account || ((extra && extra.session && extra.session._user) ? extra.session._user.account : '');
 	if (l_logins.hasOwnProperty(account) === false) {
 		return onDone('[' + account + '] not logined');	
 	}
 	
 	if (l_accounts.hasOwnProperty(account) === false) {
-		return onDone('[' + account + '] not found');	
+		return onDone('[' + account + '] not found');
 	}
 	
 	// record logout time
@@ -322,6 +325,14 @@ SR.API.add('_ACCOUNT_LOGOUT', {
 	});
 });
 
+// auto-logout when disconnect
+SR.Callback.onDisconnect(function (conn) {
+	var account = SR.Conn.getSessionName(conn);
+	SR.API._ACCOUNT_LOGOUT({account: account}, function (err) {
+		LOG.warn('[' + account + '] auto-logout', l_name);
+	});
+});
+
 // reset password by email
 SR.API.add('_ACCOUNT_RESETPASS', {
 	email:		'string',
@@ -343,6 +354,7 @@ var l_protected_fields = {'uid': true, 'account': true, 'password': true};
 
 // set user data by account name & type:value mapping
 SR.API.add('_ACCOUNT_SETDATA', {
+	_login:			true,
 	account:		'string',
 	data:			'object'
 }, function (args, onDone) {
@@ -388,9 +400,16 @@ SR.API.add('_ACCOUNT_SETDATA', {
 
 // get user data by account name
 SR.API.add('_ACCOUNT_GETDATA', {
-	account:		'string',
+	_login:			true,
+	account:		'+string',
 	type:			'string'		// type: ['login', 'data', 'control', 'email', 'uid']
-}, function (args, onDone) {
+}, function (args, onDone, extra) {
+	
+	// check if account exists, if not then try to get from session
+	if (!args.account && extra.session._user) {
+		args.account = extra.session._user.account;
+	}
+	
 	if (l_accounts.hasOwnProperty(args.account) === false) {
 		return onDone('[' + args.account + '] not found');	
 	}
