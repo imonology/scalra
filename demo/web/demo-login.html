@@ -3,6 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <script type="text/javascript" src="/lib/scalra.js"></script>
+<script type="text/javascript" src="logic.js"></script>
 <script>
 
 // retrieve account & password from HTML elements
@@ -18,10 +19,11 @@ function getInput() {
 
 // allow string to check if it begins with something
 // ref: http://stackoverflow.com/questions/1767246/javascript-check-if-string-begins-with-something
-String.prototype.startsWith = function (needle) {
-    return(this.indexOf(needle) == 0);
-};
+//String.prototype.startsWith = function (needle) {
+//    return(this.indexOf(needle) == 0);
+//};
 
+/*
 function login(type) {
 	SR.login(type, getInput(), function (result) {
 		
@@ -53,6 +55,7 @@ function login(type) {
 		}
 	});
 }
+*/
 
 var onConnect = function () {
 	console.log('connected to scalra server');
@@ -78,7 +81,7 @@ e-mail: <input type="text" value="" id="email">
 <br>
 Remote Server: <input type="text" value="" id="server">
 <br>
-<a href="javascript:login('account')">Login</a><br>
+<a href="javascript:login('account', '/web/demo-lobby.html')">Login</a><br>
 <!-- <a href="javascript:login('FB');">FB Login</a><br> -->
 <a href="javascript:login('guest')">Guest Login</a><br>
 <p>

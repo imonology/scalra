@@ -3,6 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <script type="text/javascript" src="/lib/scalra.js"></script>
+<script type="text/javascript" src="logic.js"></script>
 <script>
 
 var accountField = undefined;
@@ -12,6 +13,22 @@ var dataArea = undefined;
 var onConnect = function () {
 	
 	console.log('onConnect called...');
+	
+	SR.API._ACCOUNT_GETDATA({type: 'email'}, function (err, result) {
+		if (err) {
+			alert(err);	
+			document.location.href = 'demo-login.html';
+			return;
+		}
+		
+		//accountField.value = result.data.account; 
+		emailField.value = result.email;
+			
+		//var str = JSON.stringify(result.data.data, undefined, 2);
+		//dataArea.value = str;		
+	});
+	
+	/*
 	SR.sendEvent('SR_QUERY_USERDATA', function (result) {
 		
 		if (result.code === 0 && result.data) {
@@ -21,7 +38,8 @@ var onConnect = function () {
 			var str = JSON.stringify(result.data.data, undefined, 2);
 			dataArea.value = str;
 		}
-	});	
+	});
+	*/	
 	
 	// check if SR.Video exists
 	if (typeof SR.Video === 'object') {
@@ -41,6 +59,7 @@ document.addEventListener ("DOMContentLoaded", function () {
 	
 });
 
+/*
 function logout () {
 	SR.login('logout', {account: accountField.value}, function (result) {
 		
@@ -64,6 +83,7 @@ function logout () {
 		}
 	});		
 }
+*/
 
 var onResponse = function (result) {
 	// process login success
