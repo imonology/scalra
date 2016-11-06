@@ -10,7 +10,7 @@
 var l_name = '_account';
 
 // cache reference of accounts
-var l_accounts;
+var l_accounts = undefined;
 
 // list of logined accounts (account -> user's full data)
 var l_logins = SR.State.get('user.logins', 'map');
@@ -166,7 +166,12 @@ SR.API.add('_ACCOUNT_REGISTER', {
 	email:		'string',
 	data:		'+object'
 }, function (args, onDone, extra) {
-
+	
+	// check if DB is initialized
+	if (typeof l_accounts === 'undefined') {
+		return onDone('DB module is not loaded, please enable DB module');	
+	}
+		
 	// print basic info to confirm
 	LOG.warn('register new account: ' + args.account + ' pass: ' + args.password + ' e-mail: ' + args.email, l_name);
 
@@ -221,9 +226,14 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	from:		'+string'		// which server relays this login request
 }, function (args, onDone, extra) {
 
+	// check if DB is initialized
+	if (typeof l_accounts === 'undefined') {
+		return onDone('DB module is not loaded, please enable DB module');	
+	}
+		
 	var account = args.account;	
 	LOG.warn('login [: ' + account + '] pass: ' + args.password + (args.from ? ' from: ' + args.from : ''), l_name);
-
+	
 	// check if account exists
 	if (l_accounts.hasOwnProperty(account) === false) {
 		return onDone('account [' + account + '] not found');	
@@ -233,7 +243,6 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	// NOTE: we allow multiple logins to exist for now
 	if (l_logins.hasOwnProperty(account)) {
 		LOG.warn('account [' + account + '] already logined', l_name);
-		//return onDone('account [' + account + '] already logined');		
 	}
 	
 	var user = l_accounts[account];
@@ -288,13 +297,19 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	});	
 });
 
-// logout by account
-SR.API.add('_ACCOUNT_LOGOUT', {
-	_login:		true,
-	account:	'+string'
-}, function (args, onDone, extra) {
-
+// verify whether a valid login exists before proceeding
+var l_checkLogin = function (args, onDone, extra) {
+	
+	LOG.warn('l_accounts:');
+	LOG.warn(l_accounts);
+		
+	// check if DB is initialized
+	if (typeof l_accounts === 'undefined') {
+		return onDone('DB module is not loaded, please enable DB module');	
+	}
+	
 	var account = args.account || ((extra && extra.session && extra.session._user) ? extra.session._user.account : '');
+	
 	if (l_logins.hasOwnProperty(account) === false) {
 		return onDone('[' + account + '] not logined');	
 	}
@@ -303,6 +318,23 @@ SR.API.add('_ACCOUNT_LOGOUT', {
 		return onDone('[' + account + '] not found');
 	}
 	
+	// check if account exists, if not then try to get from session
+	if (!args.account) {
+		args.account = account;
+	}
+	
+	return true;
+}
+
+// logout by account
+SR.API.add('_ACCOUNT_LOGOUT', {
+	_login:		true,
+	account:	'+string'
+}, function (args, onDone, extra) {
+
+	if (l_checkLogin(args, onDone, extra) !== true)
+		return;
+		
 	// record logout time
 	var user = l_accounts[account];
 	user.login.time_out = new Date();
@@ -338,7 +370,10 @@ SR.API.add('_ACCOUNT_RESETPASS', {
 	email:		'string',
 	account:	'+string'			// optional e-mail to check
 }, function (args, onDone) {
+
+	// send reset mail
 	
+	onDone(null);	
 });
 
 // set new password by token
@@ -355,13 +390,13 @@ var l_protected_fields = {'uid': true, 'account': true, 'password': true};
 // set user data by account name & type:value mapping
 SR.API.add('_ACCOUNT_SETDATA', {
 	_login:			true,
-	account:		'string',
+	account:		'+string',
 	data:			'object'
-}, function (args, onDone) {
-	if (l_accounts.hasOwnProperty(args.account) === false) {
-		return onDone('[' + args.account + '] not found');	
-	}
-	
+}, function (args, onDone, extra) {
+
+	if (l_checkLogin(args, onDone, extra) !== true)
+		return;
+		
 	// iterate each item and set value while recording errors
 	var errmsg = '';
 	var data = l_accounts[args.account];
@@ -402,27 +437,38 @@ SR.API.add('_ACCOUNT_SETDATA', {
 SR.API.add('_ACCOUNT_GETDATA', {
 	_login:			true,
 	account:		'+string',
-	type:			'string'		// type: ['login', 'data', 'control', 'email', 'uid']
+	type:			'+string',		// type: ['login', 'data', 'control', 'email', 'uid']
+	types:			'+array'		// same as type but in array form
 }, function (args, onDone, extra) {
 	
-	// check if account exists, if not then try to get from session
-	if (!args.account && extra.session._user) {
-		args.account = extra.session._user.account;
-	}
-	
-	if (l_accounts.hasOwnProperty(args.account) === false) {
-		return onDone('[' + args.account + '] not found');	
-	}
-	
+	LOG.warn('calling l_checkLogin...');
+	if (l_checkLogin(args, onDone, extra) !== true)
+		return;
+		
 	var data = l_accounts[args.account];
-	if (data.hasOwnProperty(args.type) === false) {
-		return onDone('field [' + args.type + '] invalid');
-	}	
 	
+	// convert needed types into array form
+	var types = args.types || [];
+	if (args.type) {
+		types.push(type);
+	}
+
 	// prepare return value, including 'account'
-	var value = {account: args.account};
-	value[args.type] = data[args.type];
-	onDone(null, value);
+	var value = {account: args.account};	
+	var errmsg = '';
+	for (var i=0; i < types.length; i++) {
+		if (data.hasOwnProperty(types[i]) === false) {
+			errmsg += ('field [' + types[i] + '] invalid\n'); 
+		} else {
+			value[types[i]] = data[types[i]];	
+		}
+	}
+	
+	if (errmsg !== '') {
+		onDone(errmsg);
+	} else {
+		onDone(null, value);
+	}
 });
 
 
