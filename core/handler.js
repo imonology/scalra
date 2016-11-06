@@ -450,13 +450,24 @@ var EventHandler = function () {
 				// it's a js object, check each parameter one by one
 				for (var para in checker) {
 					
+					// check for login requirement (must first login before proceed)
+					if (para === '_login') {
+						
+						if (checker[para] === true && event.session && 
+							event.session.hasOwnProperty('_user') === false) {
+							err_str.push('login required');
+						}
+						continue;
+					}
+					
 					// check for group specifications
 					if (para === '_groups' || para === '_permissions') {
 						// check if logined user matches the group
 						var groups = checker['_groups'] || [];
 						var permissions = checker['_permissions'] || [];
 						// see if we've a group match
-						if (l_checkGroups(groups, event.session['_groups']) === false && l_checkGroups(permissions, event.session['_permissions']) === false) {
+						if (l_checkGroups(groups, event.session['_groups']) === false && 
+							l_checkGroups(permissions, event.session['_permissions']) === false) {
 							err_str.push('group-permission denied, no group permission to access event');
 							break;
 						}

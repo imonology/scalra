@@ -64,7 +64,9 @@ var l_add = exports.add = function (name, func, checker) {
 	};
 	
 	// store a new wrapper function for calling the specified API
-	exports[name] = wrapper
+	// NOTE: when this API is called as a server-side function, 
+	// likely 'extra' data such as session or conn won't be provided
+	exports[name] = wrapper;
 	
 	// add this function as a handler
 	var handlers = {};
