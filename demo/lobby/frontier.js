@@ -36,8 +36,6 @@ var config = {
 	//console:			false,				// turn off console if you don't want it
     handlers: [
         {file: 'handler.js'},
-		//{file: '../app/handler_SPS.js'},
-		//{file: '../app/handler_TTT.js'},
 		{file: 'login.js', owner: 'SR'},
 		{file: 'system.js', owner: 'SR'},
 		{file: 'log.js', owner: 'SR'},
@@ -55,9 +53,9 @@ var config = {
     ],
 	// TODO: init core SR functions without using components		
     components: [
-        SR.Component.REST(),                    // start a HTTP server,
+		//SR.Component.REST(),                    // start a HTTP server,
 		//SR.Component.REST('HTTPS'),             // start a HTTPS server,
-		SR.Component.SockJS(),					// start a sockjs HTTP server
+		//SR.Component.SockJS(),					// start a sockjs HTTP server
 		//SR.Component.SockJS('HTTPS'),			// start a sockjs HTTPS server
 		//SR.Component.SocketIO(),					// start a socketio HTTP server
 		//SR.Component.SocketIO('HTTPS'),			// start a socketio HTTPS server		
