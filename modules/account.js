@@ -292,7 +292,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 		l_logins[account] = extra.conn;	
 						
 		// return login success
-		LOG.warn('[' + account + '] login success, total logins: ' + Object.keys(l_logins).length, l_name);	
+		LOG.warn('[' + account + '] login success, total online accounts: ' + Object.keys(l_logins).length, l_name);	
 		onDone(null, {account: account, token: token});
 	});	
 });
@@ -300,8 +300,8 @@ SR.API.add('_ACCOUNT_LOGIN', {
 // verify whether a valid login exists before proceeding
 var l_checkLogin = function (args, onDone, extra) {
 	
-	LOG.warn('l_accounts:');
-	LOG.warn(l_accounts);
+	//LOG.warn('l_accounts:');
+	//LOG.warn(l_accounts);
 		
 	// check if DB is initialized
 	if (typeof l_accounts === 'undefined') {
@@ -334,6 +334,8 @@ SR.API.add('_ACCOUNT_LOGOUT', {
 
 	if (l_checkLogin(args, onDone, extra) !== true)
 		return;
+	
+	var account = args.account;
 		
 	// record logout time
 	var user = l_accounts[account];

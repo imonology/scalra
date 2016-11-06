@@ -16,19 +16,19 @@ function login(type, page) {
 		
 		// try to login if register success
 		if (type === 'register') {
-			alert('register success! continue with login... \n 註冊成功! 自動登入...');
+			alert('register success! continue with login... \n註冊成功! 自動登入...');
 			login('account', page);
 			return;
 		}
 		
-		alert('login success! \n 登入成功!');
+		alert('login success!\n登入成功!');
 		window.location = (page || '/main');		
 	}
 	
 	switch (type) {
 		case 'register':
 			if (input.account === '' || input.password === '' || input.email === '') {
-				return alert('please fill in complete registeration data \n 請填寫完整註冊資料');	
+				return alert('please fill in complete registeration data \n請填寫完整註冊資料');	
 			}
 			SR.API._ACCOUNT_REGISTER(input, onDone);
 			break;
@@ -44,16 +44,16 @@ function login(type, page) {
 	}
 }
 
-function logout (account, page) {	
+function logout (page) {
 
-	SR.API._ACCOUNT_LOGOUT({account: account}, function (err, result) {
+	SR.API._ACCOUNT_LOGOUT(function (err, result) {
 		if (err) {
 			alert(err);
 		} else {
-			alert('logout success \n 登出成功');	
+			alert('logout success \n登出成功');	
 		}
 		
 		var url = (page || "/");
-		window.location.href = url;		
+		window.location.href = url;
 	});	
 }

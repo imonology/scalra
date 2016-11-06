@@ -23,40 +23,6 @@ function getInput() {
 //    return(this.indexOf(needle) == 0);
 //};
 
-/*
-function login(type) {
-	SR.login(type, getInput(), function (result) {
-		
-		// process login success
-		if (result.code === 0) {
-			alert('success, msg: ' + result.msg);
-			
-			// do not redirect if it's just to reset password or register
-			if (type === 'getpass')
-				return;
-			else if (type === 'register') {
-				login('account');
-				return;
-			}
-			
-			window.location = 'demo-lobby.html';
-		}
-		else if (result.code === 1) {
-			alert('fail, msg: ' + result.msg);
-		}
-		else if (result.code === 2) {
-			alert('error, msg: ' + result.msg);
-		}
-		else if (result.code === 3) {
-			alert('data mismatch, msg: ' + result.msg);
-		}	
-		else {
-			alert('unknown error code: ' + result.code);
-		}
-	});
-}
-*/
-
 var onConnect = function () {
 	console.log('connected to scalra server');
 	
