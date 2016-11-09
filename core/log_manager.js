@@ -389,7 +389,7 @@ exports.disposeAllLogs = function (onSuccess) {
 	jq.run(); 	
 }
 
-var l_output = function (level, caller, msg, func, fid_array, colortag) {
+var l_output = function (level, msg, func, fid_array, colortag) {
 
 	// if output message's error level is too high then don't show
 	if (l_error_level < level)
@@ -443,7 +443,7 @@ var l_output = function (level, caller, msg, func, fid_array, colortag) {
 	var term = func || ' ';
 
 	// generate output string
-	var str = '-' + curr.getHours() + ':' + curr.getMinutes() + '-' + caller + '::' + term + '::' + msg;
+	var str = '-' + curr.getHours() + ':' + curr.getMinutes() + '-' + term + '::' + msg;
 	
 	// output to screen
 	if (to_show)
@@ -504,22 +504,22 @@ var l_logger = exports.logger = function (msg, caller) {
 
 	// output system-level debug message
 	this.sys = function (msg, caller) {
-		l_output(4, arguments.callee.caller.name, msg, caller, [_fid_debug]);
+		l_output(4, msg, caller, [_fid_debug]);
 	}
 
 	// output application-level debug message	
 	this.debug = function (msg, caller) {
-		l_output(3, arguments.callee.caller.name, msg, caller, [_fid_debug]);
+		l_output(3, msg, caller, [_fid_debug]);
 	}
 
 	// output warning messages
 	this.warn = function (msg, caller) {
-		l_output(2, arguments.callee.caller.name, msg, caller, [_fid_debug], SR.Tags.WARN);
+		l_output(2, msg, caller, [_fid_debug], SR.Tags.WARN);
 	}
 
 	// output error messages
 	this.error = function (msg, caller) {
-		l_output(1, arguments.callee.caller.name, msg, caller, [_fid_debug, _fid_error], SR.Tags.ERR);
+		l_output(1, msg, caller, [_fid_debug, _fid_error], SR.Tags.ERR);
 	}
 
 	// print stack trace of current execution
@@ -748,4 +748,3 @@ var l_logger = exports.logger = function (msg, caller) {
 			}, condition);
 	}
 }
-
