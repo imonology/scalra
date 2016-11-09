@@ -68,7 +68,9 @@ l_module.start = function (config, onDone) {
 	var cookieParser = require('cookie-parser')
 	
 	// set view engine & directory
-	app.set('views', SR.Settings.FRONTIER_PATH + '/../views');	
+	var views_path = SR.path.join(SR.Settings.FRONTIER_PATH, '..', (config.views || 'views')); 
+	LOG.warn('views path: ' + views_path, l_name);
+	app.set('views', views_path);	
 	
 	var engine = require('ejs-mate');
 	app.engine('ejs', engine);
@@ -79,9 +81,10 @@ l_module.start = function (config, onDone) {
 	app.use('/lib', express.static(SR.Settings.SR_PATH + '/lib'));
 	
 	// need cookieParser middleware before we can do anything with cookies
-	// TODO: need to input a string? such as below..
-	//app.use(express.cookieParser('843751247f5ef129bcc2ed42e6ab2cba'));
-	app.use(cookieParser());
+	if (typeof config.cookie_token === 'string') {
+		app.use(cookieParser(config.cookie_token));
+	}
+	//app.use(express.cookieSession());	
 	
 	// set a cookie
 	// ref: http://stackoverflow.com/questions/16209145/how-to-set-cookie-in-node-js-using-express-framework
