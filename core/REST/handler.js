@@ -8,6 +8,7 @@ payment
 SNS
 login
 upload
+shutdown
 
 */
 // to parse query string
@@ -628,3 +629,17 @@ exports.upload = function (path_array, res, para, req) {
 		}
 		// end of "for file uploading
 }
+
+// handle server shutdown requests
+exports.shutdown = function (path_array, res, para, req) {
+
+	var token = path_array[2];
+	LOG.warn('token: [' + token + ']', l_name);
+	
+	// TODO: check for token correctness
+	if (token === 'self') {
+		LOG.warn('received self shutdown request', l_name);
+		SR.Settings.FRONTIER.dispose();
+	}
+}
+

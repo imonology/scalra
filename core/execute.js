@@ -284,7 +284,7 @@ var l_stop = exports.stop = function (list, onDone) {
 			else {
 				
 				var info = stat;
-				var url = 'http://' + info.IP + ':' + (info.port + SR.Settings.PORT_INC_HTTP) + '/stop/self';
+				var url = 'http://' + info.IP + ':' + (info.port + SR.Settings.PORT_INC_HTTP) + '/shutdown/self';
 				LOG.warn('stop a lobby, url: ' + url, l_name);
 				UTIL.HTTPget(url, function () {
 					LOG.warn('stop lobby HTTP request done', l_name);
