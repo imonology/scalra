@@ -262,9 +262,11 @@ l_components['REST'] = exports.REST = function (type, handle_list, port) {
 			
 			// set default REST handlers
 			SR.REST.addHandler(SR.REST.Handler);
-			SR.REST.addHandler('REST_execute.js');
 			//SR.REST.addHandler('REST_upload.js');
 			SR.REST.addHandler('REST_web.js');
+		
+			// NOTE: this has been moved to monitor server
+			//SR.REST.addHandler('REST_execute.js');
 			
 			// set custom REST handlers
 			if (handle_list && handle_list.length > 0) {

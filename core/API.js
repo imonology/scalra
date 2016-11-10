@@ -136,6 +136,7 @@ l_add('addRemote', {
 	l_hosts[args.name] = args.host;
 	
 	// add a remote host calling function
+	// TODO: utilize socket connection to remote host whenever available
 	exports[args.name] = function (name, remote_args, onRemoteDone) {
 				
 		// call through HTTP post request

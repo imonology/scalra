@@ -54,6 +54,18 @@ l_module.start = function (config, onDone) {
 				ports:  UTIL.getLocalPort()
 			}
 		});
+		
+		// subscribe for shutdown message
+		l_connector.send('_MONITOR_ALERT', {
+			id:	 SR.Settings.SERVER_INFO.id
+		}, '_MONITOR_ALERT', function (res) {
+			LOG.warn('monitor alert received:');
+			LOG.warn(res);
+			if (res.type === 'SHUTDOWN') {
+				LOG.warn('received self shutdown request');
+				SR.Settings.FRONTIER.dispose();		
+			}
+		});			
 
 		// add monitor as a remote API endpoint		
 		SR.API.addRemote({name: 'monitor', host: {IP: ip, port: SR.Settings.PORT_MONITOR}});
