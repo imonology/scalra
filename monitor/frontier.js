@@ -129,6 +129,67 @@ SR.API.add('_STOP_SERVER', {
 	onDone(null);
 });
 
+// list of subscribers to screen (server id -> conn object)
+var l_subscribers = {};
+
+// API to subscribe output of a screen
+SR.API.add('_SUBSCRIBE_SCREEN', {
+	id:			'string',		// project id
+	owner: 		'string',
+	project: 	'string',
+	name: 		'string'
+}, function (args, onDone, extra) {
+	
+	// keep connection object
+	var subscriber = l_subscribers[args.id] = {
+		proc: null,
+		conn: extra.conn
+	};
+	
+	// start tailing the project's output
+	try {
+
+		var log_file = SR.path.resolve(SR.Settings.PATH_USERBASE, 
+									   args.owner,
+									   args.project,
+									   'log',
+									   'output.log');
+		
+		subscriber.proc = spawn('tail', ['-n', '1000', '-f', log_file]);
+				
+		subscriber.proc.stdout.on('data', function (d) {
+			var logData = d.toString().replace(/\[m/g, '[');
+			
+			SR.EventManager.send('_SUBSCRIBE_SCREEN', {
+				id: args.id,
+				data: humanize.nl2br(ansi_up.ansi_to_html(logData))
+			}, [subscriber.conn]);
+			
+			LOG.debug(d.toString());
+		});
+		
+		subscriber.proc.stderr.on('data', function (d) {
+			
+			SR.EventManager.send('_SUBSCRIBE_SCREEN', {
+				id: args.id,
+				data: d.toString()
+			}, [subscriber.conn]);
+			
+			LOG.debug(d.toString());			
+		});
+		
+		subscriber.proc.on('exit', function (code) {
+			LOG.warn('screen spawn exit: ' + code);
+		});
+	}
+	catch (e) {
+		LOG.error('Get screen log of [' + args.id + '] failed');
+	}
+		
+	// determine server ID from session data
+	onDone(null);
+});
+
 var l_buildPaths = function () {
 	
 	// (re-)build path settings
