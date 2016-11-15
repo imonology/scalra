@@ -8,18 +8,18 @@
 // module object
 var l_module = exports.module = {};
 
-// a pool for all message handlers
-var l_handlers = exports.handlers = {};
-var l_checkers = exports.checkers = {};
-var l_api = exports.api = {};
-
-var l_name = 'SR.Module.MODULE_NAME';
-
 //-----------------------------------------
-// Handlers (format checkers and event handlers)
+// API definitions
 //
 //-----------------------------------------
 
+SR.API.add('EXAMPLE_API', {
+	name:	'string',
+	age:	'number'
+}, function (args, onDone, extra) {
+	LOG.warn('Name: ' + args.name);
+	onDone(null, {age: args.age+1});
+});
 
 
 //-----------------------------------------
