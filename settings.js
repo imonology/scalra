@@ -20,7 +20,7 @@ var local_config = require('./config.js').config;
 var settings = exports.settings = { 
 	
 	// mode can be 'dev', 'prod'
-	MODE: 'prod',
+	MODE: 'dev',
 	
 	// IP & Domainname for Lobby
 	IP_LOBBY	: '127.0.0.1',
