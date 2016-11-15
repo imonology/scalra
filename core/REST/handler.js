@@ -95,7 +95,7 @@ exports.event = function (path_array, res, JSONobj, req) {
 		}
 
 		// check for special case processing (SR_REDIRECT)
-		if (res_obj[SR.Tags.UPDATE] === 'SR_REDIRECT' && res_obj[SR.Tags.PARA].url) {
+		if (res_obj[SR.Tags.UPDATE] === 'SR_REDIRECT' && res_obj[SR.Tags.PARA] && res_obj[SR.Tags.PARA].url) {
 
 			var url = res_obj[SR.Tags.PARA].url;
 			LOG.warn('redirecting to: ' + url, l_name);
