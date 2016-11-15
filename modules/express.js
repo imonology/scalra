@@ -59,12 +59,10 @@ l_module.start = function (config, onDone) {
 	/*
 		Web Frontend
 	*/
-	//var express = require(SR.Settings.FRONTIER_PATH + '/../node_modules/express');
 	var express = require('express');
-	var http = require('http');
+	var http_server = (config.secured === true ? require('https') : require('http'));
 		
 	var app = express();
-	//var cookieParser = require(SR.Settings.FRONTIER_PATH + '/../node_modules/cookie-parser')
 	var cookieParser = require('cookie-parser')
 	
 	// set view engine & directory
@@ -109,12 +107,35 @@ l_module.start = function (config, onDone) {
 		next(); // <-- important!
 	});	
 	
-	var express_port = UTIL.getProjectPort('PORT_INC_EXPRESS');
-	//LOG.warn('express port: ' + express_port, l_name);
+	var express_port = (config.secured === true ? 
+						UTIL.getProjectPort('PORT_INC_EXPRESS_S') : 
+						UTIL.getProjectPort('PORT_INC_EXPRESS'));
 	
-	var server = http.createServer(app).listen(express_port, function() {
-		LOG.warn('Express server listening on port ' + express_port, l_name);
-	});
+	
+	var keys = SR.Settings.Project.keys;
+		
+	if (config.secured === true && typeof keys === 'object') {
+				
+		var options = {
+			key: SR.fs.readFileSync(keys.privatekey),
+			cert: SR.fs.readFileSync(keys.certificate)
+		};
+
+		// add CA info if available
+		if (keys.ca) {
+			options.ca = SR.fs.readFileSync(keys.ca)			
+		}		
+		
+		var server = http_server.createServer(options, app).listen(express_port, function() {
+			LOG.warn('Express server listening securely on port ' + express_port, l_name);
+		});
+				
+	} else {
+		var server = http_server.createServer(app).listen(express_port, function() {
+			LOG.warn('Express server listening on port ' + express_port, l_name);
+		});
+		
+	}
 
 	// set up script monitor, so we may hot-load router
 	//var router_path = SR.Settings.FRONTIER_PATH + '/' + (config.router || 'router.js'); 
