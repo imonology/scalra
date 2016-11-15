@@ -153,6 +153,11 @@ var EventHandler = function () {
 
 	// register response callback (event responder) for server notifications
 	var l_responders = {}
+	
+	// get checkers for external verification / doc generation
+	this.getCheckers = function () {
+		return l_checkers;	
+	}
 
 	// return the number of handlers
 	this.getHandlerSize = function () {
