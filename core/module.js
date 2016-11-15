@@ -166,7 +166,9 @@ var l_load = exports.load = function (name, config) {
 	// including: 1. module as a step with start/stop 2. load module's handlers
 	if (typeof module === 'undefined' && loaded_module) {
 		module = l_add(name, loaded_module.module);
-		SR.Handler.add(loaded_module);
+		if (module) {
+			SR.Handler.add(loaded_module);
+		}
 	}
 	
 	if (!loaded_module || !module)
