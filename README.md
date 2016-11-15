@@ -76,7 +76,8 @@ see [Installation Guide](INSTALL.md) for full instructions to setup a Scalra sys
   * Auto-reload of modified logic scripts
   * Works out-of-box with [MongoDB](https://www.mongodb.com) and [Express](https://expressjs.com)
   
-
+see [Release Notes](History.md) on various changes / new features in each releases.
+									
 ## Docs & Community
 
   * [Website and Documentation](https://github.com/imonology/scalra) - [[website repo](https://github.com/imonology/scalra)]
