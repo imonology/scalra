@@ -77,6 +77,14 @@ l_module.start = function (config, onDone) {
 	// set directory to serve static files
 	app.use('/web', express.static(SR.Settings.FRONTIER_PATH + '/../web'));
 	app.use('/lib', express.static(SR.Settings.SR_PATH + '/lib'));
+
+	if (typeof config.public === 'string') {
+		//app.use(express.static(SR.Settings.FRONTIER_PATH + '/../public'));
+		//app.use('/pub/', express.directory(SR.Settings.FRONTIER_PATH + '/public'));
+		var public_path = SR.path.resolve(SR.Settings.FRONTIER_PATH + '/..' + config.public);
+		LOG.warn('set public web directory to: ' + public_path, l_name);		
+		app.use(express.static(public_path));
+	}
 	
 	// need cookieParser middleware before we can do anything with cookies
 	if (typeof config.cookie_token === 'string') {
