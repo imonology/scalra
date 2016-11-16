@@ -71,7 +71,7 @@ var builder = function () {
 
 		for (var i = 0; i < requestFields.length; i++) {
 			var parameter = {};
-			parameter.name = requestFields[i];
+			parameter.name = requestFields[i].name;
 			parameter.in = 'formData';
 			parameter.require = true;
 			parameter.type = 'string';
