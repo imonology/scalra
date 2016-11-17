@@ -38,14 +38,6 @@ var _getOrigin = function(req) {
 var _checkRequester = function (req, res) {
 
 	var requesterIP = req.connection.remoteAddress;
-
-	//~ if (SR.Settings.MODE !== 'dev' && serverIP != requesterIP) {
-		//~ LOG.warn('requests from non-local host: ' + requesterIP, l_name);
-		//~ res.writeHead(200, {'Content-Type': 'text/plain'});
-		//~ res.end('invalid queries from non-local hosts');
-		//~ return false;
-	//~ }
-
 	return true;
 }
 
@@ -586,7 +578,7 @@ exports.upload = function (path_array, res, para, req) {
 								//SR.fs.unlink(form.uploadDir + d.name);
 								//SR.fs.rename(upload.path, new_name);
 							}
-							LOG.warn("File " + upload.name + " was uploaded. size: " + upload.size);							
+							LOG.warn("File " + upload.name + " was uploaded. size: " + upload.size, l_name);							
 						});
 					};
 
@@ -596,14 +588,14 @@ exports.upload = function (path_array, res, para, req) {
 							
 						// for single file upload
 						if (files.upload.name) {
-							LOG.warn('single file uploaded, rename upload obj:');
-							LOG.warn(files.upload);
+							LOG.warn('single file uploaded, rename upload obj:', l_name);
+							LOG.warn(files.upload, l_name);
 							renameFile(files.upload);
 						}
 						// for multiple files in an array
 						else if (files.upload.length) {
-							LOG.warn('multiple files uploaded [' + files.upload.length +'], rename upload objects:');
-							LOG.warn(files.upload);
+							LOG.warn('multiple files uploaded [' + files.upload.length +'], rename upload objects:', l_name);
+							LOG.warn(files.upload, l_name);
 							
 							for (var i in files.upload) {
 								var upload = files.upload[i];
