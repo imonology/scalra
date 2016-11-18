@@ -89,8 +89,9 @@ l_module.start = function (config, onDone) {
 	// need cookieParser middleware before we can do anything with cookies
 	if (typeof config.cookie_token === 'string') {
 		app.use(cookieParser(config.cookie_token));
+	} else {
+		app.use(cookieParser());
 	}
-	//app.use(express.cookieSession());	
 	
 	// set a cookie
 	// ref: http://stackoverflow.com/questions/16209145/how-to-set-cookie-in-node-js-using-express-framework
