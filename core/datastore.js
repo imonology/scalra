@@ -297,8 +297,8 @@ var l_load = function (arr, name, model, cache, onDone) {
 			
 			arr.add = function (data, onAddDone) {
 			
-				LOG.warn('add new [' + name + '] entry:', l_name);
-				LOG.warn(data, l_name);
+				LOG.sys('add new [' + name + '] entry:', l_name);
+				LOG.sys(data, l_name);
 				
 				// add a new entry
 				SR.ORM.create({
@@ -318,7 +318,7 @@ var l_load = function (arr, name, model, cache, onDone) {
 					// (which doesn't have methods such as 'save')
 					//record.remake = l_remakeArray;
 					arr.push(record);
-					LOG.warn('[' + name + '] now has ' + arr.length + ' records', l_name);
+					LOG.debug('[' + name + '] now has ' + arr.length + ' records', l_name);
 					
 					// store to mapper (if exists)
 					if (l_mappers.hasOwnProperty(name)) {
@@ -686,7 +686,7 @@ var l_map = exports.map = function (args, onDone) {
 		}
 		
 		if (map.hasOwnProperty(record[key]) === true) {
-			LOG.error('[' + args.name + '] key [' + record[key] + '] already exists in records, duplicate keys found!', l_name);
+			LOG.error('[' + args.name + '] key [' + record[key] + '] exists, duplicate keys found at row: ' + (i+1) + '!', l_name);
 		}
 		map[record[key]] = record;
 	}
@@ -705,3 +705,16 @@ var l_map = exports.map = function (args, onDone) {
 	UTIL.safeCall(onDone, null, map);
 	return map;
 }
+
+// fill in the value for a key with multiple element into an object
+var l_fill = exports.fill = function (obj, key, value) {
+	try {
+		var expression = "obj['" + key.replace('.' ,'\'][\'') + '\'] = value;';
+		eval(expression);		
+		return true;
+	} catch (e) {
+		LOG.error(e);
+		return false;
+	}
+}
+
