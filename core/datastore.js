@@ -300,6 +300,17 @@ var l_load = function (arr, name, model, cache, onDone) {
 				LOG.sys('add new [' + name + '] entry:', l_name);
 				LOG.sys(data, l_name);
 				
+				// check if data contains key (if key is defined for this structure)
+				if (l_mappers.hasOwnProperty(name)) {
+					var key = l_mappers[name].key;
+					if (data.hasOwnProperty(key) === false || data[key] === '' || typeof data[key] !== 'string') {
+						var errmsg = 'new record does not have a valid string for key field [' + key + ']';
+						LOG.error(errmsg, l_name);
+						UTIL.safeCall(onAddDone, errmsg);
+						return;
+					}
+				}
+		
 				// add a new entry
 				SR.ORM.create({
 					name: name,
@@ -325,6 +336,7 @@ var l_load = function (arr, name, model, cache, onDone) {
 						var key = l_mappers[name].key;
 						var mapping = l_mappers[name].mapping;
 						
+						// this check here should be redundent
 						if (record.hasOwnProperty(key) === false) {
 							LOG.error('new record stored does not have specified key [' + key + ']', l_name);
 						} else {
