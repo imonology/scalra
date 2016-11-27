@@ -120,38 +120,173 @@ l_add('SR_API_QUERY', function (args, onDone) {
 	onDone(null, Object.keys(l_list));
 });
 
+const SockJS = require('sockjs-client');
+
 // list of remote hosts
 var l_hosts = {};
+var l_onDisconnect = {};
+var l_pending = {};
 
 l_add('addRemote', {
 	name:		'string',
 	host:		'object',
-	secured:	'+boolean'
+	secured:	'+boolean',
+	use_socket:	'+boolean',
+	onDisconnect: '+function'
 }, function (args, onDone) {
 	
 	if (l_hosts.hasOwnProperty(args.name)) {
-		return onDone('remote host [' + args.name + '] already registered');	
+		LOG.warn('remote host [' + args.name + '] already registered', l_name);
+		if (args.onDisconnect) {			
+			l_onDisconnect[args.name].push(args.onDisconnect);
+		}
+			
+		return onDone(null);	
 	}
 	
 	l_hosts[args.name] = args.host;
 	
+	l_onDisconnect[args.name] = [];
+	
+	if (l_pending.hasOwnProperty(args.name) === false) {
+		LOG.warn('clearing & setup l_pending[' + args.name + ']...', l_name);
+		l_pending[args.name] = [];
+	}
+	
 	// add a remote host calling function
-	// TODO: utilize socket connection to remote host whenever available
-	exports[args.name] = function (name, remote_args, onRemoteDone) {
-				
-		// call through HTTP post request
-		var url_request = (args.secured ? 'https' : 'http') + '://' + 
-						l_hosts[args.name].IP + ':' + l_hosts[args.name].port + '/event/' + name;
+	if (args.use_socket === true) {
+
+		// build web-socket connection
+		var url = (args.secured ? 'https' : 'http') + '://' + l_hosts[args.name].IP + ':' + l_hosts[args.name].port + '/sockjs';
+		var sock = undefined;
+		var responseCallbacks = {};
+		var pending = l_pending[args.name];
+
+		var connectSocket = function (onConnected) {
+			
+			LOG.warn('connecting to [' + args.name + '] by websocket', l_name);
+			sock = new SockJS(url);
 		
-		UTIL.HTTPpost(url_request, remote_args, function (err, res, res_obj) {
-			if (err) {
-				return UTIL.safeCall(onRemoteDone, err);
+			// Open the connection
+			sock.onopen = function () {
+				// send cookie explicitly (my serverID)
+				var cookie = SR.Settings.SERVER_INFO.id;
+				LOG.warn('connected to server [' + args.name + '], sockjs sends cookie:', l_name);
+				LOG.warn(cookie, l_name);
+				sock.send(cookie, l_name);				
+				sock.is_connected = true;
+				
+				// send pending packets
+				
+				LOG.warn('pending packets to send: ' + pending.length, l_name);
+				LOG.warn(l_pending);
+				for (var i=0; i < pending.length; i++) {
+					sock.sendJSON(pending[i]);
+				}
+				pending = [];
+				
+				UTIL.safeCall(onConnected, null);
 			}
 			
-			// return error code & result directly
-			UTIL.safeCall(onRemoteDone, res_obj[SR.Tags['PARA']].err, res_obj[SR.Tags['PARA']].result);
-		});
-	};
+			// On connection close
+			sock.onclose = function (obj) {
+				LOG.warn('disconnected from server [' + args.name + ']', l_name);
+				// TODO: try to re-connect periodically?
+				delete sock;
+				sock = undefined;
+				
+				// if onDone still exists, it means we're just in the process of making a new connection
+				// so this attempt fails
+				if (typeof onDone === 'function') {
+					onDone('cannot establish websocket connection to [' + args.name + ']');
+					onDone = undefined;
+				}
+				
+				// remove remote host record
+				delete l_hosts[args.name];
+				
+				// notify
+				var list = l_onDisconnect[args.name];
+				LOG.warn('notify onDisconnect callbacks: ' + list.length, l_name);
+				for (var i=0; i < list.length; i++)
+					UTIL.safeCall(list[i]);
+			}
+			
+			// On receive message from server
+			sock.onmessage = function (e) {
+				// Get the content
+				var obj = JSON.parse(e.data);
+				var name = obj[SR.Tags['UPDATE']];
+				
+				if (responseCallbacks.hasOwnProperty(name) === false) {					
+					LOG.warn('cannot find proper response handler for [' + name + ']', l_name);
+					return;
+				}
+				
+				// return error code & result directly
+				UTIL.safeCall(responseCallbacks[name], obj[SR.Tags['PARA']].err, obj[SR.Tags['PARA']].result);
+			}
+			
+			// attach customized send function
+			sock.sendJSON = function (obj) {
+				sock.send(JSON.stringify(obj));
+			};
+		}
 	
-	onDone(null);
+		// call through websocket requests (useful for subscription-like behaviors)
+		exports[args.name] = function (name, remote_args, onRemoteDone) {
+
+			responseCallbacks[name] = onRemoteDone;
+			var obj = {};
+			obj[SR.Tags['EVENT']] = name;
+			obj[SR.Tags['PARA']] = remote_args;
+						
+			// check if socket is connected
+			if (sock) {
+				// send packet if connection established
+				if (sock.is_connected === true) {				
+					sock.sendJSON(obj);
+					return;
+				} 
+			} else {
+				var msg = '[' + args.name + '] not yet connected or broken, cache packet: ' + name;
+				LOG.warn(msg, l_name);
+				//UTIL.safeCall(onRemoteDone, errmsg);
+				// TODO: try to re-connect (periodically)	
+			}
+			
+			// otherwise cache the packet and send when connection is made			
+			pending.push(obj);
+			LOG.warn(l_pending);
+		};
+		
+		// init first socket connection
+		connectSocket(function () {
+			onDone(null);
+			onDone = undefined;
+		});
+		
+	} else {
+				
+		LOG.warn('connecting to [' + args.name + '] by HTTP', l_name);
+		
+		// call through HTTP post request	
+		exports[args.name] = function (name, remote_args, onRemoteDone) {
+	
+			var url_request = (args.secured ? 'https' : 'http') + '://' + 
+				l_hosts[args.name].IP + ':' + l_hosts[args.name].port + '/event/' + name;
+			
+			// POST approach
+			UTIL.HTTPpost(url_request, remote_args, function (err, res, res_obj) {
+				if (err) {
+					return UTIL.safeCall(onRemoteDone, err);
+				}
+				
+				// return error code & result directly
+				UTIL.safeCall(onRemoteDone, res_obj[SR.Tags['PARA']].err, res_obj[SR.Tags['PARA']].result);
+			});
+		};
+
+		onDone(null);		
+	}
 });
