@@ -122,72 +122,121 @@ SR.API.add('_STOP_SERVER', {
 		return onDone('server [' + args.id + '] not registered');
 	}
 	
-	LOG.warn('sending MONITOR_ALERT to [' + args.id + ']...');
+	LOG.warn('sending MONITOR_ALERT to [' + args.id + ']...', l_name);
 
 	// notify server to shutdown via previous connection
 	SR.EventManager.send('_MONITOR_ALERT', {type: 'SHUTDOWN'}, [l_servers[args.id]]);
 	onDone(null);
 });
 
-// list of subscribers to screen (server id -> conn object)
+// list of subscribers to screen (server id -> conn object list)
 var l_subscribers = {};
 
-// API to subscribe output of a screen
-SR.API.add('_SUBSCRIBE_SCREEN', {
-	id:			'string',		// project id
-	owner: 		'string',
-	project: 	'string',
-	name: 		'string'
+const spawn = require('child_process').spawn;
+
+// API to subscribe for the continous output wrirrrt
+SR.API.add('_SUBSCRIBE_FILESTREAM', {
+	owner:		'string',
+	project:	'string',
+	name:		'string'
 }, function (args, onDone, extra) {
+
+	LOG.warn('extra: ');
+	LOG.warn(extra);
+
+	var owner = args.owner;
+	var project = args.project;
+	var name = args.name;
 	
-	// keep connection object
-	var subscriber = l_subscribers[args.id] = {
-		proc: null,
-		conn: extra.conn
-	};
+	var serverID = owner + '-' + project + '-' + name;
 	
+	// check if already subscribed
+	if (l_subscribers.hasOwnProperty(serverID) === false) {
+		l_subscribers[serverID] = {
+			proc: null,
+			conns: []
+		}
+	}
+	
+	var subscriber = l_subscribers[serverID];
+	
+	// add a new subscriber connection (only if new)
+	if (subscriber.conns.indexOf(extra.conn) === (-1)) {		
+		subscriber.conns.push(extra.conn);
+	}
+	
+	// subscribe for output
+	//SR.Comm.subscribe(extra.conn.connID, serverID, extra.conn);
+	
+	// return serverID to indicate subscription success	
+	onDone(null, {serverID: serverID, data: 'showing screen for [' + serverID + ']'});
+	
+	if (subscriber.proc !== null) {
+		LOG.warn('screen output for [' + serverID + '] already exists, show existing tailing process', l_name);
+		return;
+	}
+
 	// start tailing the project's output
 	try {
-
+		
 		var log_file = SR.path.resolve(SR.Settings.PATH_USERBASE, 
-									   args.owner,
-									   args.project,
+									   owner,
+									   project,
 									   'log',
 									   'output.log');
 		
+		LOG.warn('tailing [' + log_file + ']...', l_name);
 		subscriber.proc = spawn('tail', ['-n', '1000', '-f', log_file]);
-				
-		subscriber.proc.stdout.on('data', function (d) {
-			var logData = d.toString().replace(/\[m/g, '[');
-			
-			SR.EventManager.send('_SUBSCRIBE_SCREEN', {
-				id: args.id,
-				data: humanize.nl2br(ansi_up.ansi_to_html(logData))
-			}, [subscriber.conn]);
-			
-			LOG.debug(d.toString());
-		});
 		
-		subscriber.proc.stderr.on('data', function (d) {
+		var onData = function (d) {
+			// NOTE: strings like '[monitor]' will get replaced as well (incorrectly)
+			var logData = d.toString().replace(/\[m/g, '[');
+			//var logData = d.toString();
 			
-			SR.EventManager.send('_SUBSCRIBE_SCREEN', {
-				id: args.id,
-				data: d.toString()
-			}, [subscriber.conn]);
-			
-			LOG.debug(d.toString());			
-		});
+			//SR.Comm.publish(serverID, {
+			//	serverID: serverID,
+			//	data: logData
+			//});
+			//LOG.warn('sending to ' + subscriber.conns.length + ' subscribers...', l_name);
+			SR.EventManager.send('_SUBSCRIBE_FILESTREAM', 
+								 {err: null, result: {serverID: serverID, data: logData}},
+								 subscriber.conns);
+		}
+		
+		subscriber.proc.stdout.on('data', onData);
+		subscriber.proc.stderr.on('data', onData);
 		
 		subscriber.proc.on('exit', function (code) {
-			LOG.warn('screen spawn exit: ' + code);
+			LOG.warn('screen spawn exit: ' + code, l_name);
 		});
 	}
 	catch (e) {
-		LOG.error('Get screen log of [' + args.id + '] failed');
+		LOG.error(e, l_name);
 	}
-		
-	// determine server ID from session data
-	onDone(null);
+});
+
+// remove subscription or stop tailing if nobody's interested in viewing
+// TODO: should have system-mechanism for auto-unsubscribe
+SR.Callback.onDisconnect(function (conn) {
+	for (var serverID in l_subscribers) {
+		for (var i=0; i < l_subscribers[serverID].conns.length; i++) {
+			
+			var c = l_subscribers[serverID].conns[i];
+			if (c.connID !== conn.connID)
+				continue;
+			
+			// remove the connection
+			l_subscribers[serverID].conns.splice(i, 1);
+			
+			// check if nobody's subscribing, then should remove tailing process
+			if (l_subscribers[serverID].conns.length === 0) {
+				LOG.warn('no subscriber for [' + serverID + '] screen, stop tailing...');
+				l_subscribers[serverID].proc.kill('SIGHUP');
+				delete l_subscribers[serverID];
+			}
+			return;
+		}
+	}
 });
 
 var l_buildPaths = function () {
