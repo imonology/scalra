@@ -55,30 +55,45 @@ l_module.start = function (config, onDone) {
 			}
 		});
 		
-		// subscribe for shutdown message
-		l_connector.send('_MONITOR_ALERT', {
-			id:	 SR.Settings.SERVER_INFO.id
-		}, '_MONITOR_ALERT', function (res) {
-			LOG.warn('monitor alert received:');
-			LOG.warn(res);
-			if (res.type === 'SHUTDOWN') {
-				LOG.warn('received self shutdown request');
-				SR.Settings.FRONTIER.dispose();		
-			}
-		});			
+		var onConnect = function (err) {
+			if (err)
+				LOG.error(err);
+			
+			// subscribe for shutdown message
+			SR.API['monitor']('_MONITOR_ALERT', {
+				id:	 SR.Settings.SERVER_INFO.id
+			}, function (err, result) {
+				if (err) {
+					return LOG.error(err);	
+				}
+				
+				if (result) {
 
-		// add monitor as a remote API endpoint		
-		SR.API.addRemote({name: 'monitor', host: {IP: ip, port: SR.Settings.PORT_MONITOR}});
-		
-		// get parameters from monitor, if available
-		SR.API['monitor']('_SYS_PATH', {type: 'PATH_LIB'}, function (err, result) {
-			if (!err) {
+					LOG.warn('monitor alert received:', l_name);
+					LOG.warn(result, l_name);
+					
+					if (result.type === 'SHUTDOWN') {
+						LOG.warn('received self shutdown request', l_name);
+						SR.Settings.FRONTIER.dispose();	
+					}
+				}
+			});			
+			
+			// get parameters from monitor, if available
+			SR.API['monitor']('_SYS_PATH', {type: 'PATH_LIB'}, function (err, result) {
+				if (err) {
+					return LOG.error(err);
+				}
+				
 				LOG.warn('PATH_LIB: ' + result, l_name);
 				SR.Settings.PATH_LIB = result;
-			}
-		});
+			});	
+		}
 		
-		UTIL.safeCall(onDone);		
+		// add monitor as a remote API endpoint		
+		SR.API.addRemote({name: 'monitor', host: {IP: ip, port: SR.Settings.PORT_MONITOR}, use_socket: true}, onConnect);
+		
+		UTIL.safeCall(onDone);
 	});
 }
 
@@ -276,7 +291,8 @@ var l_connect = function (onDone) {
 		l_connector = new SR.Connector(l_config);
 
     // establish connection
-	LOG.warn('connecting to: ' + l_ip_port, l_name);
+	LOG.warn('connecting to: ', l_name);
+	LOG.warn(l_ip_port, l_name);
 	l_connector.connect(l_ip_port, function (err, socket) {
 		
 		if (err) {

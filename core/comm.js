@@ -1,4 +1,3 @@
-﻿
 //
 //  comm.js
 //
@@ -26,6 +25,8 @@
 //
 // channel pub/sub
 //
+
+var l_name = 'SR.Comm';
 
 // list of currently existing channels
 var l_channels = {};
@@ -173,6 +174,7 @@ var l_publish = exports.publish = function (channel, msg, packet_type) {
 		connections.push(conn);
 	}
 
+	//LOG.warn('publish [' + packet_type + '] to ' + connections.length + ' connections', l_name);
 	return SR.EventManager.send(packet_type, msg, connections);
 }
 
