@@ -1,4 +1,8 @@
 
+1.5.5 / 2016-11-27
+==================
+	* added: "use_socket" flag in SR.API.addRemote() to establish websocket channel with a remote host
+	* added: a new monitor server API (_SUBSCRIBE_FILESTREAM) to allow screen output of a server be subscribed (by specifying 'owner-project-name')
 
 1.5.4 / 2016-11-21
 ==================
