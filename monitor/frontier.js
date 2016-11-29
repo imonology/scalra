@@ -135,7 +135,7 @@ var l_subscribers = {};
 const spawn = require('child_process').spawn;
 
 // API to subscribe for the continous output wrirrrt
-SR.API.add('_SUBSCRIBE_FILESTREAM', {
+SR.API.add('_SUBSCRIBE_LOG', {
 	owner:		'string',
 	project:	'string',
 	name:		'string'
@@ -198,7 +198,7 @@ SR.API.add('_SUBSCRIBE_FILESTREAM', {
 			//	data: logData
 			//});
 			//LOG.warn('sending to ' + subscriber.conns.length + ' subscribers...', l_name);
-			SR.EventManager.send('_SUBSCRIBE_FILESTREAM', 
+			SR.EventManager.send('_SUBSCRIBE_LOG', 
 								 {err: null, result: {serverID: serverID, data: logData}},
 								 subscriber.conns);
 		}
