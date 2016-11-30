@@ -208,6 +208,8 @@ SR.API.add('_SUBSCRIBE_LOG', {
 		
 		subscriber.proc.on('exit', function (code) {
 			LOG.warn('screen spawn exit: ' + code, l_name);
+			subscriber.proc = undefined;
+			delete l_subscribers[serverID];
 		});
 	}
 	catch (e) {
