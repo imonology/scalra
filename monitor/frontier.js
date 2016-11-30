@@ -134,48 +134,10 @@ var l_subscribers = {};
 
 const spawn = require('child_process').spawn;
 
-// API to subscribe for the continous output wrirrrt
-SR.API.add('_SUBSCRIBE_LOG', {
-	owner:		'string',
-	project:	'string',
-	name:		'string'
-}, function (args, onDone, extra) {
+var l_tailOutput = function (owner, project, name, subscriber) {
 
-	LOG.warn('extra: ');
-	LOG.warn(extra);
-
-	var owner = args.owner;
-	var project = args.project;
-	var name = args.name;
-	
 	var serverID = owner + '-' + project + '-' + name;
 	
-	// check if already subscribed
-	if (l_subscribers.hasOwnProperty(serverID) === false) {
-		l_subscribers[serverID] = {
-			proc: null,
-			conns: []
-		}
-	}
-	
-	var subscriber = l_subscribers[serverID];
-	
-	// add a new subscriber connection (only if new)
-	if (subscriber.conns.indexOf(extra.conn) === (-1)) {		
-		subscriber.conns.push(extra.conn);
-	}
-	
-	// subscribe for output
-	//SR.Comm.subscribe(extra.conn.connID, serverID, extra.conn);
-	
-	// return serverID to indicate subscription success	
-	onDone(null, {serverID: serverID, data: 'showing screen for [' + serverID + ']'});
-	
-	if (subscriber.proc !== null) {
-		LOG.warn('screen output for [' + serverID + '] already exists, show existing tailing process', l_name);
-		return;
-	}
-
 	// start tailing the project's output
 	try {
 		
@@ -191,15 +153,9 @@ SR.API.add('_SUBSCRIBE_LOG', {
 		var onData = function (d) {
 			// NOTE: strings like '[monitor]' will get replaced as well (incorrectly)
 			var logData = d.toString().replace(/\[m/g, '[');
-			//var logData = d.toString();
-			
-			//SR.Comm.publish(serverID, {
-			//	serverID: serverID,
-			//	data: logData
-			//});
-			//LOG.warn('sending to ' + subscriber.conns.length + ' subscribers...', l_name);
+
 			SR.EventManager.send('_SUBSCRIBE_LOG', 
-								 {err: null, result: {serverID: serverID, data: logData}},
+								 {err: null, result: {subID: subscriber.subID, data: logData}},
 								 subscriber.conns);
 		}
 		
@@ -214,7 +170,89 @@ SR.API.add('_SUBSCRIBE_LOG', {
 	}
 	catch (e) {
 		LOG.error(e, l_name);
+	}	
+}
+
+// API to subscribe for the continous output of a log file
+SR.API.add('_SUBSCRIBE_LOG', {
+	owner:		'string',
+	project:	'string',
+	name:		'string',
+	subID:		'string'
+}, function (args, onDone, extra) {
+
+	var owner = args.owner;
+	var project = args.project;
+	var name = args.name;
+	
+	var serverID = owner + '-' + project + '-' + name;
+	
+	// check if already subscribed
+	if (l_subscribers.hasOwnProperty(serverID) === false) {
+		l_subscribers[serverID] = {
+			proc: null,
+			subID: args.subID,			
+			conns: []
+		}
 	}
+	
+	var subscriber = l_subscribers[serverID];
+	
+	// add a new subscriber connection (only if new)
+	if (subscriber.conns.indexOf(extra.conn) === (-1)) {		
+		subscriber.conns.push(extra.conn);
+	}
+		
+	// return subID to indicate subscription success	
+	onDone(null, {subID: args.subID, data: 'showing screen for [' + serverID + ']...\n'});
+	
+	if (subscriber.proc !== null) {
+		LOG.warn('screen output for [' + serverID + '] already exists, show existing tailing process', l_name);
+		return;
+	}
+	
+	// use another function to make sure 'subscriber' is still valid in callback
+	l_tailOutput(owner, project, name, subscriber);
+});
+
+// API to subscribe for the continous output of a log file
+SR.API.add('_UNSUBSCRIBE_LOG', {
+	subID:			'string',
+	connID:			'+string'
+}, function (args, onDone, extra) {
+	
+	var connID = args.connID || extra.conn.connID;
+	var subID = args.subID;
+	var subscriber = undefined;
+	
+	for (var serverID in l_subscribers) {
+		
+		if (l_subscribers[serverID].subID === subID) {
+			subscriber = l_subscribers[serverID];
+			break;
+		}
+	}
+	
+	if (!subscriber) {
+		return onDone('subID [' + args.subID + '] not found');
+	}	
+	
+	// find & remove the connection object	
+	for (var i=0; i < subscriber.conns.length; i++) {
+		if (subscriber.conns[i].connID === connID) {
+			
+			subscriber.conns.splice(i, 1);
+			
+			// check if nobody's subscribing, then should remove tailing process
+			if (subscriber.conns.length === 0) {
+				LOG.warn('no subscriber for [' + serverID + '] screen, stop tailing...', l_name);
+				subscriber.proc.kill('SIGHUP');
+				delete l_subscribers[serverID];
+			}
+			return onDone(null);
+		}
+	}
+	return onDone('cannot find connection to remove');
 });
 
 // remove subscription or stop tailing if nobody's interested in viewing
@@ -228,15 +266,14 @@ SR.Callback.onDisconnect(function (conn) {
 				continue;
 			
 			// remove the connection
-			l_subscribers[serverID].conns.splice(i, 1);
+			SR.API._UNSUBSCRIBE_LOG({
+				serverID: serverID,
+				connID: c.connID
+			});
 			
-			// check if nobody's subscribing, then should remove tailing process
-			if (l_subscribers[serverID].conns.length === 0) {
-				LOG.warn('no subscriber for [' + serverID + '] screen, stop tailing...');
-				l_subscribers[serverID].proc.kill('SIGHUP');
-				delete l_subscribers[serverID];
-			}
-			return;
+			// NOTE: we just break because it's possible the same connection (from a single icpm instance)
+			// may subscribe for multiple serverID's output
+			break;
 		}
 	}
 });
