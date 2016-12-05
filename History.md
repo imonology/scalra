@@ -1,4 +1,9 @@
 
+1.5.6 / 2016-12-05
+==================
+	* fixed: _SUBSCRIBE_LOG / _UNSUBSCRIBE_LOG works correctly for multiple subscribers
+	* modified: rename _SUBSCRIBE_FILESTREAM to _SUBSCRIBE_LOG
+
 1.5.5 / 2016-11-27
 ==================
 	* added: "use_socket" flag in SR.API.addRemote() to establish websocket channel with a remote host
