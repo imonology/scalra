@@ -86,6 +86,7 @@ count(args, onDone)
 // 初始化 DB
 //
 //	args: {
+//		DB_type:  'string'	// type of DB to use ['mysql', 'mongodb']
 //		username: 'string'	// DB username
 //		password: 'string'	// DB password
 //		DB:	'string'		// DB name
@@ -128,9 +129,10 @@ var l_obj = {};
 //		});
 //
 exports.init = function (args, onDone) {
-	var conn_str = 'mongodb://' + args.username + ':' + args.password + '@'+ SR.Settings.DB_IP + '/' + (args.DB || args.username);
+	
+	var DB_type = args.DB_type || 'mongodb';	
+	var conn_str = DB_type + '://' + args.username + ':' + args.password + '@'+ SR.Settings.DB_IP + '/' + (args.DB || args.username);
 	LOG.warn('connecting: ' + conn_str, l_name);
-	console.log('connecting: ' + conn_str);
 	
 	orm.connect(conn_str, function (err, db) {
 		if (err) 

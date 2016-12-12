@@ -252,6 +252,7 @@ var l_load = function (arr, name, model, cache, onDone) {
 	
 	// attempt to get from DB
 	SR.ORM.init({
+		DB_type:	settings.DB_type,
 		username:	settings.account,
 		password:	settings.password,
 		DB:			settings.DB_name,

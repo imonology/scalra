@@ -68,7 +68,7 @@ exports.icFrontier = function (config) {
 	if (SR.fs.existsSync(setting_path)) {
 		LOG.sys('requiring: ' + setting_path, l_name);
 		
-		// storing setting path so we may access later (for example, when updating mongoAccess in settings.js)
+		// storing setting path so we may access later (for example, when updating DB config in settings.js)
 		// TODO: this needs to be fixed, not a clean approach
 		SR.Settings.PATH_SETTINGS = setting_path;
 		SR.Settings.Project = require(setting_path).settings;
