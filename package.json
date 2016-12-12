@@ -47,6 +47,7 @@
     "minimist": "1.2.0",
     "mocha": "2.4.5",
     "mongodb": "2.1.19",
+    "mysql": "2.12.0",
     "node-df": "0.1.1",
     "node-fs-extra": "0.8.1",
     "orm": "3.1.0",
