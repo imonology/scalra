@@ -26,13 +26,16 @@ var settings = exports.settings = {
 		
 	// default admin account/password to MongoDB
 	// NOTE: this is needed if you want to allow Scalra to create the project DB for you,
-	// otherwise if DB account/pass can be configured same as 'mongoAccess', then this is not needed
+	// otherwise if DB account/pass can be configured same as 'DB_AUTH', then this is not needed
 	// see: https://docs.mongodb.com/v2.6/tutorial/add-user-administrator/
 	DB_ADMIN: {
 		account:  'dbadmin',
 		pass:     'dbadmin-pass'
 	},
-		
+	
+	// type of DB to use ('mongodb' or 'mysql')
+	DB_TYPE: 'mongodb',
+
 	// file paths to secure keys (needed by HTTPS services, etc)
 	keys: {
 		privatekey: __dirname + '/keys/privatekey.pem',
@@ -52,4 +55,4 @@ var settings = exports.settings = {
 };
 
 // project-specific MongoDB settings
-settings.mongoAccess = {"DB_name":"scalra-demo","username":"scalra-demo","password":"scalra-demo"};
+settings.DB_AUTH = {"DB_name":"scalra-demo","username":"scalra-demo","password":"scalra-demo"};
