@@ -1343,16 +1343,25 @@ var l_getSettings = exports.getSettings = function () {
 	if (UTIL.userSettings("mongoAccess", "username") && UTIL.userSettings("mongoAccess","password")) {
 		settings.account = UTIL.userSettings("mongoAccess","username");
 		settings.password = UTIL.userSettings("mongoAccess","password");
+		settings.DB_type = 'mongodb';
+	} else if (UTIL.userSettings("DB_AUTH", "username") && UTIL.userSettings("DB_AUTH","password")) {
+		settings.account = UTIL.userSettings("DB_AUTH","username");
+		settings.password = UTIL.userSettings("DB_AUTH","password");
 	} else {
 		settings.password = Math.random().toString().substring(3,9);
-		var mongoAccess = "\nsettings.mongoAccess = " + JSON.stringify({DB_name: DB_name, username: settings.account, password: settings.password}) + ";\n";
-		LOG.warn("Creating a new credential " + mongoAccess, 'SR.DB');
+		var DBauth = "\nsettings.DB_AUTH = " + JSON.stringify({DB_name: DB_name, username: settings.account, password: settings.password}) + ";\n";
+		LOG.warn("Creating a new credential " + DBauth, 'SR.DB');
 		LOG.warn('append at: ' + SR.Settings.PATH_SETTINGS, 'SR.DB');
-    	SR.fs.appendFile(SR.Settings.PATH_SETTINGS, mongoAccess, function (err) {
+    	SR.fs.appendFile(SR.Settings.PATH_SETTINGS, DBauth, function (err) {
 			if (err) {
 				LOG.error(err);
 			}
 		});
+	}
+	
+	// set DB type if available
+	if (UTIL.userSettings("DB_TYPE")) {
+		settings.DB_type = UTIL.userSettings("DB_TYPE");
 	}
 
 	return settings;
