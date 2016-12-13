@@ -11,6 +11,7 @@
 //			publish(channel, msg, packet_type)
 //			list()
 //			count(channel)
+//			onUnsubscribed(function (sub_id) {})
 //		
 //		spatial pub/sub
 //			sub({sub_id, x, y, r})
@@ -131,6 +132,11 @@ exports.unsubscribe = function (sub_id, channel) {
 
     return true;
 }
+
+// automatic unsubscribe when a connection breaks
+SR.Callback.onDisconnect(function (conn) {
+	SR.Comm.unsubscribe(conn.connID);
+});
 
 // channel publication
 // returns success or not (true/false)

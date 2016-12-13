@@ -92,11 +92,6 @@ SR.API.add('SR_SUBSCRIBERS', {
 	});
 });
 
-// do something when a user disconnects
-SR.Callback.onDisconnect(function (conn) {
-	SR.Comm.unsubscribe(conn.connID);
-});
-
 // module object
 var l_module = {};
 
