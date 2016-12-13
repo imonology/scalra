@@ -1,4 +1,10 @@
 
+1.5.7 / 2016-12-14
+==================
+	* modify: rename "mongoAccess" to "DB_AUTH" in project /settings.js file
+	* add: support for mysql DB via DB_TYPE parameter when initializing SR.ORM
+	* add: SR.Comm.onUnsubscribed to notify interested parties when channels are being unsubscribed
+		
 1.5.6 / 2016-12-05
 ==================
 	* fixed: _SUBSCRIBE_LOG / _UNSUBSCRIBE_LOG works correctly for multiple subscribers
