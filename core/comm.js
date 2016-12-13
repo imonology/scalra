@@ -35,6 +35,9 @@ var l_channels = {};
 // list of unused channels currently pending removal
 var l_timeouts = {};
 
+// list of callbacks to notify when unsubscribe occurs
+var l_onUnsubscribe = [];
+
 // channel subscription
 exports.subscribe = function (sub_id, channel, conn) {
 
@@ -116,6 +119,11 @@ exports.unsubscribe = function (sub_id, channel) {
 
         // perform unsubscribe from this channel
         delete target_channel[sub_id];
+		
+		// notify interested parties of the unsubscription
+		for (var j=0; j < l_onUnsubscribe.length; j++) {
+			UTIL.safeCall(l_onUnsubscribe[j], sub_id);	
+		}
 
         // set to destroy channel if empty after some time
         if (Object.keys(target_channel).length === 0) {
@@ -137,6 +145,15 @@ exports.unsubscribe = function (sub_id, channel) {
 SR.Callback.onDisconnect(function (conn) {
 	SR.Comm.unsubscribe(conn.connID);
 });
+
+// notify interested parties when unsubscribe occurs
+exports.onUnsubscribed = function (onEvent) {
+	if (typeof onEvent !== 'function') {
+		return LOG.error('argument is not a valid callback function', l_name);	
+	}
+	
+	l_onUnsubscribe.push(onEvent);
+}
 
 // channel publication
 // returns success or not (true/false)
