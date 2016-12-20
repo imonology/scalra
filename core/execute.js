@@ -249,8 +249,53 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 	})
 }
 
+// shutdown a given or a number of servers          
+SR.API.add('_STOP_SERVER', {
+	id:	'string'
+}, function (args, onDone) {
 
-// shutdown a given or a number of servers               
+	var id = args.id;
+
+	// check if this is process_id and needs translation to serverID
+	if (l_id2server.hasOwnProperty(id))
+		id = l_id2server[id];
+
+	// get server info
+	SR.Call('reporting.getStat', id, function (list) {
+		if (list.length === 0) {
+			return onDone('server info for id [' + id + '] does not exist');
+		}
+
+		var stat = list[0];
+		
+		LOG.warn('info for server to be shutdown: ', l_name);
+		LOG.warn(stat, l_name);
+				
+		// check if server to be shutdown is a lobby
+		// TODO: have a more unified approach?
+		if (stat.type === 'app') {
+			
+			// record id to list of pending deletion
+			l_pendingDelete[id] = true;
+		
+			// to shutdown app servers, notify the app server directly
+			SR.AppConn.sendApp(id, 'APP_SHUTDOWN', {});			
+		}
+		else {
+			
+			var info = stat;
+			var url = 'http://' + info.IP + ':' + (info.port + SR.Settings.PORT_INC_HTTP) + '/shutdown/self';
+			LOG.warn('stopping server @ url: ' + url, l_name);
+			UTIL.HTTPget(url, function () {
+				LOG.warn('stop lobby HTTP request done', l_name);
+				onDone(null);
+			});
+		}
+	});	
+});
+
+
+// shutdown a given or a number of servers          
 /// SR-API                     
 /// l_name.stop     
 /// stop the execution of some servers given server IDs 
@@ -284,45 +329,13 @@ var l_stop = exports.stop = function (list, onDone) {
 		var id = list[i];
 		LOG.warn('id: ' + id, l_name);
 		
-		// check if this is process_id and needs translation to serverID
-		if (l_id2server.hasOwnProperty(id))
-			id = l_id2server[id];
-			
-		var stat = undefined;
-		
-		// get server info
-		SR.Call('reporting.getStat', id, function (list) {
-			if (list.length === 0) {
-				LOG.warn('server info for id [' + id + '] does not exist', l_name);				
-				return;
+		SR.API._STOP_SERVER({id: id}, function (err) {
+			if (err) {
+				LOG.error(err, l_name);
+			} else {
+				shut_count++;
 			}
-			stat = list[0];
-			
-			LOG.warn('info for server to be shutdown: ', l_name);
-			LOG.warn(stat, l_name);
-			
-			shut_count++;
-					
-			// check if server to be shutdown is a lobby
-			// TODO: have a more unified approach?
-			if (stat.type === 'app') {
-				
-				// record id to list of pending deletion
-				l_pendingDelete[id] = true;
-			
-				// to shutdown app servers, notify the app server directly
-				SR.AppConn.sendApp(id, 'APP_SHUTDOWN', {});			
-			}
-			else {
-				
-				var info = stat;
-				var url = 'http://' + info.IP + ':' + (info.port + SR.Settings.PORT_INC_HTTP) + '/shutdown/self';
-				LOG.warn('stop a lobby, url: ' + url, l_name);
-				UTIL.HTTPget(url, function () {
-					LOG.warn('stop lobby HTTP request done', l_name);
-				});
-			}
-		});		
+		});	
 	}
 	
 	UTIL.safeCall(onDone, shut_count + ' servers shutdown');
@@ -345,12 +358,30 @@ var l_stop = exports.stop = function (list, onDone) {
 /// Output                  
 ///   onDone   
 ///     [{"server":{"id":"7FA39AA9-63B8-423C-BBE9-A3D38405240B","owner":"aether","project":"BlackCat","name":"lobby","type":"lobby","IP":"211.78.245.176","port":37000},"admin":"shunyunhu@gmail.com","reportedTime":"2014-06-03T10:25:27.779Z"}] 
-///     returns a list of currently live servers    
-var l_query = exports.query = function (server_info, onDone) {
-	
-	SR.Call('reporting.getStat', server_info, function (list) {
-		UTIL.safeCall(onDone, list);
+///     returns a list of currently live servers
+
+SR.API.add('_QUERY_SERVERS', {
+	owner:		'string',
+	project:	'string',
+	name:		'string'
+}, function (args, onDone) {
+
+	// FIXME: avoid using reporting.getStat
+	SR.Call('reporting.getStat', args, function (list) {
+		UTIL.safeCall(onDone, null, list);
 	});
+});
+
+var l_query = exports.query = function (server_info, onDone) {
+
+	SR.API._QUERY_SERVERS(server_info, function (err, result) {
+		if (err) {
+			LOG.error(err);
+			onDone([]);
+		} else {
+			onDone(result);
+		}
+	});	
 }
 
 // 以下可自動關閉/啟動全部正在執行的 project servers: 
@@ -430,11 +461,6 @@ info: {
 
 // record server info (IP & port) when server starts
 SR.Callback.onAppServerStart(function (info) {
-	//LOG.warn('an app server has started:', l_name);
-	//LOG.warn(info);
-	
-	// store server info to SR.Report (so app server info is stored consistently regardless at lobby or monitor)
-	//SR.Report.storeStat({server: info});	
 
 	var server_type = info.owner + '-' + info.project + '-' + info.name;
 	if (l_started.hasOwnProperty(server_type)) {
@@ -459,8 +485,6 @@ SR.Callback.onAppServerStart(function (info) {
 });
 
 SR.Callback.onAppServerStop(function (info) {
-	//LOG.warn('an app server has stopped:', l_name);
-	//LOG.warn(info, l_name);
 	
 	LOG.warn('removing pending delete record for server [' + info.id + ']', l_name);
 	
@@ -590,3 +614,4 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 					false,
 					log_path);
 }
+
