@@ -74,11 +74,11 @@ var l_addByFile = exports.addByFile = function (handler_info, path) {
 						 
 	// set up script monitor, so we may hot-load handler functions
 	if (SR.Script.monitor(handler_name, fullpath) === undefined) {
-		LOG.error('cannot load file: ' + fullpath, 'SR.Handler');	
+		LOG.error('cannot load file: ' + fullpath, l_name);	
 		return false;
 	}
 
-	LOG.warn('load handlers [' + handler_name + '] success...', 'SR.Handler');
+	LOG.warn('load handlers [' + handler_name + '] success...', l_name);
 	var handlers = SR.Script[handler_name];
 	
 	// add handlers by checkers & handlers array
@@ -97,7 +97,7 @@ var l_get = exports.get = function (name) {
 	// create new set if not exists
 	if (l_handlerSets.hasOwnProperty(name) === false) {
 		l_handlerSets[name] = new EventHandler();
-		LOG.sys('creating new handler_set: ' + name, 'SR.Handler');
+		LOG.sys('creating new handler_set: ' + name, l_name);
 	}	
 	
 	return l_handlerSets[name];
@@ -111,7 +111,7 @@ exports.dispatch = function (event, name) {
 
 	// find handler set
 	if (l_handlerSets.hasOwnProperty(name) === false) {
-		LOG.warn('no handler set by the name [' + name + ']', 'SR.Handler');
+		LOG.warn('no handler set by the name [' + name + ']', l_name);
 		return false;
 	}	
 	
@@ -173,7 +173,7 @@ var EventHandler = function () {
 	this.load = function (handler_app) {
 		
 		if (typeof handler_app !== 'object') {
-			LOG.error('nothing to load', 'SR.Handler');
+			LOG.error('nothing to load', l_name);
 			LOG.stack();
 			return 0;
 		}
@@ -190,7 +190,7 @@ var EventHandler = function () {
 			handlers = handler_app.getMessageHandlers();
 
 		if (!checkers || !handlers) {
-			LOG.warn('Checkers or handlers not found, possibly only SR.Callback used?', 'SR.Handler');
+			LOG.warn('Checkers or handlers not found, possibly only SR.Callback used?', l_name);
 			return 0;
 		}
 	  
@@ -208,7 +208,7 @@ var EventHandler = function () {
 			list += (h + ' ');
 			num_stored++;
 		}
-		LOG.sys(list, 'SR.Handler');
+		LOG.sys(list, l_name);
 		
 		return num_stored;
 	}
@@ -220,24 +220,24 @@ var EventHandler = function () {
 		
 		// check if name exists
 		if (l_checkers.hasOwnProperty(arg.event_name) === false) {
-			LOG.warn('event handler [' + arg.event_name + '] does not exist, cannot modify permission', 'SR.Handler');
+			LOG.warn('event handler [' + arg.event_name + '] does not exist, cannot modify permission', l_name);
 			return undefined;
 		}
 		
-		LOG.warn('type: ' + arg.type, 'SR.Handler');
+		LOG.warn('type: ' + arg.type, l_name);
 		
 		// check over if groups exist
 		var checkers = l_checkers[arg.event_name];
 		var groups = (checkers.hasOwnProperty('_groups') ? l_checkers[arg.event_name]['_groups'] : []);
 		var permissions = (checkers.hasOwnProperty('_permissions') ? l_checkers[arg.event_name]['_permissions'] : []);
-		LOG.sys('original groups & permissions', 'SR.Handler');
-		LOG.sys(groups, 'SR.Handler');
-		LOG.sys(permissions, 'SR.Handler');
+		LOG.sys('original groups & permissions', l_name);
+		LOG.sys(groups, l_name);
+		LOG.sys(permissions, l_name);
 		
 		for (var i=0; i < groups.length; i++) {
 			if (groups[i] === arg.group) {
 				if (arg.type === true) {
-					LOG.warn('group [' + arg.group + '] already set for event [' + arg.event_name + ']', 'SR.Handler');
+					LOG.warn('group [' + arg.group + '] already set for event [' + arg.event_name + ']', l_name);
 					return groups;
 				}
 				// unset flag
@@ -249,7 +249,7 @@ var EventHandler = function () {
 		for (var i=0; i < permissions.length; i++) {
 			if (permissions[i] === arg.permission) {
 				if (type === true) {
-					LOG.warn('permission [' + arg.permission + '] already set for event [' + arg.event_name + ']', 'SR.Handler');
+					LOG.warn('permission [' + arg.permission + '] already set for event [' + arg.event_name + ']', l_name);
 					return permissions;
 				}
 				// unset flag
@@ -261,11 +261,11 @@ var EventHandler = function () {
 		// if not found, check if this is a new group to add
 		if (i === groups.length) {
 			if (type === true) {
-				LOG.warn('adding new group [' + group + '] to event [' + event_name + ']', 'SR.Handler');
+				LOG.warn('adding new group [' + group + '] to event [' + event_name + ']', l_name);
 				groups.push(group);
 			}
 			else {
-				LOG.warn('no group setting', 'SR.Handler');
+				LOG.warn('no group setting', l_name);
 				return groups;
 			}
 		}
@@ -278,8 +278,8 @@ var EventHandler = function () {
 		else
 			delete l_checkers[event_name]['_groups'];
 		
-		LOG.warn('new groups: ', 'SR.Handler');
-		LOG.warn(groups, 'SR.Handler');
+		LOG.warn('new groups: ', l_name);
+		LOG.warn(groups, l_name);
 		return groups;
 	}	
 	
@@ -292,7 +292,7 @@ var EventHandler = function () {
 		
 		// check if we're lobby and same-name app servers are available
 		var list = SR.AppConn.queryAppServers();
-		LOG.sys('check forward for: ' + msgtype + ' app server size: ' + Object.keys(list).length, 'SR.Handler');
+		LOG.sys('check forward for: ' + msgtype + ' app server size: ' + Object.keys(list).length, l_name);
 	
 		var minload_id = undefined;
 		var minload = 10000;
@@ -300,7 +300,7 @@ var EventHandler = function () {
 		for (var id in list) {
 			var info = list[id];
 			if (info.type === 'app' && info.name === SR.Settings.SERVER_INFO.name) {
-				LOG.warn('found forward target [' + id + '] loading: ' + info.usercount, 'SR.Handler');
+				LOG.warn('found forward target [' + id + '] loading: ' + info.usercount, l_name);
 				if (info.usercount < minload) {
 					minload_id = id;
 					minload = info.usercount;
@@ -342,11 +342,11 @@ var EventHandler = function () {
 		// unknown event type  
 		if (i == eventtypes.length) {
 			var err_str = 'unknown event type. sent from: ' + event.printSource();					
-			LOG.error(err_str, 'SR.Handler');
+			LOG.error(err_str, l_name);
 			
 			// print each key in this event
 			for (var k in event.data)
-				LOG.error(k, 'SR.Handler');
+				LOG.error(k, l_name);
 			
 			// simply ignore, this should not happen
 			SR.EventManager.checkout(event, {});
@@ -369,7 +369,7 @@ var EventHandler = function () {
 		// append '\n' at end to indicate message end
 		// NOTE: message type is shown as 'debug' message to allow developer also to see it
 		var recv_str = JSON.stringify(event.data) + '\n';
-		LOG.debug(SR.Tags.RCV + msgtype + ' from ' + (conn_name ? '[' + conn_name + '] ' : '') + '(' + event.printSource() + ')\n' + recv_str + SR.Tags.END, 'SR.Handler');
+		LOG.debug(SR.Tags.RCV + msgtype + ' from ' + (conn_name ? '[' + conn_name + '] ' : '') + '(' + event.printSource() + ')\n' + recv_str + SR.Tags.END, l_name);
 		
 		// record incoming size plus '\n'
 		SR.Stat.add('net_in', recv_str.length + 1);
@@ -408,7 +408,7 @@ var EventHandler = function () {
 			if (event.hasOwnProperty('cid'))	
 				l_handleEventResponse(msgtype, event);
 			else
-				LOG.error('no client id (cid) provided by a response for event [' + msgtype + ']', 'SR.Handler');
+				LOG.error('no client id (cid) provided by a response for event [' + msgtype + ']', l_name);
 		
 			// finish handling the event
 			// NOTE: should not use 'event.done' as it will return something back, which may trigger new responses
@@ -419,11 +419,11 @@ var EventHandler = function () {
 		// check if the right handler exists (for both format & content)
 		if (l_handlers.hasOwnProperty(msgtype) === false) {
 			var err_str = 'no handler for [' + eventtype + '] type: ' + msgtype;
-			LOG.error(err_str, 'SR.Handler');
+			LOG.error(err_str, l_name);
 
-			LOG.error('existing handlers: ', 'SR.Handler');
+			LOG.error('existing handlers: ', l_name);
 			for (var event_name in l_handlers)
-				LOG.error(event_name, 'SR.Handler');
+				LOG.error(event_name, l_name);
 			
 			// notify error
 			var obj = {};
@@ -544,7 +544,7 @@ var EventHandler = function () {
 
 			// check if already checkout
 			if (typeof event.id !== 'undefined') {
-				LOG.error('event still not checkout after: ' + SR.Settings.TIMEOUT_EVENTHANDLE + ' ms', 'SR.Handler');
+				LOG.error('event still not checkout after: ' + SR.Settings.TIMEOUT_EVENTHANDLE + ' ms', l_name);
 				SR.EventManager.dropEvent(event);
 			}
 		}
@@ -605,7 +605,7 @@ var EventHandler = function () {
 	// notify that a response to a particular event is received
 	var l_handleEventResponse = function (response_type, event) {
 	
-		LOG.sys('handling event response [' + response_type  + ']', 'SR.Handler');
+		LOG.sys('handling event response [' + response_type  + ']', l_name);
 		
 		// go over each registered callback function and see which one responds
 		for (var i=0; i < l_responders[response_type].length; i++) {
@@ -613,7 +613,7 @@ var EventHandler = function () {
 			// call callback and see whether it has been processed
 			if (l_responders[response_type][i].cid === event.cid) {
 				// log incoming message type & IP/port
-				LOG.sys(SR.Tags.RCV + response_type + ' from ' + event.printSource() + SR.Tags.END, 'SR.Handler');
+				LOG.sys(SR.Tags.RCV + response_type + ' from ' + event.printSource() + SR.Tags.END, l_name);
 
 				// make callback
 				UTIL.safeCall(l_responders[response_type][i].onResponse, event);
