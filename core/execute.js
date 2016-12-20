@@ -279,7 +279,8 @@ SR.API.add('_STOP_SERVER', {
 			l_pendingDelete[id] = true;
 		
 			// to shutdown app servers, notify the app server directly
-			SR.AppConn.sendApp(id, 'APP_SHUTDOWN', {});			
+			SR.AppConn.sendApp(id, 'APP_SHUTDOWN', {});	
+			onDone(null);
 		}
 		else {
 			
@@ -335,10 +336,13 @@ var l_stop = exports.stop = function (list, onDone) {
 			} else {
 				shut_count++;
 			}
+			
+			//LOG.warn('i: ' + i + ' list.length: ' + list.length);
+			if (i >= (list.length-1)) {
+				UTIL.safeCall(onDone, shut_count + '/' + list.length + ' servers shutdown successfully');				
+			}
 		});	
 	}
-	
-	UTIL.safeCall(onDone, shut_count + ' servers shutdown');
 }
 
 // get a list of currently started/recorded servers
