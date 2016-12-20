@@ -76,6 +76,10 @@ SR.Log =                    require(CORE_DIR + 'log_manager');
 global.LOG = new SR.Log.logger();
 global.UTIL = SR.Utility = require(CORE_DIR + 'utility');
 
+// generic API interface
+SR.Handler =                require(CORE_DIR + 'handler');
+SR.API = 					require(CORE_DIR + 'API');
+
 SR.File =                   require(CORE_DIR + 'file').icFile;  
 SR.AppConn =                require(CORE_DIR + 'app_conn');
 
@@ -88,7 +92,6 @@ SR.Comm =                   require(CORE_DIR + 'comm');
 SR.Conn =                   require(CORE_DIR + 'conn');
 SR.Console =                require(CORE_DIR + 'console');
 SR.Execute =                require(CORE_DIR + 'execute');
-SR.Handler =                require(CORE_DIR + 'handler');
 SR.JobQueue =               require(CORE_DIR + 'job_queue');
 SR.Require =                require(CORE_DIR + 'require');
 SR.RPC =                    require(CORE_DIR + 'RPC');
@@ -116,9 +119,6 @@ SR.Socket =                 require(CORE_DIR + 'socket').icSocket;
 SR.Listener =               require(CORE_DIR + 'listener').icListener;
 SR.Connector =              require(CORE_DIR + 'connector').icConnector;
 SR.Frontier =               require(CORE_DIR + 'frontier').icFrontier;
-
-// generic API interface
-SR.API = 					require(CORE_DIR + 'API');
 
 // extensions 
 // objects

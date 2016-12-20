@@ -102,6 +102,7 @@ SR.Callback.onDisconnect(function (conn) {
 	}
 });
 
+/*
 // API to start servers
 SR.API.add('_START_SERVER', {
 	owner:		'string',
@@ -128,6 +129,7 @@ SR.API.add('_STOP_SERVER', {
 	SR.EventManager.send('_MONITOR_ALERT', {type: 'SHUTDOWN'}, [l_servers[args.id]]);
 	onDone(null);
 });
+*/
 
 // list of subscribers to screen (server id -> conn object list)
 var l_subscribers = {};

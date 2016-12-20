@@ -44,8 +44,6 @@ var l_id2server = {};
 // map of successfully started processes (to be associated with the app server info)
 var l_started = {};
 
-// map of reported app servers
-//var l_servers = {};
 
 //-----------------------------------------
 // define local function
@@ -59,108 +57,44 @@ var l_started = {};
 //-----------------------------------------
 
 // start a certain number (size) of servers of a particular type
-// server_info include:
-// { owner:  'string',
-//   project: 'string',
-//   name:    'string'}
-// NOTE: path needs to be relative to the executing environment, which is where the calling frontier resides
-/// SR-API
-/// l_name.start 
-/// start a certain number (size) of servers of a particular type
-/// Input
-///   server_info 
-///     {owner: 'aether', project: 'BlackCat', name: 'lobby'}    
-///     what kind of server to start      
-///     object         
-///   size    
-///     1   
-///     how many servers to start        
-///     number                       
-/// Output                                    
-///   onDone                  
-///   onOutput 
-var l_start = exports.start = function (server_info, size, onDone, onOutput) {
-
-	var errmsg;
+SR.API.add('_START_SERVER', {
+	owner:		'+string',
+	project:	'+string',
+	name:		'string',
+	size:		'+number',
+	onOutput:	'+function'
+}, function (args, onDone) {
+	
+	LOG.warn('SR.API._START_SERVER called');
+	
 	if (SR.Settings.hasOwnProperty('SERVER_INFO') === false) {
-		errmsg = 'SR.Settings.SERVER_INFO not set';
-		LOG.error(errmsg, l_name);
-		return UTIL.safeCall(onDone, errmsg);
+		return onDone('SR.Settings.SERVER_INFO not set');
 	}
-	
-	// force convert parameter
-	if (typeof size === 'string')
-		size = parseInt(size);
-	
-	// construct server_info (if not provided, use default value in SERVER_INFO)		
-	server_info.owner   = server_info.owner   || SR.Settings.SERVER_INFO.owner;
-	server_info.project = server_info.project || SR.Settings.SERVER_INFO.project;
-	
+			
+	// construct server_info (if not provided, use default value in SERVER_INFO)
+	var size = args.size || 1;	
+	args.owner   = args.owner   || SR.Settings.SERVER_INFO.owner;
+	args.project = args.project || SR.Settings.SERVER_INFO.project;
+		
 	LOG.warn('start ' + size + ' server(s), info: ', l_name);
-	LOG.warn(server_info, l_name);
+	LOG.warn(args, l_name);
 	
-	// if no owner / project specified, use default value in SERVER_INFO
-	if (server_info.owner === undefined || server_info.project === undefined || server_info.name === undefined) {
-		errmsg = 'server_info incomplete';
-		LOG.error(errmsg, l_name);
-		return UTIL.safeCall(onDone, errmsg);
+	if (!args.owner || !args.project || !args.name) {
+		return onDone('server_info incomplete');
 	}
 
 	// build path, first try relative, then try absolute
 	var valid_path = false;
 	
 	var path = '.';
-	var frontier_path = SR.path.join('.', server_info.name, 'frontier.js');
+	var frontier_path = SR.path.join('.', args.name, 'frontier.js');
 	var log_path = SR.path.join('.', 'log', 'screen.out');
 
 	LOG.warn('relative frontier path: ' + frontier_path, l_name);
 	LOG.warn('log path: ' + log_path, l_name);
-	
-	if (SR.fs.existsSync(frontier_path) === false) {
-		LOG.warn('frontier_path does not exist, try absolute. PATH_USERBASE: ' + SR.Settings.PATH_USERBASE, l_name);
-		if (SR.Settings.PATH_USERBASE) {
-			path = SR.path.join(SR.Settings.PATH_USERBASE, server_info.owner, server_info.project);
-			frontier_path = SR.path.join(path, server_info.name, 'frontier.js');
-			LOG.warn('absolute frontier path: ' + frontier_path, l_name);
-			if (SR.fs.existsSync(frontier_path) === true)
-				valid_path = true;		
-		}
-	}
-	else {
-		valid_path = true;
-	}
 
-	// check if frontier file exists
-	if (valid_path === false) {
-		errmsg = 'frontier not found: ' + frontier_path;
-		LOG.error(errmsg, l_name);
-		return UTIL.safeCall(onDone, errmsg);
-	}
-	
-	// store starting path
-	server_info.exec_path = path;
-	
-	var server_type = server_info.owner + '-' + server_info.project + '-' + server_info.name;
-	LOG.warn('starting ' + size + ' [' + server_type + '] servers', l_name);
-	
-	var existing_count = 0;
-
-	// for app servers, get how many app servers of a given name is already started	
-	if (server_info.name !== 'lobby')
-		existing_count = Object.keys(SR.AppConn.queryAppServers(server_info.name)).length;
-	
-	LOG.warn('there are ' + existing_count + ' existing [' + server_type + '] servers', l_name);
-
-	// store an entry for the callback when all servers are started as requested
-	// TODO: if it takes too long to start all app servers, then force return in some interval
-	l_pendingStart.push({
-		onDone: onDone,
-		total: size,
-		curr: 0,
-		server_type: server_type,
-		servers: []
-	});
-	
+	var server_type = args.owner + '-' + args.project + '-' + args.name;
+			
 	// notify if a server process has started
 	var onStarted = function (id) {
 					  
@@ -187,7 +121,7 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 				
 				// check if all servers of a particular type are started
 				if (task.curr === task.total) {
-					UTIL.safeCall(task.onDone, task.servers);
+					UTIL.safeCall(task.onDone, null, task.servers);
 					
 					// remove this item until app servers have also reported back
 					l_pendingStart.splice(i, 1);
@@ -199,6 +133,7 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 	
 	// start executing
 	var count = 0;
+	var existing_count = 0;
 	var start_server = function () {
 	
 		count++;
@@ -207,14 +142,111 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 		LOG.warn('starting [' + server_type + '] Server #' + count + ' ' + name, l_name);
 			
 		var id = UTIL.createToken();			
-		l_run(id, server_info, onStarted, onOutput);
+		l_run(id, args, onStarted, args.onOutput);
 
 		// see if we should keep starting server, or should return
 		if (count < size)
 			setTimeout(start_server, 100);
 	};
 	
-	start_server();	
+	var exec_frontier = function () {
+
+		// store starting path
+		args.exec_path = path;
+		
+		LOG.warn('starting ' + size + ' [' + server_type + '] servers', l_name);
+		
+		// for app servers, get how many app servers of a given name is already started	
+		if (args.name !== 'lobby')
+			existing_count = Object.keys(SR.AppConn.queryAppServers(args.name)).length;
+		
+		LOG.warn('there are ' + existing_count + ' existing [' + server_type + '] servers', l_name);
+
+		// store an entry for the callback when all servers are started as requested
+		// TODO: if it takes too long to start all app servers, then force return in some interval
+		l_pendingStart.push({
+			onDone: onDone,
+			total: size,
+			curr: 0,
+			server_type: server_type,
+			servers: []
+		});
+		
+		start_server();
+	}
+	
+	// verify frontier file exists
+	SR.fs.stat(frontier_path, function (err, stats) {
+		
+		// if file found, execute directly
+		if (!err) {
+			return exec_frontier();
+		}
+			
+		if (!SR.Settings.PATH_USERBASE) {
+			return onDone('frontier not found: ' + frontier_path);
+		}
+		
+		LOG.warn('relative frontier_path does not exist, try absolute. PATH_USERBASE: ' + SR.Settings.PATH_USERBASE, l_name);				
+		path = SR.path.join(SR.Settings.PATH_USERBASE, args.owner, args.project);
+		frontier_path = SR.path.join(path, args.name, 'frontier.js');
+		LOG.warn('absolute frontier path: ' + frontier_path, l_name);
+		
+		SR.fs.stat(frontier_path, function (err) {
+			if (err) {
+				return onDone('frontier not found: ' + frontier_path);
+			}
+			exec_frontier();
+		});
+	});	
+})
+
+// start a certain number (size) of servers of a particular type
+// server_info include:
+// { owner:  'string',
+//   project: 'string',
+//   name:    'string'}
+// NOTE: path needs to be relative to the executing environment, which is where the calling frontier resides
+
+// SR-API
+// l_name.start 
+// start a certain number (size) of servers of a particular type
+// Input
+//   server_info 
+//     {owner: 'aether', project: 'BlackCat', name: 'lobby'}    
+//     what kind of server to start      
+//     object         
+//   size    
+//     1   
+//     how many servers to start        
+//     number                       
+// Output                                    
+//   onDone                  
+//   onOutput 
+var l_start = exports.start = function (server_info, size, onDone, onOutput) {
+
+	LOG.error('obsolete usage of SR.Execute.start.. please use SR.API._START_SERVER instead', l_name);
+	
+	// force convert parameter
+	if (typeof size === 'string')
+		size = parseInt(size);
+
+	SR.API._START_SERVER({
+		owner:		server_info.owner,
+		project:	server_info.project,
+		name:		server_info.name,
+		size:		size,
+		onOutput:	onOutput
+	}, function (err, result) {
+		if (err) {
+			LOG.error(err, l_name);
+			return UTIL.safeCall(onDone, err);
+		}
+		
+		// NOTE: this usage returns an array of servers started if success, returns an error string if failed
+		// an obsolete usage, should be removed in future versions
+		UTIL.safeCall(onDone, result);
+	})
 }
 
 
