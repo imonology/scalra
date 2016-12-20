@@ -49,7 +49,7 @@ var l_error_level = SR.Settings.LOG_LEVEL;
 exports.createLog = function (path, filename, onSuccess, onFail) {
 
 	if (l_logLock === true) {
-		SR.sys.puts(l_name + '::createLog::' + SR.Tags.ERR + 'l_logLock === true' + SR.Tags.ERREND);
+		console.log(l_name + '::createLog::' + SR.Tags.ERR + 'l_logLock === true' + SR.Tags.ERREND);
 		return;
 	}
 
@@ -62,7 +62,7 @@ exports.createLog = function (path, filename, onSuccess, onFail) {
 	SR.fs.open(log_path, 'a+', 0666,
 		function (err, fd) {
 			if (err) {
-				SR.sys.puts(l_name + '::createLog::' + SR.Tags.ERR + 'SR.fs.open() exception-' + err + SR.Tags.ERREND);
+				console.log(l_name + '::createLog::' + SR.Tags.ERR + 'SR.fs.open() exception-' + err + SR.Tags.ERREND);
 				onFail(undefined);
 			} else {
 				// create unique log id
@@ -89,18 +89,18 @@ exports.createLog = function (path, filename, onSuccess, onFail) {
 exports.createLogSync = function (log_path) {
 
 	if (l_logLock === true) {
-		SR.sys.puts(l_name + '::createLogSync::' + SR.Tags.ERR + 'l_logLock === true' + SR.Tags.ERREND);
-		SR.sys.puts(l_name + '::createLogSync::' + SR.Tags.ERR + 'logPath=' + log_path + SR.Tags.ERREND);
+		console.log(l_name + '::createLogSync::' + SR.Tags.ERR + 'l_logLock === true' + SR.Tags.ERREND);
+		console.log(l_name + '::createLogSync::' + SR.Tags.ERR + 'logPath=' + log_path + SR.Tags.ERREND);
 		return undefined;
 	}
 
-	SR.sys.puts(l_name + '::createLogSync::create log=' + log_path);
+	console.log(l_name + '::createLogSync::create log=' + log_path);
 
 	var pFD = undefined;
 	try {
 		pFD = SR.fs.openSync(log_path, 'a+', 0666);
 	} catch (e) {
-		SR.sys.puts(l_name + '::createLogSync::' + SR.Tags.ERR + 'SR.fs.openSync() exception-' + e);
+		console.log(l_name + '::createLogSync::' + SR.Tags.ERR + 'SR.fs.openSync() exception-' + e);
 		return undefined;
 	}
 
@@ -137,7 +137,7 @@ var l_logmsg = function (logInst) {
 
 			// show notice if queued log exceeds limit (once each time multiples of the limit is reached)
 			if ((l_logBuffer.getLength() > 0) && (l_logBuffer.getLength() % l_logBufferOverloadLimit === 0)) {
-				SR.sys.puts(l_name + '::l_writeLog::' + SR.Tags.YELLOW + 'log len=' + l_logBuffer.getLength() + SR.Tags.ERREND);
+				console.log(l_name + '::l_writeLog::' + SR.Tags.YELLOW + 'log len=' + l_logBuffer.getLength() + SR.Tags.ERREND);
 			}
 
 			// lock individual log instance            
@@ -176,19 +176,19 @@ var l_log = exports.log = function (msg, log_id) {
 
 	// don't log if locked
 	if (l_logLock === true) {
-		SR.sys.puts(l_name + '::log::' + SR.Tags.ERR + 'l_logLock === true' + SR.Tags.ERREND);
+		console.log(l_name + '::log::' + SR.Tags.ERR + 'l_logLock === true' + SR.Tags.ERREND);
 		return;
 	}
 
 	// error if no log file is found
 	if (l_logs.hasOwnProperty(log_id) === false) {
-		SR.sys.puts(l_name + '::log::' + SR.Tags.ERR + 'log_id=' + log_id + ' not found' + SR.Tags.ERREND);
+		console.log(l_name + '::log::' + SR.Tags.ERR + 'log_id=' + log_id + ' not found' + SR.Tags.ERREND);
 		return;
 	}
 
 	// don't log if we're closing
 	if (l_logs[log_id].closing === true) {
-		SR.sys.puts(l_name + '::log::' + SR.Tags.ERR + 'log_id=' + log_id + ' is closing...');
+		console.log(l_name + '::log::' + SR.Tags.ERR + 'log_id=' + log_id + ' is closing...');
 		return;
 	}
 
@@ -235,7 +235,7 @@ var l_closeLog = exports.closeLog = function (log_id, onDone) {
 
 	// return if already closing        
 	if (l_logs[log_id].closing === true) {
-		SR.sys.puts(l_name + '::l_closeLog::' + SR.Tags.ERR + 'l_logs[' + log_id + '] already closing');
+		console.log(l_name + '::l_closeLog::' + SR.Tags.ERR + 'l_logs[' + log_id + '] already closing');
 		return;
 	}
 
@@ -247,7 +247,7 @@ var l_closeLog = exports.closeLog = function (log_id, onDone) {
 
 		SR.fs.close(l_logs[log_id].fd,
 			function () {
-				SR.sys.puts(l_name + '::l_closeLog::' + SR.Tags.YELLOW + 'LogID=' + log_id + ' closed.' + SR.Tags.ERREND);
+				console.log(l_name + '::l_closeLog::' + SR.Tags.YELLOW + 'LogID=' + log_id + ' closed.' + SR.Tags.ERREND);
 				delete l_logs[log_id];
 				onDone(log_id);
 			}
@@ -255,7 +255,7 @@ var l_closeLog = exports.closeLog = function (log_id, onDone) {
 	}
 
 	// wait for all writing done...
-	//SR.sys.puts(l_name + '::l_closeLog::close log file (' + log_id + ')');
+	//console.log(l_name + '::l_closeLog::close log file (' + log_id + ')');
 
 	l_checkEmptyPool.enqueue({
 			id: log_id,
@@ -266,7 +266,7 @@ var l_closeLog = exports.closeLog = function (log_id, onDone) {
 
 			// if nothing more to write, indicate 'done'
 			if (l_logBufferIdxByID.hasOwnProperty(item.id) === false) {
-				SR.sys.puts(l_name + '::l_checkwritingDone::no log content for [' + item.id + '] found.');
+				console.log(l_name + '::l_checkwritingDone::no log content for [' + item.id + '] found.');
 				item.onSuccess();
 				return true;
 			}
@@ -333,7 +333,7 @@ var l_checkLogClose = function () {
 // finish all existing logging and close log files
 exports.disposeAllLogs = function (onSuccess) {
 
-	//SR.sys.puts(l_name + '::disposeAllLogs::dispose all log file...');
+	//console.log(l_name + '::disposeAllLogs::dispose all log file...');
 
 	// wait for current logs closing
 	var waitClosing = function (onDone) {
@@ -341,8 +341,8 @@ exports.disposeAllLogs = function (onSuccess) {
 		// refuse any write or log creation
 		l_logLock = true;
 
-		//SR.sys.puts(l_name + '::disposeAllLogs::waitClosing...');
-		SR.sys.puts(l_name + '::disposeAllLogs::closing ' + Object.keys(l_logs).length + ' log files...');
+		//console.log(l_name + '::disposeAllLogs::waitClosing...');
+		console.log(l_name + '::disposeAllLogs::closing ' + Object.keys(l_logs).length + ' log files...');
 
 		l_onAllClosed = onDone;
 
@@ -353,7 +353,7 @@ exports.disposeAllLogs = function (onSuccess) {
 	}
 
 	var step0 = function (onDone) {
-		//SR.sys.puts(l_name + '::disposeAllLogs::step0...');
+		//console.log(l_name + '::disposeAllLogs::step0...');
 
 		if (Object.keys(l_logs).length === 0) 
 			return onDone();
@@ -372,7 +372,7 @@ exports.disposeAllLogs = function (onSuccess) {
 		// check if all logs are closed
 		l_checkDone(onDone);
 		
-		SR.sys.puts(l_name + '::disposeAllLogs::' + SR.Tags.YELLOW + 'queued messages num=' + l_logBuffer.getLength() + SR.Tags.ERREND);
+		console.log(l_name + '::disposeAllLogs::' + SR.Tags.YELLOW + 'queued messages num=' + l_logBuffer.getLength() + SR.Tags.ERREND);
 	}
 
 	var step1 =
@@ -447,7 +447,7 @@ var l_output = function (level, msg, func, fid_array, colortag) {
 	
 	// output to screen
 	if (to_show)
-		SR.sys.puts(str);
+		console.log(str);
 	
 	if (to_log) {
 		// write function-specific log

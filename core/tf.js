@@ -47,7 +47,7 @@ exports.addTF = function (pObj, pFunc) {
         if (l_objPool.hasOwnProperty(pObj) === false)
             return;
 
-        //SR.sys.puts('[icTF]::addTF::adding pObj: ' + pObj + ' and pFunc: ' + pFunc);
+        //console.log('[icTF]::addTF::adding pObj: ' + pObj + ' and pFunc: ' + pFunc);
         
         var obj = l_objPool[pObj];
         obj.funcTable.push(
@@ -63,11 +63,11 @@ exports.addTF = function (pObj, pFunc) {
 exports.runTF = function (pObj) {
         if (l_objPool.hasOwnProperty(pObj) === false)
         {
-            SR.sys.puts('[icTF]::runTF::'+SR.Tags.ERR+'pObj= '+pObj+' not found.');
+            console.log('[icTF]::runTF::'+SR.Tags.ERR+'pObj= '+pObj+' not found.');
             return;
         }
 
-        //SR.sys.puts('[icTF]::runTF::'+'run pObj= ' + pObj);
+        //console.log('[icTF]::runTF::'+'run pObj= ' + pObj);
         
         l_objPool[pObj].ready = true;
         l_objPool[pObj].funcTable[ l_objPool[pObj].funcCounter ].funcKey();

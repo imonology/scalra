@@ -712,7 +712,7 @@ exports.validatePathAsync = function (path, onDone) {
 		if (exists)
 			return l_safeCall(onDone, true);
 
-		SR.sys.puts(SR.Tags.WARN + 'creating new directory: ' + path + SR.Tags.ERREND, l_name);
+		console.log(SR.Tags.WARN + 'creating new directory: ' + path + SR.Tags.ERREND, l_name);
 		SR.fs.mkdir(path, function () {
 			l_safeCall(onDone, false);
 		});

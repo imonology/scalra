@@ -68,13 +68,13 @@ exports.add = function (id, func, always_execute) {
 // execute next job for a given queue
 var l_run = exports.run = function (id) {
     if (l_pool.hasOwnProperty(id) === false) {
-		SR.sys.puts('[SR.JobQueue]::run::'+SR.Tags.ERR+' id: ' + id + ' not found.' + SR.Tags.ERREND);
+		console.log('[SR.JobQueue]::run::'+SR.Tags.ERR+' id: ' + id + ' not found.' + SR.Tags.ERREND);
         return;
     }
 	
 	// error checking, should not happen as counter is advanced internally
 	if (l_pool[id].counter >= l_pool[id].table.length) {
-		SR.sys.puts('[SR.JobQueue]::run:: ' +SR.Tags.ERR + 'size not enough: ' + l_pool[id].table.length + ' accessing: ' + l_pool[id].counter + SR.Tags.ERREND);
+		console.log('[SR.JobQueue]::run:: ' +SR.Tags.ERR + 'size not enough: ' + l_pool[id].table.length + ' accessing: ' + l_pool[id].counter + SR.Tags.ERREND);
         return;
 	}
 	
@@ -92,7 +92,7 @@ var l_run = exports.run = function (id) {
 	
 		// if not successful, remove whole job queue		
 		if (result === false) {
-			SR.sys.puts('[SR.JobQueue]::run::' + SR.Tags.WARN + ' id: ' + id + ' job returns error, skip executing following depended jobs' + SR.Tags.ERREND);
+			console.log('[SR.JobQueue]::run::' + SR.Tags.WARN + ' id: ' + id + ' job returns error, skip executing following depended jobs' + SR.Tags.ERREND);
 						
 			// mark fail for this queue
 			l_pool[id].failed = true;

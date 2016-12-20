@@ -106,7 +106,7 @@ icFile.prototype.open = function (filename, onDone, to_cache, direct_path) {
 
 		// print error message and return failure
 		if (err) {
-			SR.sys.puts(SR.Tags.ERR + 'SR.fs.open() exception-' + err + SR.Tags.ERREND);
+			console.log(SR.Tags.ERR + 'SR.fs.open() exception-' + err + SR.Tags.ERREND);
 			UTIL.safeCall(onDone, 'cannot open');
 			return;
 		}
@@ -114,7 +114,7 @@ icFile.prototype.open = function (filename, onDone, to_cache, direct_path) {
 		// store file descriptor and notify success
 		that.fd = fd;
 
-		//SR.sys.puts(SR.Tags.WARN + 'SR.fs.open() success, fd: ' + fd + SR.Tags.ERREND);
+		//console.log(SR.Tags.WARN + 'SR.fs.open() success, fd: ' + fd + SR.Tags.ERREND);
 
 		// check whether to load existing file content to cache
 		if (to_cache !== true) {            
@@ -178,20 +178,20 @@ icFile.prototype.openSync = function (filename, to_cache) {
 		fd = SR.fs.openSync(filepath, 'a+', 0666);
 	}
 	catch (e) {
-        SR.sys.puts(SR.Tags.ERR + 'SR.fs.openSync() exception-' + e + SR.Tags.ERREND);	
+        console.log(SR.Tags.ERR + 'SR.fs.openSync() exception-' + e + SR.Tags.ERREND);	
         return null;		
 	}
 	
 	// print error message and return failure
 	if (fd === undefined || fd === null) {
-		SR.sys.puts(SR.Tags.ERR + 'SR.fs.openSync() exception-' + SR.Tags.ERREND);		
+		console.log(SR.Tags.ERR + 'SR.fs.openSync() exception-' + SR.Tags.ERREND);		
 		return null;
 	}
 
 	// store file descriptor and notify success
 	this.fd = fd;
 
-	//SR.sys.puts(SR.Tags.WARN + 'SR.fs.openSync() success, fd: ' + fd + SR.Tags.ERREND);
+	//console.log(SR.Tags.WARN + 'SR.fs.openSync() success, fd: ' + fd + SR.Tags.ERREND);
     
 	// check whether to load existing file content to cache
 	if (to_cache === true) {
@@ -234,7 +234,7 @@ icFile.prototype.getTextArray = function () {
 icFile.prototype.write = function (str) {
 	
 	if (typeof this.fd === 'undefined') {
-		return SR.sys.puts(SR.Tags.ERR + 'SR.fs.write() fd not found' + SR.Tags.ERREND);
+		return console.log(SR.Tags.ERR + 'SR.fs.write() fd not found' + SR.Tags.ERREND);
 	}
         
 	SR.fs.writeSync(this.fd, str);
@@ -249,7 +249,7 @@ icFile.prototype.write = function (str) {
 icFile.prototype.writeLine = function (str) {
 
 	if (typeof this.fd === 'undefined') {
-		return SR.sys.puts(SR.Tags.ERR + 'SR.fs.write() fd not found' + SR.Tags.ERREND);
+		return console.log(SR.Tags.ERR + 'SR.fs.write() fd not found' + SR.Tags.ERREND);
 	}
 	
 	SR.fs.writeSync(this.fd, str + '\n');
@@ -270,7 +270,7 @@ icFile.prototype.close = function (onDone) {
 	LOG.warn('fd: ' + this.fd, 'icFile.close');
 	
 	if (this.fd === undefined) {
-		SR.sys.puts(SR.Tags.ERR + 'SR.fs.close(): file not opened' + SR.Tags.ERREND);
+		console.log(SR.Tags.ERR + 'SR.fs.close(): file not opened' + SR.Tags.ERREND);
 		return UTIL.safeCall(onDone, false);
 	}
 
@@ -279,7 +279,7 @@ icFile.prototype.close = function (onDone) {
 		// NOTE: we need to use prototype way to access 'fd'
 		this.fd = undefined;
 		
-		//SR.sys.puts(SR.Tags.WARN + 'SR.fs.close(): file close success' + SR.Tags.ERREND);     
+		//console.log(SR.Tags.WARN + 'SR.fs.close(): file close success' + SR.Tags.ERREND);     
 		return UTIL.safeCall(onDone, true);
 	});
 }
@@ -288,7 +288,7 @@ icFile.prototype.close = function (onDone) {
 icFile.prototype.closeSync = function () {
 
 	if (this.fd === undefined) {
-		SR.sys.puts(SR.Tags.ERR + 'SR.fs.closeSync(): file not opened' + SR.Tags.ERREND);
+		console.log(SR.Tags.ERR + 'SR.fs.closeSync(): file not opened' + SR.Tags.ERREND);
 		return false;
 	}
 
