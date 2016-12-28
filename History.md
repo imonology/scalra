@@ -1,4 +1,10 @@
 
+1.5.8 / 2016-12-28
+==================
+	* modify: refactor SR.Execute to perform "npm start" if frontier.js doesn't exist
+	* fix: crash due to monitor stop server command returns message incorrect handling
+	* modify: convert SR.Execute.start/stop/query into SR.API _START_SERVER, _STOP_SERVER, _QUERY_SERVER
+
 1.5.7 / 2016-12-14
 ==================
 	* modify: rename "mongoAccess" to "DB_AUTH" in project /settings.js file
