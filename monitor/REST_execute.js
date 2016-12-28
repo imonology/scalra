@@ -5,6 +5,7 @@
 //	NOTE: these are currently loaded in SR.Component.REST
 //
 
+var l_name = 'Monitor.execute';
 var l_handles = exports.REST_handles = {};
 
 const ansi_up = require('ansi_up');				// converts console message to colorful HTML
@@ -16,32 +17,36 @@ l_handles.start = function (path_array, res, para, req) {
 	var project = path_array[3];
 	var name = path_array[4];
 
-	if (owner === undefined || project === undefined || name === undefined) {
-		return SR.REST.reply(res, 'cannot start server, missing owner/project/server_name');
+	if (owner === undefined || project === undefined) {
+		return SR.REST.reply(res, 'cannot start server, missing owner/project');
 	}
 
 	var size = (path_array[5] === undefined ? 1 : parseInt(path_array[5]));
-	LOG.warn('start server size: ' + size);
-
-	var channel = owner + '-' + project + '-' + name;
 	
-	SR.Execute.start({owner: owner, project: project, name: name}, size, function (list) {
-		LOG.warn('SR.Execute.start done', 'SR.REST');
-		LOG.warn(list, 'SR.REST');
+	SR.API._START_SERVER({
+		owner: owner, 
+		project: project, 
+		name: name,
+		size: size,
+		onOutput: function (output) {
+
+			// make output HTML displable
+			// TODO: do this at the client to save bandwidth?
+			if (SR.Settings.REFORMAT_HTML_TEXT === true)
+				output.data = humanize.nl2br(ansi_up.ansi_to_html(output.data));
+			
+			// record to file	
+			SR.StreamManager.publish(output.id, output);
+		}	
+	}, function (err, list) {
+		if (err) {
+			LOG.error(err, l_name);
+			return SR.REST.reply(res, []);
+		}
+		
+		LOG.warn('execute success:', l_name);
+		LOG.warn(list, l_name);
 		SR.REST.reply(res, list);
-	}, function (output) {
-
-		// make output HTML displable
-		// TODO: do this at the client to save bandwidth?
-		if (SR.Settings.REFORMAT_HTML_TEXT === true)
-			output.data = humanize.nl2br(ansi_up.ansi_to_html(output.data));
-		
-		//LOG.warn(output.data);
-		
-		// record to file
-
-		//SR.StreamManager.publish(channel, output);
-		SR.StreamManager.publish(output.id, output);
 	});
 }
 

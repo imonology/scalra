@@ -60,13 +60,11 @@ var l_started = {};
 SR.API.add('_START_SERVER', {
 	owner:		'+string',
 	project:	'+string',
-	name:		'string',
+	name:		'+string',
 	size:		'+number',
 	onOutput:	'+function'
 }, function (args, onDone) {
-	
-	LOG.warn('SR.API._START_SERVER called');
-	
+		
 	if (SR.Settings.hasOwnProperty('SERVER_INFO') === false) {
 		return onDone('SR.Settings.SERVER_INFO not set');
 	}
@@ -75,26 +73,17 @@ SR.API.add('_START_SERVER', {
 	var size = args.size || 1;	
 	args.owner   = args.owner   || SR.Settings.SERVER_INFO.owner;
 	args.project = args.project || SR.Settings.SERVER_INFO.project;
-		
+	args.name = args.name || '';
+	
 	LOG.warn('start ' + size + ' server(s), info: ', l_name);
 	LOG.warn(args, l_name);
 	
-	if (!args.owner || !args.project || !args.name) {
+	if (!args.owner || !args.project) {
 		return onDone('server_info incomplete');
 	}
 
-	// build path, first try relative, then try absolute
-	var valid_path = false;
-	
-	var path = '.';
-	var frontier_path = SR.path.join('.', args.name, 'frontier.js');
-	var log_path = SR.path.join('.', 'log', 'screen.out');
-
-	LOG.warn('relative frontier path: ' + frontier_path, l_name);
-	LOG.warn('log path: ' + log_path, l_name);
-
 	var server_type = args.owner + '-' + args.project + '-' + args.name;
-			
+				
 	// notify if a server process has started
 	var onStarted = function (id) {
 					  
@@ -105,41 +94,40 @@ SR.API.add('_START_SERVER', {
 		
 			var task = l_pendingStart[i];
 		
-			LOG.warn('pending type: ' + task.server_type, l_name);
-			if (task.server_type === server_type) {
-									
-				// record server id, check for return
-				task.servers.push(id);
-				task.curr++;
-				
-				// store this process id
-				if (l_started.hasOwnProperty(server_type) === false)
-					l_started[server_type] = [];
-				
-				// NOTE: we currently do not maintain this id, should we?
-				//l_started[server_type].push(id);
-				
-				// check if all servers of a particular type are started
-				if (task.curr === task.total) {
-					UTIL.safeCall(task.onDone, null, task.servers);
-					
-					// remove this item until app servers have also reported back
-					l_pendingStart.splice(i, 1);
-				}
-				break;
+			if (task.server_type !== server_type) {
+				continue;
 			}
+
+			LOG.warn('pending type matched: ' + task.server_type, l_name);
+
+			// record server id, check for return
+			task.servers.push(id);
+			task.curr++;
+			
+			// store this process id
+			if (l_started.hasOwnProperty(server_type) === false)
+				l_started[server_type] = [];
+			
+			// NOTE: we currently do not maintain this id, should we?
+			l_started[server_type].push(id);
+			
+			// check if all servers of a particular type are started
+			if (task.curr === task.total) {
+				UTIL.safeCall(task.onDone, null, task.servers);
+				
+				// remove this item until app servers have also reported back
+				l_pendingStart.splice(i, 1);
+			}
+			break;
 		}
 	}
 	
-	// start executing
+	// keep starting servers until 'size' is reached
 	var count = 0;
-	var existing_count = 0;
 	var start_server = function () {
 	
 		count++;
-		existing_count++;
-		var name = server_type + existing_count;
-		LOG.warn('starting [' + server_type + '] Server #' + count + ' ' + name, l_name);
+		LOG.warn('starting [' + server_type + '] Server #' + count, l_name);
 			
 		var id = UTIL.createToken();			
 		l_run(id, args, onStarted, args.onOutput);
@@ -148,57 +136,64 @@ SR.API.add('_START_SERVER', {
 		if (count < size)
 			setTimeout(start_server, 100);
 	};
-	
-	var exec_frontier = function () {
 
-		// store starting path
-		args.exec_path = path;
-		
-		LOG.warn('starting ' + size + ' [' + server_type + '] servers', l_name);
-		
-		// for app servers, get how many app servers of a given name is already started	
-		if (args.name !== 'lobby')
-			existing_count = Object.keys(SR.AppConn.queryAppServers(args.name)).length;
-		
-		LOG.warn('there are ' + existing_count + ' existing [' + server_type + '] servers', l_name);
+	// try to execute on a given path	
+	var validate_path = function (base_path, onExec) {
 
-		// store an entry for the callback when all servers are started as requested
-		// TODO: if it takes too long to start all app servers, then force return in some interval
-		l_pendingStart.push({
-			onDone: onDone,
-			total: size,
-			curr: 0,
-			server_type: server_type,
-			servers: []
-		});
-		
-		start_server();
-	}
-	
-	// verify frontier file exists
-	SR.fs.stat(frontier_path, function (err, stats) {
-		
-		// if file found, execute directly
-		if (!err) {
-			return exec_frontier();
-		}
+		var onFound = function () {
 			
-		if (!SR.Settings.PATH_USERBASE) {
-			return onDone('frontier not found: ' + frontier_path);
+			// if file found, execute directly			
+			// store starting path
+			args.exec_path = base_path;
+			
+			LOG.warn('starting ' + size + ' [' + server_type + '] servers', l_name);
+			
+			// store an entry for the callback when all servers are started as requested
+			// TODO: if it takes too long to start all app servers, then force return in some interval
+			l_pendingStart.push({
+				onDone: onDone,
+				total: size,
+				curr: 0,
+				server_type: server_type,
+				servers: []
+			});
+			
+			start_server();		
 		}
 		
-		LOG.warn('relative frontier_path does not exist, try absolute. PATH_USERBASE: ' + SR.Settings.PATH_USERBASE, l_name);				
-		path = SR.path.join(SR.Settings.PATH_USERBASE, args.owner, args.project);
-		frontier_path = SR.path.join(path, args.name, 'frontier.js');
-		LOG.warn('absolute frontier path: ' + frontier_path, l_name);
+		var file_path = SR.path.join(base_path, args.name, 'frontier.js');
+		LOG.warn('validate file_path: ' + file_path, l_name);
 		
-		SR.fs.stat(frontier_path, function (err) {
+		// verify frontier file exists, if not then we try package.json
+		SR.fs.stat(file_path, function (err, stats) {
+
+			// file not found
 			if (err) {
-				return onDone('frontier not found: ' + frontier_path);
+				file_path = SR.path.join(base_path, 'package.json');
+				
+				// remove server name from parameter 
+				args.name = '';
+				
+				SR.fs.stat(file_path, function (err, stats) {
+					if (err) {
+						return onExec('cannot find entry file');
+					}
+					onFound();
+				});
 			}
-			exec_frontier();
+			onFound();
 		});
-	});	
+	}
+
+	// NOTE: we assume PATH_USERBASE only exists at the monitor (a non-user project)
+	var base_path = (SR.Settings.PATH_USERBASE ? SR.path.join(SR.Settings.PATH_USERBASE, args.owner, args.project) : '.');
+	
+	// try relative path first
+	validate_path(base_path, function (err) {
+		if (err) {
+			return onDone('cannot find entry file to start server');
+		}		
+	});
 })
 
 // start a certain number (size) of servers of a particular type
@@ -538,13 +533,19 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 	
 		// execute directly
 		// TODO: execute under a given linux user id? (probably too complicated)
-		//var cmd = SR.path.join('.', 'run');
-		//LOG.warn('spawn cmd: ' + cmd, l_name);
-		var exe_file = info.name + '/frontier.js';
-		var new_proc = spawn('node',
-							 [exe_file, '--CONNECT_MONITOR_ONSTART=true'],
-							 {cwd: exec_path}
-		);
+		var cmd, para;
+
+		// see usage: http://stackoverflow.com/questions/11580961/sending-command-line-arguments-to-npm-script		
+		if (info.name && info.name !== '') {
+			cmd = 'node';
+			para = [info.name + '/frontier.js', '--CONNECT_MONITOR_ONSTART=true'];	
+		} else {
+			cmd = 'npm';
+			para = ['start'];
+		}
+	 
+		LOG.warn('cmd: ' + cmd + ' para: ' + para);
+		var new_proc = spawn(cmd, para, {cwd: exec_path});
 		
 		var onStdData = function (data) {
 
@@ -612,7 +613,7 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 	// NOTE: why log_file is important here is because we want to capture ALL stdout output during starting a server
 	// not just those the server writes by itself if executing successfully	
 	log_file = new SR.File();
-	//log_file.open(	id + '.log',
+	//log_file.open(id + '.log',
 	log_file.open('output.log',
 				  	onLogOpened, 
 					false,

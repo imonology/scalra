@@ -37,4 +37,4 @@ node_modules
 lib/swagger-ui
 
 # diff file before committing
-diff
+diff.*
