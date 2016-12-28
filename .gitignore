@@ -35,3 +35,6 @@ node_modules
 
 # swagger API doc generator
 lib/swagger-ui
+
+# diff file before committing
+diff
