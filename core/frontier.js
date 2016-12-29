@@ -170,7 +170,7 @@ exports.icFrontier = function (config) {
 	// right now is used by SR.Component
 	SR.Settings.FRONTIER = this;
 	SR.Settings.SR_PATH = SR.path.resolve(__dirname, '..');
-	LOG.sys('set SR.Settings.FRONTIER_PATH to: ' + SR.Settings.FRONTIER_PATH, l_name);
+	LOG.warn('set SR.Settings.FRONTIER_PATH to: ' + SR.Settings.FRONTIER_PATH, l_name);
 	LOG.warn('set SR.Settings.SR_PATH to: ' + SR.Settings.SR_PATH, l_name);	
 
 	// store paths to modules	
@@ -185,8 +185,12 @@ exports.icFrontier = function (config) {
 			SR.Settings.MOD_PATHS.push(SR.path.resolve(root_path, dirs[i]));
 		}
 	}
-	LOG.sys('module paths:', l_name);
-	LOG.sys(SR.Settings.MOD_PATHS, l_name);
+	
+	// add project's 'modules' directory to it
+	SR.Settings.MOD_PATHS.push(SR.path.join(SR.Settings.FRONTIER_PATH, '..'));
+		
+	LOG.warn('module paths:', l_name);
+	LOG.warn(SR.Settings.MOD_PATHS, l_name);
 		
     //
     // local variables
