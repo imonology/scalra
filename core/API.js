@@ -43,6 +43,15 @@ var l_add = exports.add = function (name, func, checker) {
 	// store the user-defined function
 	l_list[name] = func;
 	
+	// define post-event action
+	var post_action = function (args, result, func) {
+		return new SR.promise(function (resolve, reject) {
+			UTIL.safeCall(func, args, result, function () {
+				UTIL.safeCall(resolve);
+			});
+		});
+	}
+	
 	// define wrapper function
 	var wrapper = function (args, onDone, extra) {
 		
@@ -59,7 +68,29 @@ var l_add = exports.add = function (name, func, checker) {
 				LOG.error('[' + name + '] error:', l_name);
 				LOG.error(err, l_name);
 			}
-			UTIL.safeCall(onDone, err, result);
+			
+			// perform post-event actions, if any
+			if (l_afterActions.hasOwnProperty(name) === false) {
+				return UTIL.safeCall(onDone, err, result);
+			}
+			
+			var posts = l_afterActions[name];
+			var promise = undefined;
+			for (var i=0; i < posts.length; i++) {
+				if (!promise) {
+					promise = post_action(args, {err: err, result: result}, posts[i]);	
+				} else {
+					promise = promise.then(post_action(args, {err: err, result: result}, posts[i]));	
+				}
+			}
+			
+			// last action
+			promise.then(new SR.promise(function (resolve, reject) {
+				//LOG.warn('everything is done... call original onDone...', l_name);
+				UTIL.safeCall(onDone, err, result);	
+				resolve();
+			}));
+
 		}, extra);
 	};
 	
@@ -119,6 +150,26 @@ l_add('SR_API_QUERY', function (args, onDone) {
 	// return a list of registered API directly
 	onDone(null, Object.keys(l_list));
 });
+
+var l_afterActions = {};
+
+// register post-event actions
+exports.after = function (name, handler) {
+
+	// type check
+	if (typeof name !== 'string' || typeof handler !== 'function') {
+		LOG.error('SR.API.after parameters incorrect (need "name" and "callback function")');
+		return false;
+	}
+	
+	if (l_afterActions.hasOwnProperty(name) === false) {
+		l_afterActions[name] = [];
+	}
+	
+	// store action
+	l_afterActions[name].push(handler);
+	return true;
+};
 
 const SockJS = require('sockjs-client');
 

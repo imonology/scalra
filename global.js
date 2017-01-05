@@ -54,6 +54,7 @@ SR.http = 					require('http');
 SR.https = 					require('https');
 SR.mongo =                  require('mongodb'); // node_modules old version
 SR.async =					require('async');
+SR.promise =				require('bluebird');
 
 SR._kit =                   require(CORE_DIR + '_basekit');
 SR._uuid =                  require(CORE_DIR + 'uuid');
