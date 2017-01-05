@@ -11,6 +11,15 @@ SR.API.add('HelloWorld', function (args, onDone) {
 	onDone(null, {hello: args.name});
 });
 
+// post-event handler
+SR.API.after('HelloWorld', function (args, result, onDone) {
+	LOG.warn('after HelloWorld is called, result:');
+	LOG.warn(result);
+	LOG.warn('original parameters:');
+	LOG.warn(args);
+	onDone();
+});
+
 // negative test
 SR.API.HelloWorld(function (err, result) {
 	LOG.warn('SR.API negative test result: ');
