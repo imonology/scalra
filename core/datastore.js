@@ -40,7 +40,7 @@ var l_rebuildObjects = function (obj) {
 	for (var key in obj) {
 		
 		// we leave off functions such as 'save'
-		if (typeof obj[key] === 'function')
+		if (typeof obj[key] === 'function' || typeof obj[key] === 'undefined')
 			continue;
 		
 		// for objects
@@ -59,7 +59,12 @@ var l_rebuildObjects = function (obj) {
 			// for string/number/boolean
 			var temp = obj[key];
 			obj[key] = undefined;
-			obj[key] = temp;
+			
+			if (typeof temp === 'number' && isNaN(temp)) {
+				LOG.warn('NaN found! ignore storing', l_name);	
+			} else {
+				obj[key] = temp;				
+			}
 		}
 	}
 	return obj;	
