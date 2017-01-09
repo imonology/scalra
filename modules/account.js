@@ -299,23 +299,23 @@ SR.API.add('_ACCOUNT_LOGIN', {
 
 // verify whether a valid login exists before proceeding
 var l_checkLogin = function (args, onDone, extra) {
-	
-	//LOG.warn('l_accounts:');
-	//LOG.warn(l_accounts);
 		
 	// check if DB is initialized
 	if (typeof l_accounts === 'undefined') {
-		return onDone('DB module is not loaded, please enable DB module');	
+		onDone('DB module is not loaded, please enable DB module');	
+		return false;
 	}
 	
 	var account = args.account || ((extra && extra.session && extra.session._user) ? extra.session._user.account : '');
 	
 	if (l_logins.hasOwnProperty(account) === false) {
-		return onDone('[' + account + '] not logined');	
+		onDone('[' + account + '] not logined');
+		return false;	
 	}
 	
 	if (l_accounts.hasOwnProperty(account) === false) {
-		return onDone('[' + account + '] not found');
+		onDone('[' + account + '] not found');
+		return false;
 	}
 	
 	// check if account exists, if not then try to get from session
@@ -352,7 +352,10 @@ SR.API.add('_ACCOUNT_LOGOUT', {
 		delete l_logins[account];
 			
 		// clear session
-		delete extra.session['_user'];
+		// NOTE: extra might become invalid after sync is done
+		if (extra) {
+			delete extra.session['_user'];
+		}
 							
 		LOG.warn('[' + account + '] logout success, total logins: ' + Object.keys(l_logins).length, l_name);
 		onDone(null);
