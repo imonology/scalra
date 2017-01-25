@@ -364,10 +364,20 @@ SR.API.add('_ACCOUNT_LOGOUT', {
 
 // auto-logout when disconnect
 SR.Callback.onDisconnect(function (conn) {
-	var account = SR.Conn.getSessionName(conn);
-	SR.API._ACCOUNT_LOGOUT({account: account}, function (err) {
-		LOG.warn('[' + account + '] auto-logout', l_name);
-	});
+	// NOTE: if we auto-logout when socket disconnects, when using websockets and page refreshes, 
+	// user will auto-logout as well (undesirable). 
+	
+	//var account = SR.Conn.getSessionName(conn);
+	//if (!account) {
+	//	return;
+	//}
+	
+	//SR.API._ACCOUNT_LOGOUT({account: account}, function (err) {
+	//	if (err) {
+	//		LOG.error(err);	
+	//	}
+	//	LOG.warn('[' + account + '] auto-logout', l_name);
+	//});
 });
 
 // reset password by email
