@@ -1,4 +1,14 @@
 
+1.6.1 / 2017-01-26
+==================
+	* modify: disable auto-logoff in modules/account.js
+	* fix: invalid access to variables in account modules
+
+1.6.0 / 2017-01-09
+==================
+	* add: SR.API.after to install post-event handlers (parameters: args, result, onDone)
+	* add: project's /modules directory is checked for custom modules
+
 1.5.8 / 2016-12-28
 ==================
 	* modify: refactor SR.Execute to perform "npm start" if frontier.js doesn't exist
