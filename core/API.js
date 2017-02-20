@@ -62,6 +62,9 @@ var l_add = exports.add = function (name, func, checker) {
 			args = {};
 		}
 		
+		// TODO: perform argument type check (currently there's none, so internal API calls won't do type checks)
+		
+		
 		// make actual call to user-defined function
 		UTIL.safeCall(l_list[name], args, function (err, result) {
 			if (err) {

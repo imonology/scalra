@@ -438,7 +438,7 @@ var EventHandler = function () {
 		//	   will also allow other types of parameters be passed through
 		//	   assumpion here is that the handler will not process non-SR.Tags.PARA parameters	   
 		//var result = true;
-		var err_str = [];	
+		var err_str = [];
 
 		// if checker exist, perform format check
 		if (l_checkers.hasOwnProperty(msgtype) === true) {
