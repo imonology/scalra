@@ -335,7 +335,7 @@ var EventHandler = function () {
 		
 		// extract message type
 		for (var i=0; i < eventtypes.length; i++) {
-			if (event.data.hasOwnProperty(eventtypes[i]))
+			if (event.data[eventtypes[i]])
 				break;
 		}
 
@@ -375,14 +375,14 @@ var EventHandler = function () {
 		SR.Stat.add('net_in', recv_str.length + 1);
 		
 		// transfer cid & parameters up one level
-		if (event.data.hasOwnProperty('_cid'))
+		if (event.data['_cid'])
 			event.cid = event.data._cid;
 			
 		//LOG.warn('before event obj:', l_name);
 		//LOG.warn(event);
 		
 		// NOTE: somehow the hasOwnProperty check will pass if event.data does not have the SR.Tags.PARA field
-		if (event.data.hasOwnProperty(SR.Tags.PARA) === false || event.data[SR.Tags.PARA] === undefined)
+		if (!event.data[SR.Tags.PARA])
 			event.data = {};
 		else 
 			event.data = event.data[SR.Tags.PARA];
@@ -393,7 +393,7 @@ var EventHandler = function () {
 		// move rid (request id) into event object, if exists
 		// NOTE: do not store in conn object, as different events could shae the SAME connection object 
 		// for socket connections
-		if (event.data.hasOwnProperty('_rid')) {
+		if (event.data['_rid']) {
 			event.rid = event.data._rid;
 			delete event.data['_rid'];
 		}
