@@ -1,4 +1,14 @@
 
+
+1.6.3 / 2017-03-11
+==================
+	* fix: cannot stop server if project is accessed by linux symlink (resolve sym to real)
+
+1.6.2 / 2017-03-07
+==================
+	* fix: hasOwnProperty does not work in core/handler.js
+	* modify: will wait for websocket before sending early packets
+	
 1.6.1 / 2017-01-26
 ==================
 	* modify: disable auto-logoff in modules/account.js
@@ -6,7 +16,7 @@
 
 1.6.0 / 2017-01-09
 ==================
-	* add: SR.API.after to install post-event handlers (parameters: args, result, onDone)
+	** add: SR.API.after to install post-event handlers (parameters: args, result, onDone)
 	* add: project's /modules directory is checked for custom modules
 
 1.5.8 / 2016-12-28
