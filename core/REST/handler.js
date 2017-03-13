@@ -491,7 +491,7 @@ exports.upload = function (path_array, res, para, req) {
 						return SR.Callback.notify('onUpload', {result: false, msg: err});
 					}
 					LOG.warn("file uploaded", l_name);
-					LOG.warn(result, l_name);
+					//LOG.warn(result, l_name);
 					SR.Callback.notify('onUpload', {result: true, file: 'filepath'});
 					return;
 				});
@@ -514,7 +514,7 @@ exports.upload = function (path_array, res, para, req) {
 				});
  
 				form.on('fileBegin', function (name, file) {
-					LOG.debug("fileBegin: name " + name + ", file " + JSON.stringify(file));
+					LOG.warn("fileBegin: name " + name + ", file " + JSON.stringify(file));
 				});
 
 				form.on('file', function (name, file) {
@@ -538,6 +538,8 @@ exports.upload = function (path_array, res, para, req) {
 						LOG.error(error, l_name);
 						return;
 					}
+					LOG.warn('files uploaded');
+					LOG.warn(files);
 
 					if (!SR.Status) {
 						SR.Status = {};
@@ -607,7 +609,7 @@ exports.upload = function (path_array, res, para, req) {
 							SR.REST.reply(res, {message: 'failure (no file)'});
 							return;
 						}
-					}
+					} 
 					
 					// remove sensitive info (such as path) from response
 					var result = {
