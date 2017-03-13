@@ -365,10 +365,40 @@ SR.API.add('_QUERY_SERVERS', {
 	name:		'string'
 }, function (args, onDone) {
 
-	// FIXME: avoid using reporting.getStat
-	SR.Call('reporting.getStat', args, function (list) {
-		UTIL.safeCall(onDone, null, list);
-	});
+	// resolve for actual path if parameters indicate symlinks
+	LOG.warn('_QUERY_SERVERS para:', l_name);
+	LOG.warn(args, l_name);
+
+	var onResolved = function () {
+		// FIXME: avoid using reporting.getStat
+		SR.Call('reporting.getStat', args, function (list) {
+			UTIL.safeCall(onDone, null, list);
+		});		
+	}
+	
+	// if owner & project are not provided, do not attempt to resolve symlinks 
+	if (!args.owner || args.owner === '' || !args.project || args.project === '') {
+		return onResolved();
+	}
+	
+	var fullpath = SR.path.join(SR.Settings.PATH_USERBASE, args.owner, args.project);
+	LOG.warn('fullpath: ' + fullpath, l_name);
+	SR.fs.realpath(fullpath, function (err, resolved) {
+		if (err) {
+			return (err);
+		}
+		LOG.warn('resolved path: ' + resolved, l_name);
+		// get resolved user / project
+		var names = resolved.split('/');
+		if (names.length > 2) {
+			args.project = names[names.length-1];
+			args.owner = names[names.length-2];			
+		}
+		LOG.warn('resolved para:', l_name);
+		LOG.warn(args, l_name);		
+		
+		onResolved();
+	})
 });
 
 var l_query = exports.query = function (server_info, onDone) {

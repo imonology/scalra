@@ -297,7 +297,7 @@ var l_connect = function (onDone) {
 		
 		if (err) {
 			// try-again later
-			LOG.warn('attempt to re-connect in: ' + l_timeoutConnectRetry + 'ms', l_name);
+			LOG.warn('connect failed, try to re-connect in: ' + l_timeoutConnectRetry + 'ms', l_name);
 			setTimeout(l_connect, l_timeoutConnectRetry);
 			return;
 		}
