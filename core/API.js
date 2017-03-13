@@ -186,6 +186,7 @@ l_add('addRemote', {
 	host:		'object',
 	secured:	'+boolean',
 	use_socket:	'+boolean',
+	auto_reconnect: '+boolean',
 	onDisconnect: '+function'
 }, function (args, onDone) {
 	
