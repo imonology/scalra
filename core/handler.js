@@ -458,9 +458,28 @@ var EventHandler = function () {
 					// check for login requirement (must first login before proceed)
 					if (para === '_login') {
 						
+						// NOTE: this check will be passed automatically if caller the server
+						// that is, as internal API this check is bypassed automatically
+						// because 'event.session' likely does not exist
 						if (checker[para] === true && event.session && 
 							event.session.hasOwnProperty('_user') === false) {
 							err_str.push('login required');
+						}
+						continue;
+					}
+			
+					// check for login requirement (must first login before proceed)
+					if (para === '_admin') {
+						
+						// NOTE: this check will be passed automatically if caller the server
+						// that is, as internal API this check is bypassed automatically
+						// because 'event.session' likely does not exist
+						if (checker[para] === true && event.session) {
+							
+							if (event.session.hasOwnProperty('_user') === false || 
+								event.session._user.account !== 'admin') {
+								err_str.push('admin login required');
+							}
 						}
 						continue;
 					}
