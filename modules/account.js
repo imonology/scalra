@@ -1,6 +1,15 @@
 /*
 	account management (module-based)
 
+	API:
+		_ACCOUNT_REGISTER	// create a new user account
+		_ACCOUNT_LOGIN		// login by account
+		_ACCOUNT_LOGOUT		// logout by account
+		_ACCOUNT_RESETPASS	// reset password by email
+		_ACCOUNT_SETPASS	// set new password by token
+		_ACCOUNT_SETDATA	// set user data by account name & type:value mapping
+		_ACCOUNT_GETDATA	// get user data by account name		
+		
 	history:
 		2016-09-27		start
 */
@@ -25,6 +34,22 @@ var l_states = SR.State.get(SR.Settings.DB_NAME_SYSTEM);
 //
 // helper functions
 //
+
+// check if an account is valid
+var l_validateAccount = function (account) {
+	// check if DB is initialized
+	if (typeof l_accounts === 'undefined') {
+		LOG.error('DB module is not loaded, please enable DB module', l_name);	
+		return false;
+	}
+			
+	if (l_accounts.hasOwnProperty(account) === false) {
+		LOG.error('[' + account + '] not found', l_name);
+		return false;
+	}
+		
+	return true;
+}
 
 var l_validateUID = function () {
 	
@@ -298,7 +323,9 @@ SR.API.add('_ACCOUNT_LOGIN', {
 });
 
 // verify whether a valid login exists before proceeding
-var l_checkLogin = function (args, onDone, extra) {
+// NOTE: replaced by _login flag in checker
+/*
+var l_checkLogin = function (onDone, extra) {
 		
 	// check if DB is initialized
 	if (typeof l_accounts === 'undefined') {
@@ -306,7 +333,7 @@ var l_checkLogin = function (args, onDone, extra) {
 		return false;
 	}
 	
-	var account = args.account || ((extra && extra.session && extra.session._user) ? extra.session._user.account : '');
+	var account = ((extra && extra.session && extra.session._user) ? extra.session._user.account : '');
 	
 	if (l_logins.hasOwnProperty(account) === false) {
 		onDone('[' + account + '] not logined');
@@ -317,26 +344,23 @@ var l_checkLogin = function (args, onDone, extra) {
 		onDone('[' + account + '] not found');
 		return false;
 	}
-	
-	// check if account exists, if not then try to get from session
-	if (!args.account) {
-		args.account = account;
-	}
-	
+		
 	return true;
 }
+*/
 
 // logout by account
 SR.API.add('_ACCOUNT_LOGOUT', {
 	_login:		true,
 	account:	'+string'
 }, function (args, onDone, extra) {
-
-	if (l_checkLogin(args, onDone, extra) !== true)
-		return;
 	
-	var account = args.account;
-		
+	var account = (extra.session && extra.session._user ? extra.session._user.account : args.account);
+
+	if (l_validateAccount(account) === false) {
+		return onDone('invalid account [' + account + ']');
+	}
+	
 	// record logout time
 	var user = l_accounts[account];
 	user.login.time_out = new Date();
@@ -409,12 +433,14 @@ SR.API.add('_ACCOUNT_SETDATA', {
 	data:			'object'
 }, function (args, onDone, extra) {
 
-	if (l_checkLogin(args, onDone, extra) !== true)
-		return;
-		
+	var account = (extra.session && extra.session._user ? extra.session._user.account : args.account);
+	if (l_validateAccount(account) === false) {
+		return onDone('invalid account [' + account + ']');
+	}
+	
 	// iterate each item and set value while recording errors
 	var errmsg = '';
-	var data = l_accounts[args.account];
+	var data = l_accounts[account];
 	
 	for (var key in args.data) {
 		if (data.hasOwnProperty(key) === false) {
@@ -456,11 +482,12 @@ SR.API.add('_ACCOUNT_GETDATA', {
 	types:			'+array'		// same as type but in array form
 }, function (args, onDone, extra) {
 	
-	LOG.warn('calling l_checkLogin...');
-	if (l_checkLogin(args, onDone, extra) !== true)
-		return;
+	var account = (extra.session && extra.session._user ? extra.session._user.account : args.account);
+	if (l_validateAccount(account) === false) {
+		return onDone('invalid account [' + account + ']');
+	}
 		
-	var data = l_accounts[args.account];
+	var data = l_accounts[account];
 	
 	// convert needed types into array form
 	var types = args.types || [];
@@ -469,7 +496,7 @@ SR.API.add('_ACCOUNT_GETDATA', {
 	}
 
 	// prepare return value, including 'account'
-	var value = {account: args.account};	
+	var value = {account: account};	
 	var errmsg = '';
 	for (var i=0; i < types.length; i++) {
 		if (data.hasOwnProperty(types[i]) === false) {
@@ -484,6 +511,41 @@ SR.API.add('_ACCOUNT_GETDATA', {
 	} else {
 		onDone(null, value);
 	}
+});
+
+// get group info (array form) for a given account
+SR.API.add('_ACCOUNT_GETGROUP', {
+	_login: true,
+	account: 'string',
+}, function (args, onDone, extra) {
+
+	var account = args.account;
+	if (l_validateAccount(account) === false) {
+		return onDone('invalid account [' + account + ']');
+	}
+	
+	onDone(null, l_accounts[account].control.groups);
+});
+
+
+// set all groups for an account, by proving a group string
+SR.API.add('_ACCOUNT_SETGROUP', {
+	//_login: true,
+	account: 'string',
+	groups: 'string'
+}, function (args, onDone) {
+
+	var account = args.account;
+	if (l_validateAccount(account) === false) {
+		return onDone('invalid account [' + account + ']');
+	}
+	
+	// split input into array
+	var arr = args.groups.split(/[\s\b\n\t,;]+/);
+
+	var user = l_accounts[account];
+	user.control.groups = arr;
+	user.sync(onDone);	
 });
 
 
