@@ -355,7 +355,7 @@ SR.API.add('_ACCOUNT_LOGOUT', {
 	account:	'+string'
 }, function (args, onDone, extra) {
 	
-	var account = (extra.session && extra.session._user ? extra.session._user.account : args.account);
+	var account = (extra && extra.session && extra.session._user ? extra.session._user.account : args.account);
 
 	if (l_validateAccount(account) === false) {
 		return onDone('invalid account [' + account + ']');
@@ -433,7 +433,7 @@ SR.API.add('_ACCOUNT_SETDATA', {
 	data:			'object'
 }, function (args, onDone, extra) {
 
-	var account = (extra.session && extra.session._user ? extra.session._user.account : args.account);
+	var account = (extra && extra.session && extra.session._user ? extra.session._user.account : args.account);
 	if (l_validateAccount(account) === false) {
 		return onDone('invalid account [' + account + ']');
 	}
@@ -482,7 +482,7 @@ SR.API.add('_ACCOUNT_GETDATA', {
 	types:			'+array'		// same as type but in array form
 }, function (args, onDone, extra) {
 	
-	var account = (extra.session && extra.session._user ? extra.session._user.account : args.account);
+	var account = (extra && extra.session && extra.session._user ? extra.session._user.account : args.account);
 	if (l_validateAccount(account) === false) {
 		return onDone('invalid account [' + account + ']');
 	}
