@@ -1,6 +1,6 @@
 {
   "name": "scalra",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "description": "node.js framework to prototype and scale rapidly",
   "main": "index.js",
   "scripts": {
