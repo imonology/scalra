@@ -530,7 +530,7 @@ SR.API.add('_ACCOUNT_GETGROUP', {
 
 // set all groups for an account, by proving a group string
 SR.API.add('_ACCOUNT_SETGROUP', {
-	//_login: true,
+	_admin: true,
 	account: 'string',
 	groups: 'string'
 }, function (args, onDone) {
@@ -547,6 +547,54 @@ SR.API.add('_ACCOUNT_SETGROUP', {
 	user.control.groups = arr;
 	user.sync(onDone);	
 });
+
+// add an account to a given group membership
+SR.API.add('_ACCOUNT_ADDGROUP', {
+	//_admin: true,
+	account: 'string',
+	group: 'string'
+}, function (args, onDone) {
+
+	var account = args.account;
+	if (l_validateAccount(account) === false) {
+		return onDone('invalid account [' + account + ']');
+	}
+	
+	var user = l_accounts[account];
+	for (var i=0; i < user.control.groups.length; i++) {
+		if (user.control.groups[i] === args.group) {
+			return onDone('already part of group [' + args.group + ']');
+		}
+	}
+	
+	// add the group
+	user.control.groups.push(args.group);
+	user.sync(onDone);
+});
+
+// add an account to a given group membership
+SR.API.add('_ACCOUNT_REMOVEGROUP', {
+	_admin: true,
+	account: 'string',
+	group: 'string'
+}, function (args, onDone) {
+
+	var account = args.account;
+	if (l_validateAccount(account) === false) {
+		return onDone('invalid account [' + account + ']');
+	}
+	
+	var user = l_accounts[account];
+	for (var i=0; i < user.control.groups.length; i++) {
+		if (user.control.groups[i] === args.group) {
+			user.control.groups.splice(i, 1);
+			user.sync(onDone);	
+			return;
+		}
+	}
+	onDone('account [' + account + '] does no belong to group [' + args.group + ']');
+});
+
 
 
 var l_models = {};
