@@ -477,7 +477,8 @@ var EventHandler = function () {
 						if (checker[para] === true && event.session) {
 							
 							if (event.session.hasOwnProperty('_user') === false || 
-								event.session._user.account !== 'admin') {
+								!(event.session._user.account === 'admin' || 
+								 event.session._user.control.groups.indexOf('admin') !== (-1))) {
 								err_str.push('admin login required');
 							}
 						}
