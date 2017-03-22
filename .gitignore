@@ -38,3 +38,7 @@ lib/swagger-ui
 
 # diff file before committing
 diff.*
+
+# host-specific config file
+config.js
+
