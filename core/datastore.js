@@ -237,8 +237,8 @@ var l_load = function (arr, name, model, cache, onDone) {
 		}
 	}
 	
-	LOG.warn('[' + name + '] init with attributes:', l_name);
-	LOG.warn(attr);
+	LOG.sys('[' + name + '] init with attributes:', l_name);
+	LOG.sys(attr, l_name);
 	
 	// TODO: able to specify methods & validations in future?
 	names[name] = {

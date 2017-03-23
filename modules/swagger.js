@@ -8,11 +8,12 @@
 //
 'use strict';
 var l_module = exports.module = {};
+var l_name = 'swagger';
 
 var builder = function () {
 	var self = this;
 	
-	self.host = 'localhost';
+	self.host = SR.Settings.DOMAIN_LOBBY || 'localhost';
 
 	self.doc = {
 		'swagger': '2.0',
@@ -41,7 +42,7 @@ var builder = function () {
 		'paths': {}
 	};
 
-	self.functionDoc = function (apiDescriptor) {
+	self.buildDoc = function (apiDescriptor) {
 		var path = apiDescriptor.prefix + '/' + apiDescriptor.name;
 		var auth = apiDescriptor.auth != null ? apiDescriptor.auth : true;
 		var method = apiDescriptor.method || 'post';
@@ -59,8 +60,9 @@ var builder = function () {
 		methodObject.operationId = operationId;
 		methodObject.consumes = ['application/x-www-form-urlencoded'];
 		methodObject.produces = ['application/json; charset=utf-8'];
-		methodObject.responses = {};
-		methodObject.responses[200] = {};
+		methodObject.responses = {
+			200: {}
+		};
 		methodObject.parameters = [];
 
 		if (auth) {
@@ -73,8 +75,8 @@ var builder = function () {
 			var parameter = {};
 			parameter.name = requestFields[i].name;
 			parameter.in = 'formData';
-			parameter.require = true;
-			parameter.type = 'string';
+			parameter.required = requestFields[i].required;
+			parameter.type = requestFields[i].type;
 			methodObject.parameters.push(parameter);
 		}
 
@@ -89,19 +91,19 @@ var builder = function () {
 
 		// pass in each API description
 		for (var name in descriptions) {
-			self.functionDoc(descriptions[name]);
+			self.buildDoc(descriptions[name]);
 		}
 
 		var fs = require('fs');
 
 		var swaggerPath = SR.path.resolve(SR.Settings.FRONTIER_PATH, '..', 'web', 'swagger.json');
-		LOG.warn('swaggerpath: ' + swaggerPath);
+		LOG.warn('swaggerpath: ' + swaggerPath, l_name);
 
 		fs.writeFile(swaggerPath, JSON.stringify(self.doc, null, 4), function (err) {
 			if (err) {
 				UTIL.safeCall(onDone, err);
 			} else {
-				LOG.warn('swagger info saved to: ' + swaggerPath);
+				LOG.warn('swagger info saved to: ' + swaggerPath, l_name);
 				UTIL.safeCall(onDone, null);
 			}
 		});
@@ -141,7 +143,7 @@ SR.API.add('_BUILD_APIDOC', {
 			requestFields: [],
 			summary: checker['_summary'] || '',
 			description: checker['_desc'] || '',
-			tag: (name.charAt(0) === '_' ? 'system' : 'user')
+			tag: ((name.charAt(0) === '_' || name.indexOf('SR') === 0) ? 'system' : 'user')
 		}
 
 		for (var para in checker) {
@@ -154,16 +156,20 @@ SR.API.add('_BUILD_APIDOC', {
 			var type = checker[para];
 
 			if (typeof type !== 'string') {
-				LOG.warn('API [' + name + '] has non-string parameter [' + para + '], skip it...');
+				LOG.warn('API [' + name + '] parameter [' + para + '] has non-string type, skip it...', l_name);
 				continue;
 			}
-
-			if (type.charAt(0) === '+')
+			
+			var required = true;
+			if (type.charAt(0) === '+') {
 				type = type.substring(1);
+				required = false;
+			}
 
 			desc.requestFields.push({
 				name: para,
-				type: type
+				type: type,
+				required: required
 			});
 		}
 
@@ -171,6 +177,8 @@ SR.API.add('_BUILD_APIDOC', {
 	}
 
 	var host = SR.Settings.Project.domain + ':' + UTIL.getProjectPort('PORT_INC_HTTP') + '/';
+	
+	// create the file /web/swagger.json to be parsed by /lib/swagger-ui
 	l_swagger.build(host, descriptions, function (err) {
 		if (err) {
 			LOG.error(err);
