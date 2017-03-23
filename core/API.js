@@ -191,7 +191,13 @@ var l_hosts = {};
 var l_onDisconnect = {};
 var l_pending = {};
 
-l_add('addRemote', {
+//
+// add a server for remote API calls
+// so later we can use the following to call the remote API:
+//
+//		SR.API['server_name'].API_NAME()
+//
+l_add('_addRemote', {
 	name:		'string',
 	host:		'object',
 	secured:	'+boolean',
@@ -357,3 +363,6 @@ l_add('addRemote', {
 		onDone(null);		
 	}
 });
+
+// dummy warpper to allow usage of 'addRemote' directly
+exports['addRemote'] = exports['_addRemote'];
