@@ -63,7 +63,7 @@ var l_add = exports.add = function (name, func, checker) {
 		}
 		
 		// TODO: perform argument type check (currently there's none, so internal API calls won't do type checks)
-		
+		// TODO: move checker to here
 		
 		// make actual call to user-defined function
 		UTIL.safeCall(l_list[name], args, function (err, result) {
@@ -99,48 +99,58 @@ var l_add = exports.add = function (name, func, checker) {
 	
 	// store a new wrapper function for calling the specified API
 	// NOTE: when this API is called as a server-side function, 
-	// likely 'extra' data such as session or conn won't be provided
+	// 'extra' data such as session or conn won't be provided
 	exports[name] = wrapper;
 	
-	// add this function as a handler
-	var handlers = {};
-	handlers[name] = function (event) {
-		var args = event.data;
-		wrapper(args, function (err, result) {
-			// check for special processing
-			// TODO: cleaner way?
-			if (typeof result === 'object' && typeof result.type === 'string') {
-				if (result.type === 'html' && typeof result.data === 'string') {
-					// return webpage
-					return event.done('SR_HTML', {page: result.data});
-				}
-				
-				// check for special SR messages
-				if (result.type.startsWith('SR_')) {
-					return event.done(result.type, result.data);
-				}
-			}
-			
-			// check if nothing should be returned
-			if (typeof err === 'undefined' && typeof result === 'undefined') {
-				event.done();
-			}
-			else {
-				// normal processing
-				event.done({err: err, result: result});
-			}
-			
-		}, {
-			// NOTE: we also pass connection & session, as extra info
-			conn: event.conn,
-			session: event.session
-		});
-	}
+	// build checkers
 	var checkers = {};
 	if (typeof checker === 'object' || typeof checker === 'function') {
 		checkers[name] = checker;	
-	}
+	}	
+	
+	// add this function as a handler
+	var handlers = {};
+	
+	// simply reject requests for _prviate API
+	if (checkers[name] && checkers[name]['_private'] === true) {
+		handlers[name] = function (event) {
+			event.done({err: '[' + name + '] is private'});
+		}
+	} else {
+		handlers[name] = function (event) {
+			var args = event.data;
+			wrapper(args, function (err, result) {
+				// check for special processing
+				// TODO: cleaner way?
+				if (typeof result === 'object' && typeof result.type === 'string') {
+					if (result.type === 'html' && typeof result.data === 'string') {
+						// return webpage
+						return event.done('SR_HTML', {page: result.data});
+					}
 
+					// check for special SR messages
+					if (result.type.startsWith('SR_')) {
+						return event.done(result.type, result.data);
+					}
+				}
+
+				// check if nothing should be returned
+				if (typeof err === 'undefined' && typeof result === 'undefined') {
+					event.done();
+				}
+				else {
+					// normal processing
+					event.done({err: err, result: result});
+				}
+
+			}, {
+				// NOTE: we also pass connection & session, as extra info
+				conn: event.conn,
+				session: event.session
+			});
+		}		
+	}
+	
 	LOG.sys('transforming [' + name + '] as handler...', l_name);
 	SR.Handler.add({handlers: handlers, 
 					checkers: checkers});
@@ -232,9 +242,11 @@ l_add('addRemote', {
 				sock.is_connected = true;
 				
 				// send pending packets
+				if (pending.length > 0) {
+					LOG.warn('pending packets to send: ' + pending.length, l_name);
+					LOG.warn(l_pending, l_name);					
+				}
 				
-				LOG.warn('pending packets to send: ' + pending.length, l_name);
-				LOG.warn(l_pending);
 				for (var i=0; i < pending.length; i++) {
 					sock.sendJSON(pending[i]);
 				}
