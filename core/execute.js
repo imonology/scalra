@@ -360,14 +360,18 @@ var l_stop = exports.stop = function (list, onDone) {
 ///     returns a list of currently live servers
 
 SR.API.add('_QUERY_SERVERS', {
-	owner:		'string',
-	project:	'string',
-	name:		'string'
+	owner:		'+string',
+	project:	'+string',
+	name:		'+string'
 }, function (args, onDone) {
 
 	// resolve for actual path if parameters indicate symlinks
 	LOG.warn('_QUERY_SERVERS para:', l_name);
 	LOG.warn(args, l_name);
+	
+	if (!SR.Settings.PATH_USERBASE) {
+		return onDone('PATH_USERBASE not found (exists at Monitor only)');
+	}
 
 	var onResolved = function () {
 		// FIXME: avoid using reporting.getStat
