@@ -30,7 +30,8 @@ var config = {
 		//SR.Component.REST('HTTPS', ['REST_handle.js']),     // start a HTTPs server
     ],
 	modules: {
-		'reporting': {}
+		'reporting': {},
+		'swagger': {}
 	}
 };
 
