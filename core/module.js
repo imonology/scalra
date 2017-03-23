@@ -262,7 +262,8 @@ SR.Call = function (api_name) {
 		}
 
 		//LOG.warn(module.api);
-		var func = module.api[func_name];
+		// NOTE: if a module isn't loaded correctly, module.api may be undefined
+		var func = (module.api && module.api[func_name] ? module.api[func_name] : undefined);
 		
 		if (typeof func === 'string' || typeof func === 'object')
 			return func;
