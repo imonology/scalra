@@ -61,7 +61,12 @@ var builder = function () {
 		methodObject.consumes = ['application/x-www-form-urlencoded'];
 		methodObject.produces = ['application/json; charset=utf-8'];
 		methodObject.responses = {
-			200: {}
+			200: {
+				"schema" : {},
+				"headers": {},
+				"description" : "OK",
+				"examples" : apiDescriptor.example ? {"application/json" : apiDescriptor.example} : {}				
+			}
 		};
 		methodObject.parameters = [];
 
@@ -71,10 +76,14 @@ var builder = function () {
 			}];
 		}
 
+		// NOTE: for 'in' we still are not able to show 'object' type properly
+		// see: 
+		// http://stackoverflow.com/questions/36862371/swagger-send-body-and-formdata-parameter
+		// 
 		for (var i = 0; i < requestFields.length; i++) {
 			var parameter = {};
 			parameter.name = requestFields[i].name;
-			parameter.in = 'formData';
+			parameter.in = (requestFields[i].type === 'object' || requestFields[i].type === 'function' ? 'body' : 'formData');
 			parameter.required = requestFields[i].required;
 			parameter.type = requestFields[i].type;
 			methodObject.parameters.push(parameter);
@@ -169,8 +178,10 @@ SR.API.add('_BUILD_APIDOC', {
 			desc.requestFields.push({
 				name: para,
 				type: type,
-				required: required
+				required: required,
 			});
+			
+			desc.example = (typeof checker['_response'] === 'object' ? checker['_response'] : undefined);		
 		}
 
 		descriptions.push(desc);
