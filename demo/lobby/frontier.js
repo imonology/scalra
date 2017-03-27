@@ -64,7 +64,8 @@ var config = {
 		// disable DB usage by default, uncomment if DB (currently MongoDB) is installed
 		//'DB': {collections: collections, shutdown_if_fail: true},
 		'chat': {limit: 1000, backup: true},
-		'pubsub': {}
+		'pubsub': {},
+		'swagger': {}
 	}
 };
 
