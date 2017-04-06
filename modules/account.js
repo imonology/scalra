@@ -492,7 +492,7 @@ SR.API.add('_ACCOUNT_GETDATA', {
 	// convert needed types into array form
 	var types = args.types || [];
 	if (args.type) {
-		types.push(type);
+		types.push(args.type);
 	}
 
 	// prepare return value, including 'account'
