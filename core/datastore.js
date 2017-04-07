@@ -136,6 +136,48 @@ var l_buildQuery = function (obj) {
 	return query;
 }
 
+// check if a given datastore needs to build key-based mapping
+var l_checkMapper = function (name, data, onDone) {
+	// check if data contains key (if key is defined for this structure)
+	if (l_mappers.hasOwnProperty(name)) {
+		var key = l_mappers[name].key;
+		if (data.hasOwnProperty(key) === false || data[key] === '' || typeof data[key] !== 'string') {
+			var errmsg = 'new record does not have a valid string for key field [' + key + ']';
+			LOG.error(errmsg, l_name);
+			UTIL.safeCall(onDone, errmsg);
+			return false;
+		}
+	}
+	return true;	
+}
+
+// build key-record mapping, if key index exists for a given datastore
+// optionally can remove a previous key "old_key"
+var l_buildMapper = function (name, record, remove_old) {
+	// store to mapper (if exists)
+	if (l_mappers.hasOwnProperty(name)) {
+		var key = l_mappers[name].key;
+		var mapping = l_mappers[name].mapping;
+
+		// this check here should be redundent
+		if (record.hasOwnProperty(key) === false) {
+			LOG.error('new record stored does not have specified key [' + key + ']', l_name);
+			return false;
+		}
+		
+		if (remove_old === true) {
+			for (var record_key in mapping) {
+				if (mapping[record_key] === record) {
+					delete mapping[record_key];
+					LOG.warn('existing record [' + record_key + '] found, remove it!', l_name);
+				}
+			}
+		}			
+		mapping[record[key]] = record;
+	}
+	return true;	
+}
+
 var l_createSync = function (name, src) {
 	
 	return function (onSyncDone) {
@@ -155,6 +197,25 @@ var l_createSync = function (name, src) {
 		//src.save(function (err) {
 		//	UTIL.safeCall(onSyncDone, err);
 		//});
+		
+		var build_mapper = false;
+		if (l_checkMapper(name, src)) {
+						
+			// first check if 'key' has been modified
+			var mapping = l_mappers[name].mapping;
+			var key = l_mappers[name].key;
+			LOG.warn('key [' + key + '] exists for DS [' + name + ']', l_name);
+			
+			if (mapping.hasOwnProperty(src[key]) === false) {
+				build_mapper = true;
+			} else {
+				if (mapping[src[key]] !== src) {
+					// new key collides with an existing object with same key name
+					return UTIL.safeCall(onSyncDone, 'new key [' + src[key] + '] collides with existing key!');
+				}				
+			}
+			LOG.warn('build_mapper: ' + build_mapper);
+		}
 
 		// save twice version
 		src.save(function (err) {
@@ -162,8 +223,14 @@ var l_createSync = function (name, src) {
 				return UTIL.safeCall(onSyncDone, err);
 			}
 			
-			src = l_rebuildObjects(src);			
+			src = l_rebuildObjects(src);
 			src.save(function (err) {
+				
+				// rebuild key-based mapping
+				if (build_mapper) {
+					l_buildMapper(name, src, true);	
+				}
+				
 				UTIL.safeCall(onSyncDone, err);
 			});			
 		});
@@ -305,18 +372,11 @@ var l_load = function (arr, name, model, cache, onDone) {
 			
 				LOG.sys('add new [' + name + '] entry:', l_name);
 				LOG.sys(data, l_name);
-				
-				// check if data contains key (if key is defined for this structure)
-				if (l_mappers.hasOwnProperty(name)) {
-					var key = l_mappers[name].key;
-					if (data.hasOwnProperty(key) === false || data[key] === '' || typeof data[key] !== 'string') {
-						var errmsg = 'new record does not have a valid string for key field [' + key + ']';
-						LOG.error(errmsg, l_name);
-						UTIL.safeCall(onAddDone, errmsg);
-						return;
-					}
+
+				if (l_checkMapper(name, data, onAddDone) === false) {
+					return;
 				}
-		
+						
 				// add a new entry
 				SR.ORM.create({
 					name: name,
@@ -336,20 +396,9 @@ var l_load = function (arr, name, model, cache, onDone) {
 					//record.remake = l_remakeArray;
 					arr.push(record);
 					LOG.debug('[' + name + '] now has ' + arr.length + ' records', l_name);
-					
-					// store to mapper (if exists)
-					if (l_mappers.hasOwnProperty(name)) {
-						var key = l_mappers[name].key;
-						var mapping = l_mappers[name].mapping;
-						
-						// this check here should be redundent
-						if (record.hasOwnProperty(key) === false) {
-							LOG.error('new record stored does not have specified key [' + key + ']', l_name);
-						} else {
-							mapping[record[key]] = record;	
-						}
-					}
-					
+
+					l_buildMapper(name, record);
+										
 					UTIL.safeCall(onAddDone, null, record);
 				});
 			}
@@ -735,4 +784,3 @@ var l_fill = exports.fill = function (obj, key, value) {
 		return false;
 	}
 }
-
