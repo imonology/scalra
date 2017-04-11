@@ -66,9 +66,16 @@ l_module.start = function (config, onDone) {
 	var cookieParser = require('cookie-parser')
 	
 	// set view engine & directory
-	var views_path = SR.path.join(SR.Settings.FRONTIER_PATH, '..', (config.views || 'views')); 
-	LOG.warn('views path: ' + views_path, l_name);
-	app.set('views', views_path);	
+	var views_paths = [];
+	for (var i=0; i < SR.Settings.MOD_PATHS.length; i++) {
+		views_paths.push(SR.path.join(SR.Settings.MOD_PATHS[i], (config.views || 'views'))); 
+	}
+	LOG.warn('views paths: ' + views_paths, l_name);
+	app.set('views', views_paths);
+
+	//var views_path = SR.path.join(SR.Settings.FRONTIER_PATH, '..', (config.views || 'views')); 
+	//LOG.warn('views path: ' + views_path, l_name);
+	//app.set('views', views_path);
 	
 	var engine = require('ejs-mate');
 	app.engine('ejs', engine);
