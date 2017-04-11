@@ -67,10 +67,14 @@ l_module.start = function (config, onDone) {
 	
 	// set view engine & directory
 	var views_paths = [];
+	var web_paths = [];
 	for (var i=0; i < SR.Settings.MOD_PATHS.length; i++) {
 		views_paths.push(SR.path.join(SR.Settings.MOD_PATHS[i], (config.views || 'views'))); 
+		web_paths.push(SR.path.join(SR.Settings.MOD_PATHS[i], 'web'));
 	}
 	LOG.warn('views paths: ' + views_paths, l_name);
+	LOG.warn('web paths: ' + web_paths, l_name);
+	
 	app.set('views', views_paths);
 
 	//var views_path = SR.path.join(SR.Settings.FRONTIER_PATH, '..', (config.views || 'views')); 
@@ -82,7 +86,10 @@ l_module.start = function (config, onDone) {
 	app.set('view engine', 'ejs');
 	
 	// set directory to serve static files
-	app.use('/web', express.static(SR.Settings.FRONTIER_PATH + '/../web'));
+	//app.use('/web', express.static(SR.Settings.FRONTIER_PATH + '/../web'));
+	for (var i=0; i < web_paths.length; i++) {
+		app.use('/web', express.static(web_paths[i]));
+	}
 	app.use('/lib', express.static(SR.Settings.SR_PATH + '/lib'));
 
 	if (typeof config.public === 'string') {
