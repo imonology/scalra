@@ -111,6 +111,24 @@ exports.icFrontier = function (config) {
 	this.id = UTIL.createUUID();
 
 	var l_frontierName = undefined;
+
+	// build module path from a root path
+	var l_buildModulePath = function (root_path, default_prefix) {
+		var arr = SR.Settings.SR_PATH.split(SR.path.sep);
+		var prefix = arr[arr.length-1] + '-';
+		var dirs = UTIL.getDirectoriesSync(root_path);
+
+		if (default_prefix)
+			prefix = default_prefix;
+		
+		//LOG.warn('default_prefix: ' + default_prefix + ' prefix: ' + prefix + ' paths to check:');
+		for (var i in dirs) {
+			LOG.warn(dirs[i]);
+			if (dirs[i].startsWith(prefix)) { 
+				SR.Settings.MOD_PATHS.push(SR.path.resolve(root_path, dirs[i]));
+			}
+		}
+	}
 	
 	// determine proper server info
 	// lobby_port_opened: true/false
@@ -163,6 +181,9 @@ exports.icFrontier = function (config) {
 	
 	// store frontier path
 	SR.Settings.FRONTIER_PATH = SR.FRONTIER_PATH;
+	
+	// store path to project's base directory
+	SR.Settings.PROJECT_PATH = SR.path.resolve(SR.FRONTIER_PATH, '..');
 
 	l_createServerInfo();
 	
@@ -175,16 +196,12 @@ exports.icFrontier = function (config) {
 
 	// store paths to modules	
 	SR.Settings.MOD_PATHS = [];
+
 	var root_path = SR.path.resolve(SR.Settings.SR_PATH, '..');	
-	var arr = SR.Settings.SR_PATH.split(SR.path.sep);
-	var prefix = arr[arr.length-1] + '-';
-	var dirs = UTIL.getDirectoriesSync(root_path);
+	l_buildModulePath(root_path);
 	
-	for (var i in dirs) {
-		if (dirs[i].startsWith(prefix)) { 
-			SR.Settings.MOD_PATHS.push(SR.path.resolve(root_path, dirs[i]));
-		}
-	}
+	var project_module_path = SR.path.resolve(SR.Settings.PROJECT_PATH, 'node_modules');
+	l_buildModulePath(project_module_path, 'scalra');
 	
 	// add project's 'modules' directory to it
 	SR.Settings.MOD_PATHS.push(SR.path.join(SR.Settings.FRONTIER_PATH, '..'));
