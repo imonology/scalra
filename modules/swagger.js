@@ -187,7 +187,7 @@ SR.API.add('_BUILD_APIDOC', {
 		descriptions.push(desc);
 	}
 
-	var host = SR.Settings.Project.domain + ':' + UTIL.getProjectPort('PORT_INC_HTTP') + '/';
+	var host = l_swagger.host + ':' + UTIL.getProjectPort('PORT_INC_HTTP') + '/';
 	
 	// create the file /web/swagger.json to be parsed by /lib/swagger-ui
 	l_swagger.build(host, descriptions, function (err) {
