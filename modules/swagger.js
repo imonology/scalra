@@ -26,7 +26,7 @@ var builder = function () {
 				'url': 'http://www.apache.org/licenses/LICENSE-2.0.html'
 			}
 		},
-		'host': self.host,
+		'host': self.host + ':' + UTIL.getProjectPort('PORT_INC_HTTP') + '/',
 		'basePath': '/',
 		'tags': [],
 		'securityDefinitions': {
@@ -93,22 +93,19 @@ var builder = function () {
 		self.doc.paths[path] = docObject;
 	};
 
-	self.build = function (host, descriptions, onDone) {
-		self.doc.host = self.host = host;
-
-		LOG.warn('doc host: ' + self.host);
+	self.build = function (descriptions, onDone, host) {
+		//self.doc.host = self.host = host;
+		LOG.warn('doc host: ' + self.doc.host);
 
 		// pass in each API description
 		for (var name in descriptions) {
 			self.buildDoc(descriptions[name]);
 		}
 
-		var fs = require('fs');
-
 		var swaggerPath = SR.path.resolve(SR.Settings.FRONTIER_PATH, '..', 'web', 'swagger.json');
 		LOG.warn('swaggerpath: ' + swaggerPath, l_name);
 
-		fs.writeFile(swaggerPath, JSON.stringify(self.doc, null, 4), function (err) {
+		SR.fs.writeFile(swaggerPath, JSON.stringify(self.doc, null, 4), function (err) {
 			if (err) {
 				UTIL.safeCall(onDone, err);
 			} else {
@@ -186,11 +183,9 @@ SR.API.add('_BUILD_APIDOC', {
 
 		descriptions.push(desc);
 	}
-
-	var host = l_swagger.host + ':' + UTIL.getProjectPort('PORT_INC_HTTP') + '/';
 	
 	// create the file /web/swagger.json to be parsed by /lib/swagger-ui
-	l_swagger.build(host, descriptions, function (err) {
+	l_swagger.build(descriptions, function (err) {
 		if (err) {
 			LOG.error(err);
 			return onDone(err);

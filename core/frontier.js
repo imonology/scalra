@@ -127,7 +127,7 @@ exports.icFrontier = function (config) {
 		
 		//LOG.warn('default_prefix: ' + default_prefix + ' prefix: ' + prefix + ' paths to check:');
 		for (var i in dirs) {
-			LOG.warn(dirs[i]);
+			//LOG.warn(dirs[i]);
 			if (dirs[i].startsWith(prefix)) { 
 				SR.Settings.MOD_PATHS.push(SR.path.resolve(root_path, dirs[i]));
 			}
