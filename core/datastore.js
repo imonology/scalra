@@ -25,14 +25,17 @@ example types:
 			data      : Object // JSON encoded
 */
 // mapping from type name to actual type object
+// supported types ref: https://github.com/dresende/node-orm2/wiki/Model-Properties
+// see example: https://github.com/dresende/node-orm2
 var l_types = {
 	'string':	String,
-	'number':	Number,
 	'boolean':	Boolean,
-	'buffer':	Buffer,
-	'object':	Object
+	'number':	Number,
+	'date':		Date,
+	'object':	Object,
+	'buffer':	Buffer,		// used for binary data such as photos
+	'array':	Object
 }
-
 
 var l_rebuildObjects = function (obj) {
 
@@ -178,7 +181,33 @@ var l_buildMapper = function (name, record, remove_old) {
 	return true;	
 }
 
-var l_createSync = function (name, src) {
+// modify field content from object to array if the type is 'array'
+var l_convertArray = function (obj, array_names) {
+	
+	for (var i=0; i < array_names.length; i++) {
+		var key = array_names[i];
+		
+		if (typeof obj[key] !== 'object') {
+			continue;
+		}
+
+		var array_obj = obj[key];
+
+		LOG.warn('array field [' + key + '] is treated as object!', l_name);
+		LOG.warn(array_obj);
+
+		// convert array object to js array
+		var temp_arr = [];
+		for (var idx_key in array_obj) {
+			temp_arr.push(array_obj[idx_key]);
+		}
+		LOG.warn('convert to array with element size: ' + temp_arr.length, l_name);
+		LOG.warn(temp_arr, l_name);
+		obj[key] = temp_arr;
+	}
+}
+
+var l_createSync = function (name, src, array_fields) {
 	
 	return function (onSyncDone) {
 		
@@ -230,6 +259,9 @@ var l_createSync = function (name, src) {
 				if (build_mapper) {
 					l_buildMapper(name, src, true);	
 				}
+				
+				// convert 'array' types to array form instead of object
+				l_convertArray(src, array_fields);
 				
 				UTIL.safeCall(onSyncDone, err);
 			});			
@@ -291,12 +323,23 @@ var l_load = function (arr, name, model, cache, onDone) {
 	// determine attributes & their types based on a sample object 
 	var attr = {};
 	
+	// fields that are of array-type (used to convert object content to array format)
+	var array_fields = [];
+	
 	for (var key in model) {
 		var type = model[key];
 		
 		if (typeof type === 'string' && l_types.hasOwnProperty(type)) {
+			// for basic system-supported types
 			attr[key] = l_types[type];
+			
+			// store fields of type 'array', to be used later
+			if (type === 'array') {
+				array_fields.push(key);			
+			}
 		} else if (type instanceof Array) {
+			// for enum type (such as: [ "USA", "Canada", "Rest of the World" ])
+			// see: https://github.com/dresende/node-orm2/wiki/Model-Properties
 			attr[key] = type;
 		} else {
 			LOG.error('unknown type: ' + key, l_name);
@@ -353,8 +396,11 @@ var l_load = function (arr, name, model, cache, onDone) {
 			// right now we only use references
 			for (var i=0; i < result.length; i++) {
 				
-				result[i].sync = l_createSync(name, result[i]);
-				
+				result[i].sync = l_createSync(name, result[i], array_fields);
+
+				// convert result to array form, if type is specified as 'array'
+				l_convertArray(result[i], array_fields);
+								
 				//result[i].remake = l_remakeArray;
 				arr.push(result[i]);
 			}
@@ -387,7 +433,7 @@ var l_load = function (arr, name, model, cache, onDone) {
 					}
 
 					// attach sync function
-					record.sync = l_createSync(name, record);
+					record.sync = l_createSync(name, record, array_fields);
 					
 					// NOTE: we need to store into the existing master array
 					// this is an important step as subsequent update to this entry needs to be done
