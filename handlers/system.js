@@ -180,6 +180,23 @@ SR.Callback.onStart(function () {
 						
 						l_initSystemParameters('projectID', UTIL.createUUID());
 						l_initSystemParameters('projectSecret', UTIL.createToken());
+		
+						// add sync function to l_states
+						l_states.sync = function (onDone) {
+							// store back to DB
+							// check existing users
+							l_states.lastUpdate = new Date();
+							SR.DB.setData(SR.Settings.DB_NAME_SYSTEM, l_states, 
+								// success
+								function (data) {
+									onDone(null);
+								},
+								// fail
+								function () {
+									onDone('store system para failed');
+								}
+							);
+						}
 				  	},
 				  	// fail
 				  	function () {
@@ -212,19 +229,14 @@ SR.Callback.onStop(function () {
 	
 	LOG.warn('storing system parameters to DB...', 'handlers.system');
 	
-	l_states.lastUpdate = new Date();
-
-    // store states back to DB
-	SR.DB.setData(SR.Settings.DB_NAME_SYSTEM, l_states, 
-				  	// success
-				  	function (data) {
-						LOG.warn('store system parameter to DB success...', 'handlers.system');
-						LOG.warn(data, 'handlers.system');
-				  	},
-				  	// fail
-				  	function () {
-						LOG.error('store system parameter to DB error...', 'handlers.system');
-				  	});
+    // store states back to DB	
+	l_states.sync(function (err) {
+		if (err) {
+			LOG.error('store system parameter to DB error...', 'handlers.system');
+		} else {
+			LOG.warn('store system parameter to DB success...', 'handlers.system');
+		}
+	});
 });
 
 //

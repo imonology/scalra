@@ -66,22 +66,16 @@ var l_validateUID = function () {
 // TODO: use SR.DS for l_states instead
 var l_getUID = function (onDone) {
 		
-	l_validateUID();	
-	var uid = ++l_states['uid_count'];	
+	l_validateUID();
+	var uid = ++l_states['uid_count'];
 	
-	// store back to DB
-    // check existing users
-	SR.DB.setData(SR.Settings.DB_NAME_SYSTEM, l_states, 
-				  	// success
-				  	function (data) {
-						LOG.warn('uid generated: ' + uid);
-						onDone(uid);
-				  	},
-				  	// fail
-				  	function () {
-						LOG.error('uid generation failed with DB');
-						onDone(undefined);
-				  	});	
+	l_states.sync(function (err) {
+		if (err) {
+			return onDone(undefined);
+		}
+		LOG.warn('uid generated: ' + uid);
+		onDone(uid);
+	});
 }
 
 var l_encryptPass = exports.encryptPass = function (original, salt) {
