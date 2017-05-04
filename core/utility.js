@@ -721,9 +721,14 @@ exports.validatePathAsync = function (path, onDone) {
 
 // get a list of directories under a given path
 exports.getDirectoriesSync = function (srcpath) {
-	return SR.fs.readdirSync(srcpath).filter(function(file) {
-		return SR.fs.statSync(path.join(srcpath, file)).isDirectory();
-	});
+	try {	
+		return SR.fs.readdirSync(srcpath).filter(function(file) {
+			return SR.fs.statSync(path.join(srcpath, file)).isDirectory();
+		});
+	} catch (e) {
+		LOG.error(e, l_name);
+		return [];
+	}
 }
 
 
