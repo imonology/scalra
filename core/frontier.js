@@ -149,10 +149,10 @@ exports.icFrontier = function (config) {
 		var name    = words[words.length-1];
 		
 		// get one level deeper for scalra system servers (monitor, entry...)
-		//if (owner === 'scalra') {
-		//	owner = words[words.length-4];
-		//	project = words[words.length-3];
-		//}		
+		if (name === 'monitor' || name === 'entry') {
+			owner = words[words.length-4];
+			project = words[words.length-3];
+		}		
 		
 		LOG.warn('extracting server info from path... \n[owner]:  ' + owner + '\n[project]: ' + project + '\n[name]:  ' + name, l_name);
 			
