@@ -149,7 +149,7 @@ exports.icFrontier = function (config) {
 		var name    = words[words.length-1];
 		
 		// get one level deeper for scalra system servers (monitor, entry...)
-		if (name === 'monitor' || name === 'entry') {
+		if (owner === 'scalra' && (name === 'monitor' || name === 'entry')) {
 			owner = words[words.length-4];
 			project = words[words.length-3];
 		}		
