@@ -726,7 +726,7 @@ exports.getDirectoriesSync = function (srcpath) {
 			return SR.fs.statSync(path.join(srcpath, file)).isDirectory();
 		});
 	} catch (e) {
-		LOG.error(e, l_name);
+		LOG.warn('cannot list dir: ' + srcpath, l_name);
 		return [];
 	}
 }

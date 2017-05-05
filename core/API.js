@@ -214,7 +214,7 @@ l_add('_addRemote', {
 			
 		return onDone(null);	
 	}
-	
+		
 	l_hosts[args.name] = args.host;
 	
 	l_onDisconnect[args.name] = [];
@@ -235,7 +235,7 @@ l_add('_addRemote', {
 
 		var connectSocket = function (onConnected) {
 			
-			LOG.warn('connecting to [' + args.name + '] by websocket', l_name);
+			LOG.warn('connecting to [' + args.name + '] by websocket (' + l_hosts[args.name].IP + ':' + l_hosts[args.name].port + ')', l_name);
 			sock = new SockJS(url);
 		
 			// Open the connection
@@ -341,7 +341,7 @@ l_add('_addRemote', {
 		
 	} else {
 				
-		LOG.warn('connecting to [' + args.name + '] by HTTP', l_name);
+		LOG.warn('connecting to [' + args.name + '] by HTTP (' + l_hosts[args.name].IP + ':' + l_hosts[args.name].port + ')', l_name);
 		
 		// call through HTTP post request	
 		exports[args.name] = function (name, remote_args, onRemoteDone) {
