@@ -697,12 +697,17 @@ exports.getDateTimeString = function () {
 exports.validatePath = function (path) {
 
 	LOG.warn('validating path: ' + path, l_name);
-	if (SR.fs.existsSync(path) === false) {
-		LOG.warn('creating new directory: ' + path + SR.Tags.ERREND, l_name);
-		SR.fs.mkdirSync(path);
+	try {
+		if (SR.fs.existsSync(path) === false) {
+			LOG.warn('creating new directory: ' + path + SR.Tags.ERREND, l_name);
+			SR.fs.ensureDirSync(path);
+			return false;
+		}
+		return true;		
+	} catch (e) {
+		LOG.error('validatePath failed: ' + path, l_name);
 		return false;
 	}
-	return true;
 }
 
 // check if a directory exists or create if not (async version)
