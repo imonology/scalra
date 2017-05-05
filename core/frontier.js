@@ -141,18 +141,18 @@ exports.icFrontier = function (config) {
 		// extract frontier name from path, avoid unusable characters
 		var words = SR.Settings.FRONTIER_PATH.replace(':', ']').split(SR.path.sep);
 		
-		LOG.sys('path split:', l_name);
-		LOG.sys(words, l_name);		
+		LOG.warn('path split:', l_name);
+		LOG.warn(words, l_name);		
 		
 		var owner   = words[words.length-3];
 		var project = words[words.length-2];
 		var name    = words[words.length-1];
 		
 		// get one level deeper for scalra system servers (monitor, entry...)
-		if (owner === 'scalra') {
-			owner = words[words.length-4];
-			project = words[words.length-3];
-		}		
+		//if (owner === 'scalra') {
+		//	owner = words[words.length-4];
+		//	project = words[words.length-3];
+		//}		
 		
 		LOG.warn('extracting server info from path... \n[owner]:  ' + owner + '\n[project]: ' + project + '\n[name]:  ' + name, l_name);
 			
