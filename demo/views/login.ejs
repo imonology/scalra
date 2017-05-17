@@ -1,0 +1,47 @@
+<% layout('template/common') %>
+<% block('title').append('<title>' + language.login_title + '</title>') %>
+	
+			<section id="four" class="wrapper style2 special">
+				<div class="inner">
+					<header class="major narrow">
+						<h2><%= language.login_title %></h2>
+					</header>
+					<form name="login" action="" method="GET">
+						<div class="container 75%">
+							<div class="row uniform 50%">
+								<div class="6u 12u$(xsmall)">
+									<input id="account" name="account" placeholder="<%= language.login_account %>" type="text" autofocus />
+								</div>
+								<div class="6u$ 12u$(xsmall)">
+									<input id="password" name="password" placeholder="<%= language.login_password %>" type="password" onkeypress="return onKeyPress(event);" />
+								</div>
+							</div>
+						</div>
+						
+						<ul class="actions">
+							<li><a class="button special" href="javascript:login('account')"><%= language.button_login %></a></li>
+							<li><a class="button alt" href="/register"><%= language.button_register %></a></li>
+						</ul>
+							
+						<!--
+						<div class="container 75%">
+							<div class="row uniform 50%">
+								<div class="12u$">
+									<input id="email" name="email" placeholder="<%= language.login_email %>" type="email" />
+								</div>
+							</div>
+						</div>
+						<ul class="actions">						
+							<li><a class="button alt" href="javascript:login('getpass')"><%= language.button_getpass %></a></li>
+						</ul>
+						-->
+
+						<script>							
+						function onKeyPress (event) {
+							if (event.keyCode === 13) 
+								login('account');
+						}							
+						</script>
+					</form>
+				</div>
+			</section>

@@ -28,10 +28,10 @@ var settings = exports.settings = {
 	// NOTE: this is needed if you want to allow Scalra to create the project DB for you,
 	// otherwise if DB account/pass can be configured same as 'DB_AUTH', then this is not needed
 	// see: https://docs.mongodb.com/v2.6/tutorial/add-user-administrator/
-	DB_ADMIN: {
-		account:  'dbadmin',
-		pass:     'dbadmin-pass'
-	},
+//	DB_ADMIN: {
+//		account:  'dbadmin',
+//		pass:     'dbadmin-pass'
+//	},
 	
 	// type of DB to use ('mongodb' or 'mysql')
 	DB_TYPE: 'mongodb',

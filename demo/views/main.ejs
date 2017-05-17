@@ -1,0 +1,31 @@
+<% layout('template/common') %>
+<% block('title').append('<title>Main</title>') %>
+
+<script>
+
+var onConnect = function () {
+}
+
+</script>
+			
+			<section id="three" class="wrapper style2 special">
+				<div class="inner">
+					<header class="major narrow">
+						<h2>Main Menu</h2>
+						<p>Please select which functions to perform</p>
+					</header>
+					<form name="login" action="" method="GET">
+
+						<ul class="actions">
+							<li><a class="button alt" href="javascript:logout('<%= login.account %>')">Logout</a></li>
+						</ul>
+															
+						<% 	if (login.admin) { %>
+								<ul class="actions">
+								<!-- <li><a class="button alt" href="/manage_groups">Assign Roles</a></li> -->
+								</ul>
+						<%	} %>
+					</form>
+				</div>
+			</section>
+

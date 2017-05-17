@@ -1,0 +1,52 @@
+<% layout('template/common') %>
+<% block('title').append('<title>Login</title>') %>
+				
+			<section id="four" class="wrapper style2 special">
+				<div class="inner">
+					<header class="major narrow">
+						<h2><%= language.register_title %></h2>
+						<p><%= language.register_subtitle %></p>
+					</header>
+					<form name="login" action="" method="GET">
+						<div class="container 75%">
+							<div class="row uniform 50%">
+								<div class="6u 12u$(xsmall)">
+									<input id="account" name="account" placeholder="<%= language.register_account %>" type="text" autofocus />
+								</div>
+								<div class="6u$ 12u$(xsmall)">
+									<input id="email" name="email" placeholder="<%= language.register_email %>" type="email" />									
+								</div>
+								<div class="6u 12u$(xsmall)">
+									<input id="password" name="password" placeholder="<%= language.register_password %>" type="password" />
+
+								</div>									
+								<div class="6u$ 12u$(xsmall)">
+									<input id="password_verify" name="password_verify" placeholder="<%= language.register_checkpass %>" type="password" onkeypress="return onKeyPress(event);" />
+								</div>
+							</div>
+						</div>
+						<ul class="actions">						
+							<li><a class="button special" href="javascript: register();"><%= language.button_register %></a></li>
+							<li><a class="button alt" href="/"><%= language.button_login %></a></li>
+						</ul>
+						
+						<script>
+							function register() {
+								// check if passwords are same
+								var password = document.getElementById('password').value;
+								var password_verify = document.getElementById('password_verify').value;
+								if (password !== password_verify) {
+									alert('Password do not match, please enter again');
+									return;
+								}
+								login('register');								
+							}
+							function onKeyPress (event) {
+								if (event.keyCode === 13) { 
+									register();	
+								}
+							}							
+						</script>
+					</form>
+				</div>
+			</section>

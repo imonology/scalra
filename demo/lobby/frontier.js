@@ -29,7 +29,7 @@ SR.Console.add('t', 'show current time', function (para) {
 '');
 
 // a list of names for all collections to be created
-var collections =  ['test1'];
+var collections =  ['test_db'];
 
 var config = {
     path:               __dirname,
@@ -62,9 +62,11 @@ var config = {
     ],
 	modules: {
 		// disable DB usage by default, uncomment if DB (currently MongoDB) is installed
-		//'DB': {collections: collections, shutdown_if_fail: true},
+		'DB': {collections: collections, shutdown_if_fail: true},
 		'chat': {limit: 1000, backup: true},
 		'pubsub': {},
+		'express': {router: 'router.js'},
+		'flexform': {},	
 		'swagger': {}
 	}
 };
