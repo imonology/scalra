@@ -1,0 +1,60 @@
+<% layout('template/common') %>
+<% block('title').append('<title>Main</title>') %>
+
+<script>
+
+var onConnect = function () {
+	
+	// obtain device list
+	SR.API.QUERY_FORM({
+		name: 'DeviceInfo',
+		query: {}
+	}, function (err, result) {
+
+		if (err) {
+			alert(err);
+			return;
+		}
+		
+		console.log(result);
+		var values = result.data.values;
+		
+		// pull-down menu
+		var html = '<select id="device">';
+		html += '<option value="">Please select the device to connect: </option>';
+
+		for (var key in values) {
+			var record = values[key];
+			var device_name = record.name + ' (' + record.IP + ':' + record.port + ')';
+			var device_id = record.id;
+				
+			html += '<option value="' + device_id + '" ';
+			html += '>' + device_name + '</option>';
+		}
+		html += '</select>';
+
+		document.getElementById('device_list').innerHTML = html;
+	})
+}
+
+</script>
+			
+			<section id="three" class="wrapper style2 special">
+				<div class="inner">
+					<header class="major narrow">
+						<h2>Connect Device</h2>
+						<p>Please select which device to connect</p>
+					</header>
+					
+						<div id="device_list"></div>
+						<p>
+						<ul class="actions">
+							<li><a class="button alt" href="javascript:alert('connect!')">Connect</a></li>
+							<li><a class="button alt" href="/main">Back to Main</a></li>
+						</ul>					
+					
+					<canvas></canvas>
+
+				</div>
+			</section>
+

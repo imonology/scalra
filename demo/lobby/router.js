@@ -91,4 +91,14 @@ module.exports = function (app) {
 		var args = {login: login, language: l_lang, para: {form_name: req.query.form_name}};		
 		res.render('flexform/list_filter', args);
 	});	
+	
+	// connect a single device
+	app.get('/connect', function (req, res) { 
+		var login = l_checkLogin(req);
+		if (!login.account)
+			return res.redirect('/');
+		
+		var args = {login: login, language: l_lang};		
+		res.render('connect', args);
+	});		
 }
