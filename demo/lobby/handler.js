@@ -25,18 +25,17 @@ var l_states = SR.State.get('counters');
 if (typeof l_states.counter === 'undefined')
 	l_states['counter'] = 0;
 
-// test event
-l_checkers.HELLO_EVENT = {
-	//name: 'string'
-};
 
-l_handlers.HELLO_EVENT = function (event) {
-    
+// sample event
+SR.API.add('HELLO_EVENT', {
+	age:	'number',
+}, function (args, onDone) {
+	    
 	// print some message
 	LOG.debug('HELLO_EVENT has been called');
 	LOG.warn(event);
 	
-	if (!event.data.age) {
+	if (!args.age) {
 		LOG.error('no age sent to HELLO_EVENT!', 'lobby');	
 	}
 	
@@ -50,36 +49,8 @@ l_handlers.HELLO_EVENT = function (event) {
 	// send back response
 	event.done('HELLO_REPLY', {name: event.data.name, age: age, 中文: '中文也通!', 
 							   reset_counter: reset_counter, persist_counter: l_states['counter']});
-}
+})
 
-l_checkers.TEST_SERVER_PUSH = {
-	channel:	'string'	
-}
-
-l_handlers.TEST_SERVER_PUSH = function (event) {
-	LOG.warn(event);		
-	var channel = event.data.channel;
-	SR.Comm.publish(channel, {data: (event.data.msg || 'nothing sent')});
-	event.done({err: 0, msg: 'data sent to ' + channel});
-}
-
-// test session
-l_handlers.TEST_SESSION = function (event) {
-    
-	// print some message
-	LOG.debug('TEST_SESSION called');
-	LOG.warn(event);
-	
-	if (event.data.id)
-		event.session['id'] = event.data.id;
-	else
-		LOG.warn('id: ' + event.session['id']);
-	
-	// do something..
-	
-	// send back response
-	event.done('TEST_SESSION_REPLY', {result: true, msg: 'you can modify this', name: 'johnny'});
-}
 
 //
 // custom logic
