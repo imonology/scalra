@@ -1344,9 +1344,19 @@ var l_getSettings = exports.getSettings = function () {
 		settings.account = UTIL.userSettings("mongoAccess","username");
 		settings.password = UTIL.userSettings("mongoAccess","password");
 		settings.DB_type = 'mongodb';
+		
+		if (UTIL.userSettings("mongoAccess","DB_name")) {
+			settings.DB_name = UTIL.userSettings("mongoAccess","DB_name");
+		}
+		
 	} else if (UTIL.userSettings("DB_AUTH", "username") && UTIL.userSettings("DB_AUTH","password")) {
 		settings.account = UTIL.userSettings("DB_AUTH","username");
 		settings.password = UTIL.userSettings("DB_AUTH","password");
+	
+		if (UTIL.userSettings("DB_AUTH","DB_name")) {
+			settings.DB_name = UTIL.userSettings("DB_AUTH","DB_name");
+		}
+				
 	} else {
 		settings.password = Math.random().toString().substring(3,9);
 		var DBauth = "\nsettings.DB_AUTH = " + JSON.stringify({DB_name: DB_name, username: settings.account, password: settings.password}) + ";\n";

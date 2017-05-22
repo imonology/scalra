@@ -8,7 +8,7 @@ SR.Callback.onStart(function () {
 	
 });
 
-var l_form;
+var l_form = SR.State.get('FlexFormMap');
 var l_accounts;
 
 SR.Callback.onStart(function () {
@@ -70,5 +70,25 @@ module.exports = function (app) {
 			return res.redirect('/');
 	
 		res.render('main', {login: login, language: l_lang});
+	});	
+	
+	// view/create basic info
+	app.get('/device', function (req, res) {
+		var login = l_checkLogin(req);
+		
+		if (!login.account)
+			return res.redirect('/');
+							
+		res.render('flexform/view', {login: login, language: l_lang, forms: [{name: req.query.form_name}]});	
+	});	
+	
+	// list records
+	app.get('/list', function (req, res) { 
+		var login = l_checkLogin(req);
+		if (!login.account)
+			return res.redirect('/');
+		
+		var args = {login: login, language: l_lang, para: {form_name: req.query.form_name}};		
+		res.render('flexform/list_filter', args);
 	});	
 }

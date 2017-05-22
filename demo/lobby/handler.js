@@ -5,7 +5,7 @@
 //
 
 // put collections used here
-SR.DB.useCollections(['test2']);
+SR.DB.useCollections(['testDB']);
 
 // a pool for all message handlers
 var l_handlers = exports.handlers = {};
@@ -82,11 +82,70 @@ l_handlers.TEST_SESSION = function (event) {
 }
 
 //
+// custom logic
+//
+var l_form = SR.State.get('FlexFormMap');
+
+SR.API.after('UPDATE_FORM', function (args, output, onDone) {
+	if (output.err) {
+		return onDone();
+	}
+
+	if (l_form.hasOwnProperty(args.form_id) === false) {
+		return onDone();
+	}
+	
+	LOG.warn('perform post-action for UPDATE_FORM...')
+	switch (l_form[args.form_id].name) {
+		case 'DeviceInfo':
+			LOG.warn('output:');
+			LOG.warn(output);
+			
+			var record_ids = output.result.record_ids;
+			LOG.warn('record_ids:');
+			LOG.warn(record_ids);
+			if (!record_ids)
+				break;
+			
+			LOG.warn('l_devices');
+			LOG.warn(l_devices);
+			
+			//for (var i=0; i < record_ids.length; i++) {
+			//	l_devices[record_ids[i]].id = UTIL.createUUID();
+			//	l_devices[record_ids[i]].sync();
+			//}
+			break;
+			
+		default:
+			break;					 
+	}
+	
+	onDone();
+})
+
+//
 // system events
 //
+var l_devices = undefined;
 
 SR.Callback.onStart(function () {
 
+	SR.API.INIT_FORM({
+		name: 'DeviceInfo',
+		fields: [
+			{id: 'id', name: 'Device ID', type: 'string', desc: '', must: true, show: false, option: ''},			
+			{id: 'name', name: 'Name', type: 'string', desc: 'Your device name', must: true, show: true, option: undefined},
+			{id: 'IP', name: 'IP', type: 'string', desc: 'ex. 192.168.33.46', must: true, show: true, option: ''},
+			{id: 'port', name: 'Port', type: 'number', desc: '', must: true, show: true, option: undefined}
+		]
+	}, function (err, ref) {
+		if (err) {
+			return LOG.error(err);
+		}
+		l_devices = ref['DeviceInfo'];
+		LOG.warn('l_devices');
+		LOG.warn(l_devices);
+	});
 });
 
 SR.Callback.onStop(function () {
