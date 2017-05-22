@@ -28,12 +28,16 @@ if (typeof l_states.counter === 'undefined')
 
 // sample event
 SR.API.add('HELLO_EVENT', {
-	age:	'number',
-}, function (args, onDone) {
+	name:	'+string',
+	age:	'+string',
+}, function (args, onDone, extra) {
 	    
 	// print some message
 	LOG.debug('HELLO_EVENT has been called');
-	LOG.warn(event);
+	LOG.warn('args:');
+	LOG.warn(args);
+	LOG.warn('extra');
+	LOG.warn(extra);
 	
 	if (!args.age) {
 		LOG.error('no age sent to HELLO_EVENT!', 'lobby');	
@@ -43,12 +47,13 @@ SR.API.add('HELLO_EVENT', {
 	reset_counter++;
 	l_states['counter']++;
 	
-	var age = event.data.age ? parseInt(event.data.age) : 0;
-	age = age + 10;
+	var age = args.age ? parseInt(args.age) : 0;
+	age = age + 2;
 	
 	// send back response
-	event.done('HELLO_REPLY', {name: event.data.name, age: age, 中文: '中文也通!', 
-							   reset_counter: reset_counter, persist_counter: l_states['counter']});
+	onDone(null, {name: args.name, age: age, 中文: '中文也通!', 
+				  reset_counter: reset_counter, 
+				  persist_counter: l_states['counter']});
 })
 
 
@@ -58,6 +63,7 @@ SR.API.add('HELLO_EVENT', {
 var l_form = SR.State.get('FlexFormMap');
 
 SR.API.after('UPDATE_FORM', function (args, output, onDone) {
+	// if result is bad, just ignore it
 	if (output.err) {
 		return onDone();
 	}
@@ -67,7 +73,9 @@ SR.API.after('UPDATE_FORM', function (args, output, onDone) {
 	}
 	
 	LOG.warn('perform post-action for UPDATE_FORM...')
-	switch (l_form[args.form_id].name) {
+	var form = l_form[args.form_id];
+	
+	switch (form.name) {
 		case 'DeviceInfo':
 			LOG.warn('output:');
 			LOG.warn(output);
@@ -78,13 +86,24 @@ SR.API.after('UPDATE_FORM', function (args, output, onDone) {
 			if (!record_ids)
 				break;
 			
-			LOG.warn('l_devices');
-			LOG.warn(l_devices);
+			var values = form.data.values;
 			
-			//for (var i=0; i < record_ids.length; i++) {
-			//	l_devices[record_ids[i]].id = UTIL.createUUID();
-			//	l_devices[record_ids[i]].sync();
-			//}
+			// find records just added
+			for (var record_id in values) {
+				if (record_ids.indexOf(record_id) >= 0) {
+					var record = values[record_id];
+					record.id = UTIL.createUUID();
+				}
+			}
+			// write back to DB
+			form.sync(function (err) {
+				if (err) {
+					LOG.error(err);
+					return onDone(err);
+				}
+				return onDone();
+			})
+			return;
 			break;
 			
 		default:
@@ -105,7 +124,7 @@ SR.Callback.onStart(function () {
 		name: 'DeviceInfo',
 		fields: [
 			{id: 'id', name: 'Device ID', type: 'string', desc: '', must: true, show: false, option: ''},			
-			{id: 'name', name: 'Name', type: 'string', desc: 'Your device name', must: true, show: true, option: undefined},
+			{id: '*name', name: 'Name', type: 'string', desc: 'Your device name', must: true, show: true, option: undefined},
 			{id: 'IP', name: 'IP', type: 'string', desc: 'ex. 192.168.33.46', must: true, show: true, option: ''},
 			{id: 'port', name: 'Port', type: 'number', desc: '', must: true, show: true, option: undefined}
 		]
