@@ -68,12 +68,15 @@ l_module.start = function (config, onDone) {
 	// set view engine & directory
 	var views_paths = [];
 	var web_paths = [];
+	var lib_paths = [];
 	for (var i=0; i < SR.Settings.MOD_PATHS.length; i++) {
 		views_paths.push(SR.path.join(SR.Settings.MOD_PATHS[i], (config.views || 'views'))); 
 		web_paths.push(SR.path.join(SR.Settings.MOD_PATHS[i], 'web'));
+		lib_paths.push(SR.path.join(SR.Settings.MOD_PATHS[i], 'lib'));
 	}
 	LOG.warn('views paths: ' + views_paths, l_name);
 	LOG.warn('web paths: ' + web_paths, l_name);
+	LOG.warn('lib paths: ' + lib_paths, l_name);
 	
 	app.set('views', views_paths);
 
@@ -91,7 +94,10 @@ l_module.start = function (config, onDone) {
 		app.use('/web', express.static(web_paths[i]));
 	}
 	app.use('/lib', express.static(SR.Settings.SR_PATH + '/lib'));
-
+	for (var i=0; i < lib_paths.length; i++) {
+		app.use('/lib', express.static(lib_paths[i]));
+	}
+	
 	if (typeof config.public === 'string') {
 		//app.use(express.static(SR.Settings.FRONTIER_PATH + '/../public'));
 		//app.use('/pub/', express.directory(SR.Settings.FRONTIER_PATH + '/public'));
