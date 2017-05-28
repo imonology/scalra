@@ -6,6 +6,9 @@
 
 require('scalra')('dev');
 
+const ansi_up = require('ansi_up');				// converts console message to colorful HTML
+const humanize = require('humanize');			// better human readability
+
 // show debug / warning / error messages
 LOG.setLevel(2);
 LOG.show('all');
@@ -295,3 +298,60 @@ l_frontier.init(function () {
     // callback when lobby is started
     LOG.warn('monitor started successfully', l_name);
 });
+
+// start server
+if (SR.fs.existsSync('./startedServers.txt')) {
+	SR.fs.readFile('./startedServers.txt', 'utf8', function (err, data) {
+		if (err) {
+			LOG.error(err, l_name);
+		} else {
+			if (data == '') {
+				SR.startedServers = [];
+				return;
+			}
+			var servers = JSON.parse(data);
+			SR.startedServers = servers;
+			if (servers[0]) {
+				setTimeout(function () {
+					for (let server of servers) {
+						SR.API._START_SERVER({
+							owner: server.owner, 
+							project: server.project, 
+							name: server.name,
+							size: server.size,
+							onOutput: function (output) {
+
+								// make output HTML displable
+								// TODO: do this at the client to save bandwidth?
+								if (SR.Settings.REFORMAT_HTML_TEXT === true)
+									output.data = humanize.nl2br(ansi_up.ansi_to_html(output.data));
+
+								// record to file
+								SR.StreamManager.publish(output.id, output);
+							}
+						}, function (err, list) {
+							if (err) {
+								LOG.error(err, l_name);
+								return SR.REST.reply(res, []);
+							}
+
+							LOG.warn('execute success:', l_name);
+							LOG.warn(list, l_name);
+							// SR.REST.reply(res, list);
+						});
+					}
+				}, 3000);
+			}
+		}
+	});	
+} else {
+	SR.fs.writeFile("./startedServers.txt", '', function(err) {
+		if(err) {
+			return console.log(err);
+		}
+		SR.startedServers = [];
+		LOG.warn("Init startedServers.txt", l_name);
+	}); 
+}
+
+

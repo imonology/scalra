@@ -3,6 +3,7 @@ logs
 log
 *.log
 npm-debug.log*
+startedServers.txt
 
 # Runtime data
 pids

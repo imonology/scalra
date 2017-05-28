@@ -23,6 +23,20 @@ l_handles.start = function (path_array, res, para, req) {
 
 	var size = (path_array[5] === undefined ? 1 : parseInt(path_array[5]));
 	
+	SR.startedServers.push({
+		owner: owner, 
+		project: project, 
+		name: name,
+		size: size
+	});
+
+	SR.fs.writeFile("./startedServers.txt", JSON.stringify(SR.startedServers), function(err) {
+		if(err) {
+			return console.log(err);
+		}
+		LOG.warn("Started server logged.", l_name);
+	}); 
+
 	SR.API._START_SERVER({
 		owner: owner, 
 		project: project, 
