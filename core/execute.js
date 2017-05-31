@@ -121,6 +121,13 @@ SR.API.add('_START_SERVER', {
 			break;
 		}
 
+		// delete log
+		l_deleteStartedServer({
+			owner: args.owner,
+			project: args.project,
+			name: args.name
+		});
+
 		// log started server
 		l_getServerInfo({
 			owner: args.owner,
@@ -203,6 +210,17 @@ SR.API.add('_START_SERVER', {
 		}		
 	});
 })
+
+function l_deleteStartedServer(data) {
+	for (let serverID in SR.startedServers) {
+		if (SR.startedServers[serverID].owner == data.owner &&
+			SR.startedServers[serverID].project == data.project &&
+			SR.startedServers[serverID].name == data.name) {
+			delete SR.startedServers[serverID];
+			break;
+		}
+	}
+}
 
 function l_getServerInfo(data) {
 	LOG.warn('Trying to get info of the just started server.', l_name);
