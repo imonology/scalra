@@ -23,7 +23,14 @@ l_handles.start = function (path_array, res, para, req) {
 
 	var size = (path_array[5] === undefined ? 1 : parseInt(path_array[5]));
 	
-	SR.startedServers.push({
+	var serverExist = false;
+	for (let server of SR.startedServers) {
+		if (server.owner == owner && server.project == project && server.name == name) {
+			serverExist = true;
+			break;
+		}
+	}
+	!serverExist && SR.startedServers.push({
 		owner: owner, 
 		project: project, 
 		name: name,
