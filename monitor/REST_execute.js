@@ -43,59 +43,11 @@ l_handles.start = function (path_array, res, para, req) {
 			LOG.error(err, l_name);
 			return SR.REST.reply(res, []);
 		}
-		
-		l_getServerInfo({owner, project, name, size});
 
 		LOG.warn('execute success:', l_name);
 		LOG.warn(list, l_name);
 		SR.REST.reply(res, list);
 	});
-}
-
-function l_getServerInfo(data) {
-	LOG.warn('Trying to get info of the just started server.', l_name);
-	SR.API._QUERY_SERVERS(data, function (err, result) {
-		if (err) {
-			LOG.error(err, l_name);
-		} else {
-			if (!result[0] || !result[0].id) {
-				setTimeout(function () {
-					l_getServerInfo(data);
-				}, 500);
-			} else {
-				l_logStartedServers(Object.assign({}, data, {id: result[0].id}))
-			}
-		}
-	})
-}
-
-function l_logStartedServers(serverData) {
-	var serverExist = false;
-	for (let serverID in SR.startedServers) {
-		if (SR.startedServers[serverID].owner == serverData.owner && 
-			SR.startedServers[serverID].project == serverData.project && 
-			SR.startedServers[serverID].name == serverData.name) {
-			serverExist = true;
-			break;
-		}
-	}
-
-	if (!serverExist) {
-		SR.startedServers[serverData.id] = {
-			id: serverData.id,
-			owner: serverData.owner, 
-			project: serverData.project, 
-			name: serverData.name,
-			size: serverData.size
-		};
-	}
-
-	SR.fs.writeFile("./startedServers.txt", JSON.stringify(SR.startedServers), function(err) {
-		if(err) {
-			return console.log(err);
-		}
-		LOG.warn("Started server logged.", l_name);
-	}); 
 }
 
 // handle server stopping requests
