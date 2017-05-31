@@ -71,19 +71,24 @@ function l_getServerInfo(data) {
 
 function l_logStartedServers(serverData) {
 	var serverExist = false;
-	for (let server of SR.startedServers) {
-		if (server.owner == serverData.owner && server.project == serverData.project && server.name == serverData.name) {
+	for (let serverID in SR.startedServers) {
+		if (SR.startedServers[serverID].owner == serverData.owner && 
+			SR.startedServers[serverID].project == serverData.project && 
+			SR.startedServers[serverID].name == serverData.name) {
 			serverExist = true;
 			break;
 		}
 	}
-	!serverExist && SR.startedServers.push({
-		id: serverData.id,
-		owner: serverData.owner, 
-		project: serverData.project, 
-		name: serverData.name,
-		size: serverData.size
-	});
+
+	if (!serverExist) {
+		SR.startedServers[serverData.id] = {
+			id: serverData.id,
+			owner: serverData.owner, 
+			project: serverData.project, 
+			name: serverData.name,
+			size: serverData.size
+		};
+	}
 
 	SR.fs.writeFile("./startedServers.txt", JSON.stringify(SR.startedServers), function(err) {
 		if(err) {
@@ -110,7 +115,18 @@ l_handles.stop = function (path_array, res, para, req) {
 	SR.Execute.stop(id, function (msg) {
 		LOG.warn('SR.Execute.stop done', 'SR.REST');
 		SR.REST.reply(res, msg);
+		l_deleteStoppedServer(id);
 	});
+}
+
+function l_deleteStoppedServer(serverID) {
+	delete SR.startedServers[serverID];
+	SR.fs.writeFile("./startedServers.txt", JSON.stringify(SR.startedServers), function(err) {
+		if(err) {
+			return console.log(err);
+		}
+		LOG.warn("Delete log from startedServers.", l_name);
+	}); 
 }
 
 // handle server query requests

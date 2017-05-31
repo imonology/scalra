@@ -306,19 +306,19 @@ if (SR.fs.existsSync('./startedServers.txt')) {
 			LOG.error(err, l_name);
 		} else {
 			if (data == '') {
-				SR.startedServers = [];
+				SR.startedServers = {};
 				return;
 			}
 			var servers = JSON.parse(data);
 			SR.startedServers = servers;
-			if (servers[0]) {
+			if (typeof servers == 'object') {
 				setTimeout(function () {
-					for (let server of servers) {
+					for (let serverID in servers) {
 						SR.API._START_SERVER({
-							owner: server.owner, 
-							project: server.project, 
-							name: server.name,
-							size: server.size,
+							owner: servers[serverID].owner, 
+							project: servers[serverID].project, 
+							name: servers[serverID].name,
+							size: servers[serverID].size,
 							onOutput: function (output) {
 
 								// make output HTML displable
