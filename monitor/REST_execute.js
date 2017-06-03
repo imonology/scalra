@@ -52,11 +52,11 @@ l_handles.start = function (path_array, res, para, req) {
 
 // handle server stopping requests
 l_handles.stop = function (path_array, res, para, req) {
-
 	var id = path_array[2];
-	LOG.warn('id: [' + id + ']', 'stop');
+	var project = path_array[3]
+	LOG.warn('id: [' + id + '], project: [' + project + ']', 'stop');
 
-	if (id === undefined) {
+	if (id === undefined && !project) {
 		return SR.REST.reply(res, 'need to specify serverID');
 	} else if (id === 'self') {
 		LOG.warn('received self shutdown request', 'SR.REST');
@@ -64,7 +64,7 @@ l_handles.stop = function (path_array, res, para, req) {
 		return;
 	}
 
-	SR.Execute.stop(id, function (msg) {
+	SR.Execute.stop(id, project, function (msg) {
 		LOG.warn('SR.Execute.stop done', 'SR.REST');
 		SR.REST.reply(res, msg);
 		l_deleteStoppedServer(id);

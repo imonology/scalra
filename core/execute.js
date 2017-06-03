@@ -134,7 +134,7 @@ SR.API.add('_START_SERVER', {
 			project: args.project,
 			name: args.name,
 			size: args.size
-		});
+		}, 1);
 	}
 	
 	// keep starting servers until 'size' is reached
@@ -222,7 +222,10 @@ function l_deleteStartedServer(data) {
 	}
 }
 
-function l_getServerInfo(data) {
+function l_getServerInfo(data, times) {
+	if (times > 20) {
+		return;
+	}
 	LOG.warn('Trying to get info of the just started server.', l_name);
 	SR.API._QUERY_SERVERS(data, function (err, result) {
 		if (err) {
@@ -230,7 +233,7 @@ function l_getServerInfo(data) {
 		} else {
 			if (!result[0] || !result[0].id) {
 				setTimeout(function () {
-					l_getServerInfo(data);
+					l_getServerInfo(data, +times + 1);
 				}, 500);
 			} else {
 				l_logStartedServers(Object.assign({}, data, {id: result[0].id}))
@@ -374,7 +377,11 @@ SR.API.add('_STOP_SERVER', {
 ///     array            
 /// Output                                   
 ///   onDone 
-var l_stop = exports.stop = function (list, onDone) {
+var l_stop = exports.stop = function (list, project, onDone) {
+	if (list == 'undefined' && project) {
+		var pid = SR.serverPID[project];
+		process.kill(pid);
+	}
 
 	// first check if it's just a single server
 	if (typeof list === 'string' && list !== '')
@@ -616,7 +623,6 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 	var exec_path = info.exec_path;
 	var exec_name = info.owner + '-' + info.project + '-' + info.name;
 	var log_path = exec_path;
-	
 	LOG.warn(info, l_name);
 	LOG.warn('exec_path: ' + exec_path, l_name);
 	LOG.warn('log_path: ' + log_path, l_name);
@@ -652,7 +658,11 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 	 
 		LOG.warn('cmd: ' + cmd + ' para: ' + para);
 		var new_proc = spawn(cmd, para, {cwd: exec_path});
-		
+
+		// log project pid
+		SR.serverPID = SR.serverPID || {};
+		SR.serverPID[`${info.owner}-${info.project}-${info.name}`] = new_proc.pid;
+
 		var onStdData = function (data) {
 
 			// convert to utf8 text chunk
