@@ -349,7 +349,7 @@ if (SR.fs.existsSync('./startedServers.txt')) {
 		if(err) {
 			return console.log(err);
 		}
-		SR.startedServers = [];
+		SR.startedServers = {};
 		LOG.warn("Init startedServers.txt", l_name);
 	}); 
 }
