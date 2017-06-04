@@ -71,10 +71,10 @@ var l_getUID = function (onDone) {
 	
 	l_states.sync(function (err) {
 		if (err) {
-			return onDone(undefined);
+			return onDone(err);
 		}
 		LOG.warn('uid generated: ' + uid);
-		onDone(uid);
+		onDone(null, uid);
 	});
 }
 
@@ -96,7 +96,7 @@ var l_validateEmail = function (email) {
 // var l_addLogin = function (account, conn, onDone) {
 				
 	// if (l_accounts.hasOwnProperty(account) === false) {
-		// return onDone('[' + account + '] not found');	
+		// return onDone('INVALID_ACCOUNT', account);	
 	// }
 	
 	// var data = l_accounts[account];
@@ -196,7 +196,7 @@ SR.API.add('_ACCOUNT_REGISTER', {
 	
 	// check if DB is initialized
 	if (typeof l_accounts === 'undefined') {
-		return onDone('DB module is not loaded, please enable DB module');	
+		return onDone('DB_NOT_LOADED');	
 	}
 		
 	// print basic info to confirm
@@ -204,18 +204,18 @@ SR.API.add('_ACCOUNT_REGISTER', {
 
 	// check existing users
 	if (l_accounts.hasOwnProperty(args.account)) {
-		return onDone('account [' + args.account + '] exists');
+		return onDone('ACCOUNT_EXISTS', args.account);
 	}
 	
 	// check email correctness
 	if (l_validateEmail(args.email) === false) {
-		return onDone('email format [' + args.email + '] is invalid');
+		return onDone('INVALID_EMAIL', args.email);
 	}
 	
 	// generate unique user_id
-	l_getUID(function (uid) {
-		if (!uid) {
-			return onDone('cannot generate uid');
+	l_getUID(function (err, uid) {
+		if (err) {
+			return onDone('UID_ERROR');
 		}
 	
 		// NOTE: by default a user is a normal user, user 'groups' can later be customized
@@ -239,7 +239,7 @@ SR.API.add('_ACCOUNT_REGISTER', {
 		LOG.warn('creating new account [' + args.account + ']...', l_name);	
 		l_accounts.add(reg, function (err) {
 			if (err) {
-				return onDone('storage error for [' + args.account + ']');	
+				return onDone('DB_ERROR', err);	
 			}
 			// register success
 			LOG.warn('account register success', l_name);
@@ -260,15 +260,15 @@ SR.API.add('_ACCOUNT_LOGIN', {
 
 	// check if DB is initialized
 	if (typeof l_accounts === 'undefined') {
-		return onDone('DB module is not loaded, please enable DB module');	
+		return onDone('DB_NOT_LOADED');
 	}
 		
 	var account = args.account;	
-	LOG.warn('login [: ' + account + '] pass: ' + args.password + (args.from ? ' from: ' + args.from : ''), l_name);
+	LOG.warn('login: [' + account + '] pass: ' + args.password + (args.from ? ' from: ' + args.from : ''), l_name);
 	
 	// check if account exists
 	if (l_accounts.hasOwnProperty(account) === false) {
-		return onDone('account [' + account + '] not found');	
+		return onDone('INVALID_ACCOUNT', account);	
 	}
 	
 	// check if already logined
@@ -282,7 +282,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	// perform password or token verification	
 	if (l_encryptPass(args.password) !== user.password &&
 		user.tokens.pass.hasOwnProperty(args.password) === false) {
-		return onDone('password/token incorrect');
+		return onDone('INVALID_PASSWORD_OR_TOKEN');
 	}
 
 	// update login time
@@ -304,7 +304,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	user.sync(function (err) {
 		if (err) {
 			LOG.error(err, l_name);
-			return onDone(err);
+			return onDone('DB_ERROR', err);
 		}
 
 		// attach login (account) to connection
@@ -329,33 +329,6 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	});	
 });
 
-// verify whether a valid login exists before proceeding
-// NOTE: replaced by _login flag in checker
-/*
-var l_checkLogin = function (onDone, extra) {
-		
-	// check if DB is initialized
-	if (typeof l_accounts === 'undefined') {
-		onDone('DB module is not loaded, please enable DB module');	
-		return false;
-	}
-	
-	var account = ((extra && extra.session && extra.session._user) ? extra.session._user.account : '');
-	
-	if (l_logins.hasOwnProperty(account) === false) {
-		onDone('[' + account + '] not logined');
-		return false;	
-	}
-	
-	if (l_accounts.hasOwnProperty(account) === false) {
-		onDone('[' + account + '] not found');
-		return false;
-	}
-		
-	return true;
-}
-*/
-
 // logout by account
 SR.API.add('_ACCOUNT_LOGOUT', {
 	_login:		true,
@@ -365,7 +338,7 @@ SR.API.add('_ACCOUNT_LOGOUT', {
 	var account = (extra && extra.session && extra.session._user ? extra.session._user.account : args.account);
 
 	if (l_validateAccount(account) === false) {
-		return onDone('invalid account [' + account + ']');
+		return onDone('INVALID_ACCOUNT', account);
 	}
 	
 	// record logout time
@@ -374,7 +347,7 @@ SR.API.add('_ACCOUNT_LOGOUT', {
 	user.sync(function (err) {
 		if (err) {
 			LOG.error(err, l_name);
-			return onDone(err);	
+			return onDone('DB_ERROR', err);	
 		}
 		
 		// remove login name from connection (if any)	
@@ -442,7 +415,7 @@ SR.API.add('_ACCOUNT_SETDATA', {
 
 	var account = (extra && extra.session && extra.session._user ? extra.session._user.account : args.account);
 	if (l_validateAccount(account) === false) {
-		return onDone('invalid account [' + account + ']');
+		return onDone('INVALID_ACCOUNT', account);
 	}
 	
 	// iterate each item and set value while recording errors
@@ -475,7 +448,7 @@ SR.API.add('_ACCOUNT_SETDATA', {
 	data.sync(function (err) {
 		if (err) {
 			LOG.error(err, l_name);
-			return onDone(err);	
+			return onDone('DB_ERROR', err);	
 		}
 		onDone(errmsg === '' ? null : errmsg);
 	});
@@ -491,7 +464,7 @@ SR.API.add('_ACCOUNT_GETDATA', {
 	
 	var account = (extra && extra.session && extra.session._user ? extra.session._user.account : args.account);
 	if (l_validateAccount(account) === false) {
-		return onDone('invalid account [' + account + ']');
+		return onDone('INVALID_ACCOUNT', account);
 	}
 		
 	var data = l_accounts[account];
@@ -514,7 +487,7 @@ SR.API.add('_ACCOUNT_GETDATA', {
 	}
 	
 	if (errmsg !== '') {
-		onDone(errmsg);
+		onDone('INVALID_DATA', errmsg);
 	} else {
 		onDone(null, value);
 	}
@@ -528,7 +501,7 @@ SR.API.add('_ACCOUNT_GETGROUP', {
 
 	var account = args.account;
 	if (l_validateAccount(account) === false) {
-		return onDone('invalid account [' + account + ']');
+		return onDone('INVALID_ACCOUNT', account);
 	}
 	
 	onDone(null, l_accounts[account].control.groups);
@@ -544,7 +517,7 @@ SR.API.add('_ACCOUNT_SETGROUP', {
 
 	var account = args.account;
 	if (l_validateAccount(account) === false) {
-		return onDone('invalid account [' + account + ']');
+		return onDone('INVALID_ACCOUNT', account);
 	}
 	
 	// split input into array
@@ -564,13 +537,13 @@ SR.API.add('_ACCOUNT_ADDGROUP', {
 
 	var account = args.account;
 	if (l_validateAccount(account) === false) {
-		return onDone('invalid account [' + account + ']');
+		return onDone('INVALID_ACCOUNT', args.account);
 	}
 	
 	var user = l_accounts[account];
 	for (var i=0; i < user.control.groups.length; i++) {
 		if (user.control.groups[i] === args.group) {
-			return onDone('already part of group [' + args.group + ']');
+			return onDone('GROUP_EXISTS', args.group);
 		}
 	}
 	
@@ -588,7 +561,7 @@ SR.API.add('_ACCOUNT_REMOVEGROUP', {
 
 	var account = args.account;
 	if (l_validateAccount(account) === false) {
-		return onDone('invalid account [' + account + ']');
+		return onDone('INVALID_ACCOUNT', account);
 	}
 	
 	var user = l_accounts[account];
@@ -599,7 +572,7 @@ SR.API.add('_ACCOUNT_REMOVEGROUP', {
 			return;
 		}
 	}
-	onDone('account [' + account + '] does no belong to group [' + args.group + ']');
+	onDone('GROUP_ERROR', 'account [' + account + '] does no belong to group [' + args.group + ']');
 });
 
 
