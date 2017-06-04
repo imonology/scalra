@@ -83,6 +83,14 @@ var l_encryptPass = exports.encryptPass = function (original, salt) {
 	return UTIL.hash(original + salt, SR.Settings.ENCRYPT_TYPES[l_enc_type]);
 }
 
+// email validator
+// ref: https://stackoverflow.com/questions/46155/validate-email-address-in-javascript
+var l_validateEmail = function (email) {
+    var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email);
+}
+
+
 
 // // store & remove user data to cache
 // var l_addLogin = function (account, conn, onDone) {
@@ -199,12 +207,17 @@ SR.API.add('_ACCOUNT_REGISTER', {
 		return onDone('account [' + args.account + '] exists');
 	}
 	
+	// check email correctness
+	if (l_validateEmail(args.email) === false) {
+		return onDone('email format [' + args.email + '] is invalid');
+	}
+	
 	// generate unique user_id
 	l_getUID(function (uid) {
 		if (!uid) {
 			return onDone('cannot generate uid');
 		}
-				
+	
 		// NOTE: by default a user is a normal user, user 'groups' can later be customized
 		var reg = {
 			uid: 		uid, 
