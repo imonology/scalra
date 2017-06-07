@@ -254,12 +254,15 @@ function l_logStartedServers(serverData) {
 	}
 
 	if (!serverExist) {
+		var projectKey = `${serverData.owner}-${serverData.project}-${serverData.name}`;
+		var pid = SR.serverPID[projectKey];
 		SR.startedServers[serverData.id] = {
 			id: serverData.id,
 			owner: serverData.owner, 
 			project: serverData.project, 
 			name: serverData.name,
-			size: serverData.size
+			size: serverData.size,
+			pid: pid
 		};
 	}
 
