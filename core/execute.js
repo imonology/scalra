@@ -356,12 +356,17 @@ SR.API.add('_STOP_SERVER', {
 			onDone(null);
 		}
 		else {
-			
 			var info = stat;
 			var url = 'http://' + info.IP + ':' + (info.port + SR.Settings.PORT_INC_HTTP) + '/shutdown/self';
 			LOG.warn('stopping server @ url: ' + url, l_name);
+			var stopTimeout = setTimeout(function () {
+				var pid = SR.startedServers[id].pid;
+				LOG.warn(`Fail to stop server ${id}, force to kill process ${pid}`, l_name);
+				process.kill(pid);
+			}, 10*1000);
 			UTIL.HTTPget(url, function () {
 				LOG.warn('stop lobby HTTP request done', l_name);
+				clearTimeout(stopTimeout);
 				onDone(null);
 			});
 		}
