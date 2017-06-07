@@ -75,6 +75,7 @@ see [Installation Guide](INSTALL.md) for full instructions to setup a Scalra sys
   * Publish / subscribe (pub/sub) as messaging layer
   * Auto-reload of modified logic scripts
   * Works out-of-box with [MongoDB](https://www.mongodb.com) and [Express](https://expressjs.com)
+  * In-memory [DataStore](Features.md) that access and update DB data simply as variables
   
 see [Release Notes](History.md) on various changes / new features in each releases.
 									

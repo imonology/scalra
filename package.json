@@ -1,6 +1,6 @@
 {
   "name": "scalra",
-  "version": "1.8.4",
+  "version": "1.8.5",
   "description": "node.js framework to prototype and scale rapidly",
   "main": "index.js",
   "scripts": {
@@ -36,7 +36,7 @@
     "cookie-parser": "1.4.3",
     "ejs": "2.4.2",
     "ejs-mate": "2.3.0",
-    "emailjs": "1.0.4",
+    "emailjs": "~1.0.4",
     "expect": "1.20.1",
     "express": "4.13.4",
     "formidable": "1.0.17",

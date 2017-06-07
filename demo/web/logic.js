@@ -7,6 +7,8 @@ var languages = {};
 languages['chinese'] = {
 	err_notfound:		'帳密不符或帳號不存在!',
 	err_incomplete:		'請填寫完整註冊資料',
+	err_exists:			'帳號已存在',
+	err_email:			'e-mail 格式錯誤',
 	register_success:	'註冊成功! 自動登入...',
 	login_success:		'登入成功',	
 	logout_success:		'登出成功',
@@ -17,6 +19,8 @@ languages['chinese'] = {
 languages['english'] = {
 	err_notfound:		'account or password incorrect',
 	err_incomplete:		'please fill in full data',
+	err_exists:			'account already exists',
+	err_email:			'email format incorrect',
 	register_success:	'register success! login automatically',
 	login_success:		'login success!',	
 	logout_success:		'logout success!',
@@ -54,7 +58,26 @@ function login(type) {
 	var onDone = function (err, result) {
 		if (err) {
 			console.error(err);
-			alert(l_lang.err_notfound);
+			// switch for various errors
+			switch (err) {				
+				case 'ACCOUNT_EXISTS':
+					alert(l_lang.err_exists);
+					break;
+				case 'INVALID_EMAIL':
+					alert(l_lang.err_email);
+					break;		
+				case 'INVALID_ACCOUNT':
+				case 'INVALID_PASSWORD_OR_TOKEN':
+					alert(l_lang.err_notfound);
+					break;					
+				case 'INVALID_DATA':
+				case 'UID_ERROR':
+				case 'DB_ERROR':
+				case 'GROUP_ERROR':
+				default:
+					alert(err);
+					break;
+			}
 			return;
 		}
 

@@ -700,11 +700,13 @@ exports.validatePath = function (path) {
 	try {
 		if (SR.fs.existsSync(path) === false) {
 			LOG.warn('creating new directory: ' + path + SR.Tags.ERREND, l_name);
-			SR.fs.ensureDirSync(path);
-			return false;
+			//SR.fs.ensureDirSync(path);
+			SR.fs.mkdirSync(path);
+			//return false;
 		}
 		return true;		
 	} catch (e) {
+		LOG.error(e, l_name);
 		LOG.error('validatePath failed: ' + path, l_name);
 		return false;
 	}
