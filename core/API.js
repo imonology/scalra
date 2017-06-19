@@ -205,7 +205,6 @@ l_add('_addRemote', {
 	auto_reconnect: '+boolean',
 	onDisconnect: '+function'
 }, function (args, onDone) {
-	
 	if (l_hosts.hasOwnProperty(args.name)) {
 		LOG.warn('remote host [' + args.name + '] already registered', l_name);
 		if (args.onDisconnect) {			
@@ -265,6 +264,10 @@ l_add('_addRemote', {
 			sock.onclose = function (obj) {
 				LOG.warn('disconnected from server [' + args.name + ']', l_name);
 				// TODO: try to re-connect periodically?
+				setTimeout(function () {
+					SR.API.addRemote(args);
+				}, 5000);
+
 				delete sock;
 				sock = undefined;
 				
