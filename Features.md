@@ -35,10 +35,14 @@ l_models[l_name] = {
 	data:			'object'			// custom account-specific data
 };
 ```
+Note that we can use an optional "*" to indicate a key field for easier access.
 
 Then it can be initialized as follows:
 
 ```js
+// a quick reference to data stored in the "_account" datastore, using the field "account" as index 
+var l_accounts = undefined;
+
 // initialize the datastore when server starts
 SR.Callback.onStart(function () {
 	SR.DS.init({models: l_models}, function (err, ref) {
@@ -56,7 +60,7 @@ SR.Callback.onStart(function () {
 A login check can then be done as follows with update to the login time:
 
 ```js
-// list of logined accounts (account -> user's full data)
+// a map of logined accounts (account -> user's full data)
 var l_logins = {};
 
 SR.API.add('_ACCOUNT_LOGIN', {
