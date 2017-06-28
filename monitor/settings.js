@@ -8,6 +8,9 @@ var settings = exports.settings = {}
 
 settings.lobbyPort   = 37010;       // port for main lobby server
 
+// name for started servers log
+settings.serverList = 'startedServers.txt';
+
 // NOTE: monitor server needs to be fault-tolerant
 SR.Settings.SAFE_CALL   = true;
 

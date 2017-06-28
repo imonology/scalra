@@ -299,59 +299,70 @@ l_frontier.init(function () {
     LOG.warn('monitor started successfully', l_name);
 });
 
-// start server
-if (SR.fs.existsSync('./startedServers.txt')) {
-	SR.fs.readFile('./startedServers.txt', 'utf8', function (err, data) {
-		if (err) {
-			LOG.error(err, l_name);
-		} else {
-			if (data == '') {
-				SR.startedServers = {};
-				return;
+// restart any existing, started servers
+SR.Callback.onStart(function () {
+	
+	// determine where the log file should be
+	var logfile = SR.path.resolve('.', SR.Settings.Project.serverList);
+	LOG.warn('started server log: ' + logfile, l_name);
+
+	// start server
+	if (SR.fs.existsSync(logfile)) {
+		SR.fs.readFile(logfile, 'utf8', function (err, data) {
+			if (err) {
+				LOG.error(err, l_name);
+			} else {
+				if (data == '') {
+					SR.startedServers = {};
+					return;
+				}
+				var servers = JSON.parse(data);
+				SR.startedServers = servers;
+				if (typeof servers == 'object') {
+					setTimeout(function () {
+						for (let serverID in servers) {
+							SR.API._START_SERVER({
+								owner: servers[serverID].owner, 
+								project: servers[serverID].project, 
+								name: servers[serverID].name,
+								size: servers[serverID].size,
+								onOutput: function (output) {
+
+									// make output HTML displable
+									// TODO: do this at the client to save bandwidth?
+									if (SR.Settings.REFORMAT_HTML_TEXT === true)
+										output.data = humanize.nl2br(ansi_up.ansi_to_html(output.data));
+
+									// record to file
+									SR.StreamManager.publish(output.id, output);
+								}
+							}, function (err, list) {
+								if (err) {
+									LOG.error(err, l_name);
+									return SR.REST.reply(res, []);
+								}
+
+								LOG.warn('execute success:', l_name);
+								LOG.warn(list, l_name);
+								// SR.REST.reply(res, list);
+							});
+						}
+					}, 3000);
+				}
 			}
-			var servers = JSON.parse(data);
-			SR.startedServers = servers;
-			if (typeof servers == 'object') {
-				setTimeout(function () {
-					for (let serverID in servers) {
-						SR.API._START_SERVER({
-							owner: servers[serverID].owner, 
-							project: servers[serverID].project, 
-							name: servers[serverID].name,
-							size: servers[serverID].size,
-							onOutput: function (output) {
-
-								// make output HTML displable
-								// TODO: do this at the client to save bandwidth?
-								if (SR.Settings.REFORMAT_HTML_TEXT === true)
-									output.data = humanize.nl2br(ansi_up.ansi_to_html(output.data));
-
-								// record to file
-								SR.StreamManager.publish(output.id, output);
-							}
-						}, function (err, list) {
-							if (err) {
-								LOG.error(err, l_name);
-								return SR.REST.reply(res, []);
-							}
-
-							LOG.warn('execute success:', l_name);
-							LOG.warn(list, l_name);
-							// SR.REST.reply(res, list);
-						});
-					}
-				}, 3000);
+		});	
+	} else {
+		SR.fs.writeFile(logfile, '', function(err) {
+			if (err) {
+				return console.log(err);
 			}
-		}
-	});	
-} else {
-	SR.fs.writeFile("./startedServers.txt", '', function(err) {
-		if(err) {
-			return console.log(err);
-		}
-		SR.startedServers = {};
-		LOG.warn("Init startedServers.txt", l_name);
-	}); 
-}
+			SR.startedServers = {};
+			LOG.warn("initialize started server log: " + logfile, l_name);
+		}); 
+	}
+	
+})
+
+
 
 
