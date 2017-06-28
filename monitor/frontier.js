@@ -303,7 +303,7 @@ l_frontier.init(function () {
 SR.Callback.onStart(function () {
 	
 	// determine where the log file should be
-	var logfile = SR.path.resolve('.', SR.Settings.Project.serverList);
+	var logfile = SR.path.resolve(SR.Settings.LOG_PATH, SR.Settings.Project.serverList);
 	LOG.warn('started server log: ' + logfile, l_name);
 
 	// start server

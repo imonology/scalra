@@ -188,7 +188,7 @@ exports.icFrontier = function (config) {
 	
 	// store path to project's base directory
 	SR.Settings.PROJECT_PATH = SR.path.resolve(SR.FRONTIER_PATH, '..');
-
+		
 	l_createServerInfo();
 	
 	// TODO: remove this if possible/
@@ -242,7 +242,7 @@ exports.icFrontier = function (config) {
 	}
 	
     // enable logging
-	var stepLog = SR.Component.Log(SR.Settings.FRONTIER_PATH, SR.Settings.SERVER_INFO.name);
+	//var stepLog = SR.Component.Log(SR.Settings.FRONTIER_PATH, SR.Settings.SERVER_INFO.name);
 	
     // init necessary data for server execution
     this.init = function (onDone) {
@@ -307,7 +307,9 @@ exports.icFrontier = function (config) {
     //
 	
 	SR.Module.load('socketserver', config);
-	SR.Module.addStep(stepLog);	
+	SR.Module.load('log', config);
+	
+	//SR.Module.addStep(stepLog);	
 
 	// load application handlers
 	if (config.handlers) {

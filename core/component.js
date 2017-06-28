@@ -22,11 +22,7 @@ exports.isInstalled = function (name) {
 //-----------------------------------------
 // get predefined step for creating log files
 l_components['Log'] = exports.Log = function (path, log_name) {
-		
-	if (log_name.match(/[a-z]*$/) && log_name.match(/[a-z]*$/)[0]) {
-		log_name = log_name.match(/[0-9a-zA-Z]*$/)[0];
-	}
-	
+			
     var stepLog = {
 		
 		name: 'Log',
@@ -34,6 +30,10 @@ l_components['Log'] = exports.Log = function (path, log_name) {
         // define the init step
         start : function (onDone) {
 
+			if (log_name.match(/[a-z]*$/) && log_name.match(/[a-z]*$/)[0]) {
+				log_name = log_name.match(/[0-9a-zA-Z]*$/)[0];
+			}			
+			
             //create log name
 			// universal ISO format
             //var log_id = new Date().toISOString();
