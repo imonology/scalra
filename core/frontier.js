@@ -306,8 +306,8 @@ exports.icFrontier = function (config) {
     // steps to init/dispose
     //
 	
-	SR.Module.load('socketserver', config);
 	SR.Module.load('log', config);
+	SR.Module.load('socketserver', config);
 	
 	//SR.Module.addStep(stepLog);	
 

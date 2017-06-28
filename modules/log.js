@@ -52,11 +52,14 @@ l_module.start = function (config, onDone) {
 	log_id = log_id.replace(/:/g, '-');
 
 	// build path to log directory
-	SR.Settings.LOG_PATH = SR.path.resolve(SR.FRONTIER_PATH, 'log');
-			
-	//var fullpath = SR.path.join(path, '..', 'log');
-	LOG.sys('log path: ' + SR.Settings.LOG_PATH, l_name);
+	SR.Settings.LOG_PATH = SR.path.resolve(SR.Settings.PROJECT_PATH, 'log');
 
+	//var fullpath = SR.path.join(path, '..', 'log');
+	LOG.warn('set LOG_PATH: ' + SR.Settings.LOG_PATH, l_name);
+	
+	// ensure path exists (or create directory if not)
+	UTIL.validatePath(SR.Settings.LOG_PATH);
+	
 	// store for later use (useful in notifying monitor)
 	SR.Settings.SERVER_INFO.log = log_name + '.' + log_id;
 

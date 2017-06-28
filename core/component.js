@@ -1,3 +1,4 @@
+
 //
 //
 // component.js
@@ -21,64 +22,66 @@ exports.isInstalled = function (name) {
 
 //-----------------------------------------
 // get predefined step for creating log files
-l_components['Log'] = exports.Log = function (path, log_name) {
+// NOTE: this is replaced by /modules/log.js
+
+// l_components['Log'] = exports.Log = function (path, log_name) {
 			
-    var stepLog = {
+    // var stepLog = {
 		
-		name: 'Log',
+		// name: 'Log',
 
-        // define the init step
-        start : function (onDone) {
+        // // define the init step
+        // start : function (onDone) {
 
-			if (log_name.match(/[a-z]*$/) && log_name.match(/[a-z]*$/)[0]) {
-				log_name = log_name.match(/[0-9a-zA-Z]*$/)[0];
-			}			
+			// if (log_name.match(/[a-z]*$/) && log_name.match(/[a-z]*$/)[0]) {
+				// log_name = log_name.match(/[0-9a-zA-Z]*$/)[0];
+			// }			
 			
-            //create log name
-			// universal ISO format
-            //var log_id = new Date().toISOString();
-			// use local ISO format
-			var log_id = UTIL.localISOString(new Date());
-			log_id = log_id.replace(/:/g, '-');
+            // //create log name
+			// // universal ISO format
+            // //var log_id = new Date().toISOString();
+			// // use local ISO format
+			// var log_id = UTIL.localISOString(new Date());
+			// log_id = log_id.replace(/:/g, '-');
             
-			var fullpath = SR.path.join(path, '..', 'log');
-            LOG.sys('log path: ' + fullpath, 'SR.Component');
+			// var fullpath = SR.path.join(path, '..', 'log');
+            // LOG.sys('log path: ' + fullpath, 'SR.Component');
 			
-			// store for later use (useful in notifying monitor)
-			SR.Settings.SERVER_INFO.log = log_name + '.' + log_id;
+			// // store for later use (useful in notifying monitor)
+			// SR.Settings.SERVER_INFO.log = log_name + '.' + log_id;
 
-			var debug_file = SR.Settings.SERVER_INFO.log + '.log';
-			var error_file = SR.Settings.SERVER_INFO.log + '.err';
+			// var debug_file = SR.Settings.SERVER_INFO.log + '.log';
+			// var error_file = SR.Settings.SERVER_INFO.log + '.err';
 
-            SR.Log.createLog(fullpath, debug_file,
-                function (pID) {
+            // SR.Log.createLog(fullpath, debug_file,
+                // function (pID) {
 				
-					LOG.setLogHandle(pID);
+					// LOG.setLogHandle(pID);
 
-		            SR.Log.createLog(fullpath, error_file,
-				        function (id) {
-							LOG.setLogHandle(id, 'error'); 
-							UTIL.safeCall(onDone);
-						},
-		                function () {
-				            UTIL.safeCall(onDone);
-						}
-					);
-                },
-				onDone
-            );
-        },
+		            // SR.Log.createLog(fullpath, error_file,
+				        // function (id) {
+							// LOG.setLogHandle(id, 'error'); 
+							// UTIL.safeCall(onDone);
+						// },
+		                // function () {
+				            // UTIL.safeCall(onDone);
+						// }
+					// );
+                // },
+				// onDone
+            // );
+        // },
 
-        // define the stop procedure
-        stop: function (onDone) {
+        // // define the stop procedure
+        // stop: function (onDone) {
 
-            // dispose log file
-            SR.Log.disposeAllLogs(onDone);
-        }
-    }
+            // // dispose log file
+            // SR.Log.disposeAllLogs(onDone);
+        // }
+    // }
 	
-    return stepLog;
-}
+    // return stepLog;
+// }
 
 // DB
 l_components['DB'] = exports.DB = function (collection_names, shutdown_if_fail) {

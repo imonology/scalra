@@ -93,9 +93,10 @@ icFile.prototype.open = function (filename, onDone, to_cache, direct_path) {
 
 	// check if file already exists 
 	// TODO: make async?
-	var logpath = direct_path || SR.path.resolve(SR.Settings.FRONTIER_PATH, '..');
-	logpath = SR.path.resolve(logpath, 'log');
-	UTIL.validatePath(logpath);
+	//var logpath = direct_path || SR.path.resolve(SR.Settings.FRONTIER_PATH, '..');
+	//logpath = SR.path.resolve(logpath, 'log');
+	//UTIL.validatePath(logpath);
+	var logpath = SR.Settings.LOG_PATH;
 
 	var filepath = SR.path.resolve(logpath, filename);
 	LOG.warn('filepath to open: ' + filepath, l_name);
@@ -161,17 +162,16 @@ icFile.prototype.open = function (filename, onDone, to_cache, direct_path) {
 //          null  (file open fail)
 icFile.prototype.openSync = function (filename, to_cache) {
     
-	var path = SR.path.join(SR.Settings.FRONTIER_PATH, '..', 'log');
+	//var path = SR.path.join(SR.Settings.FRONTIER_PATH, '..', 'log');
+	// validate directory
+	//UTIL.validatePath(path);
 	
 	// check if file already exists
-	var filepath = SR.path.join(path, filename);
+	var filepath = SR.path.join(SR.Settings.LOG_PATH, filename);
 	
 	//LOG.warn('filepath:  ' + filepath);
 	var file_exist = SR.fs.existsSync(filepath);
 	
-	// validate directory
-	UTIL.validatePath(path);
-
 	// get file descriptor
 	var fd = undefined;
 	try {

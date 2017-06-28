@@ -55,9 +55,6 @@ exports.createLog = function (path, filename, onSuccess, onFail) {
 
 	var log_path = SR.path.join(path, filename);
 
-	// ensure path exists (or create directory if not)
-	UTIL.validatePath(path);
-
 	LOG.sys(log_path, 'SR.LOG');
 	SR.fs.open(log_path, 'a+', 0666,
 		function (err, fd) {
@@ -451,15 +448,17 @@ var l_output = function (level, msg, func, fid_array, colortag) {
 	if (to_show)
 		console.log(str);
 	
-	if (to_log) {
+	if (to_log && SR.Settings.LOG_PATH) {
 		// write function-specific log
 		// if func is empty but we're recording all, use 'default' as func name
 		func = func || 'default';
 		
+		var path = SR.path.resolve(SR.Settings.LOG_PATH, 'func_' + func + '.log');
+								   
 		// attach date to output string
 		// TODO: merge with write to log below?
 		msg = UTIL.getDateTimeString().substring(0, 8) + str + '\n';
-		SR.fs.appendFile('./log/func_' + func + '.log', msg, function (err) {
+		SR.fs.appendFile(path, msg, function (err) {
 			if (err) {
 				console.error("LOG writes incorrectly.");
 				console.error(err);
