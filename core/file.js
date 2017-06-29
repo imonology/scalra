@@ -112,8 +112,9 @@ icFile.prototype.open = function (filename, onDone, to_cache, direct_path) {
 			return;
 		}
 
-		// store file descriptor and notify success
+		// store file descriptor and notify success		
 		that.fd = fd;
+		LOG.warn('open file success, fd: ' + that.fd, l_name);
 
 		//console.log(SR.Tags.WARN + 'SR.fs.open() success, fd: ' + fd + SR.Tags.ERREND);
 
@@ -188,6 +189,7 @@ icFile.prototype.openSync = function (filename, to_cache) {
 		return null;
 	}
 
+	LOG.error('openSync fd: ' + fd, l_name);
 	// store file descriptor and notify success
 	this.fd = fd;
 
@@ -234,7 +236,7 @@ icFile.prototype.getTextArray = function () {
 icFile.prototype.write = function (str) {
 	
 	if (typeof this.fd === 'undefined') {
-		LOG.stack();
+		//LOG.stack();
 		return console.log(SR.Tags.ERR + 'SR.File.write fd not found for: ' + this.filepath + SR.Tags.ERREND);
 	}
         
@@ -250,8 +252,8 @@ icFile.prototype.write = function (str) {
 icFile.prototype.writeLine = function (str) {
 
 	if (typeof this.fd === 'undefined') {
-		LOG.stack();
-		return console.log(SR.Tags.ERR + 'SR.fs.writeLine() fd not found' + SR.Tags.ERREND);
+		//LOG.stack();
+		return console.log(SR.Tags.ERR + 'SR.fs.writeLine() fd not found for: ' + this.filepath + SR.Tags.ERREND);
 	}
 	
 	SR.fs.writeSync(this.fd, str + '\n');
@@ -269,7 +271,7 @@ icFile.prototype.writeLine = function (str) {
 // close current file
 icFile.prototype.close = function (onDone) {
 
-	LOG.warn('fd: ' + this.fd, 'icFile.close');
+	LOG.error('fd: ' + this.fd, 'File.close');
 	
 	if (this.fd === undefined) {
 		console.log(SR.Tags.ERR + 'SR.fs.close(): file not opened' + SR.Tags.ERREND);
@@ -279,7 +281,8 @@ icFile.prototype.close = function (onDone) {
 	SR.fs.close(this.fd, function () {
 		
 		// NOTE: we need to use prototype way to access 'fd'
-		this.fd = undefined;
+		LOG.error('fd will be closed: ' + that.fd);
+		that.fd = undefined;
 		
 		//console.log(SR.Tags.WARN + 'SR.fs.close(): file close success' + SR.Tags.ERREND);     
 		return UTIL.safeCall(onDone, true);
@@ -294,6 +297,8 @@ icFile.prototype.closeSync = function () {
 		return false;
 	}
 
+	LOG.error('fd: ' + this.fd, 'File.closeSync');
+	
 	var result = SR.fs.closeSync(this.fd); 
 	this.fd = undefined;    
 
