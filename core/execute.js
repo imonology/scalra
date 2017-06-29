@@ -266,8 +266,9 @@ function l_logStartedServers(serverData) {
 		};
 	}
 
-	SR.fs.writeFile("./startedServers.txt", JSON.stringify(SR.startedServers), function(err) {
-		if(err) {
+	var logfile = SR.path.resolve(SR.Settings.LOG_PATH, SR.Settings.Project.serverList);
+	SR.fs.writeFile(logfile, JSON.stringify(SR.startedServers), function (err) {
+		if (err) {
 			return console.log(err);
 		}
 		LOG.warn("Started server logged.", l_name);
@@ -630,9 +631,10 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 	
 	var exec_path = info.exec_path;
 	var exec_name = info.owner + '-' + info.project + '-' + info.name;
-	var log_path = exec_path;
 	LOG.warn(info, l_name);
 	LOG.warn('exec_path: ' + exec_path, l_name);
+	
+	var log_path = SR.path.resolve(exec_path, 'log');
 	LOG.warn('log_path: ' + log_path, l_name);
 	
 	/* screen version

@@ -73,9 +73,11 @@ l_handles.stop = function (path_array, res, para, req) {
 
 function l_deleteStoppedServer(serverID) {
 	delete SR.startedServers[serverID];
-	SR.fs.writeFile("./startedServers.txt", JSON.stringify(SR.startedServers), function(err) {
-		if(err) {
-			return console.log(err);
+	var logfile = SR.path.resolve(SR.Settings.LOG_PATH, SR.Settings.Project.serverList);
+	
+	SR.fs.writeFile(logfile, JSON.stringify(SR.startedServers), function (err) {
+		if (err) {
+			return LOG.error(err, l_name);
 		}
 		LOG.warn("Delete log from startedServers.", l_name);
 	}); 

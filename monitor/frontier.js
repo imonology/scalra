@@ -302,65 +302,80 @@ l_frontier.init(function () {
 // restart any existing, started servers
 SR.Callback.onStart(function () {
 	
+	SR.startedServers = {};
+	
 	// determine where the log file should be
 	var logfile = SR.path.resolve(SR.Settings.LOG_PATH, SR.Settings.Project.serverList);
-	LOG.warn('started server log: ' + logfile, l_name);
 
 	// start server
-	if (SR.fs.existsSync(logfile)) {
-		SR.fs.readFile(logfile, 'utf8', function (err, data) {
-			if (err) {
-				LOG.error(err, l_name);
-			} else {
-				if (data == '') {
-					SR.startedServers = {};
-					return;
-				}
-				var servers = JSON.parse(data);
-				SR.startedServers = servers;
-				if (typeof servers == 'object') {
-					setTimeout(function () {
-						for (let serverID in servers) {
-							SR.API._START_SERVER({
-								owner: servers[serverID].owner, 
-								project: servers[serverID].project, 
-								name: servers[serverID].name,
-								size: servers[serverID].size,
-								onOutput: function (output) {
-
-									// make output HTML displable
-									// TODO: do this at the client to save bandwidth?
-									if (SR.Settings.REFORMAT_HTML_TEXT === true)
-										output.data = humanize.nl2br(ansi_up.ansi_to_html(output.data));
-
-									// record to file
-									SR.StreamManager.publish(output.id, output);
-								}
-							}, function (err, list) {
-								if (err) {
-									LOG.error(err, l_name);
-									return SR.REST.reply(res, []);
-								}
-
-								LOG.warn('execute success:', l_name);
-								LOG.warn(list, l_name);
-								// SR.REST.reply(res, list);
-							});
-						}
-					}, 3000);
-				}
-			}
-		});	
-	} else {
-		SR.fs.writeFile(logfile, '', function(err) {
-			if (err) {
-				return console.log(err);
-			}
-			SR.startedServers = {};
-			LOG.warn("initialize started server log: " + logfile, l_name);
-		}); 
+	if (SR.fs.existsSync(logfile) === false) {
+		return;	
 	}
+
+	LOG.warn('Found previously started servers in: ' + logfile, l_name);
 	
+	SR.fs.readFile(logfile, 'utf8', function (err, data) {
+		if (err) {
+			LOG.error(err, l_name);
+			return;
+		} 
+		if (data == '') {
+			return;
+		}
+
+		try {
+			var servers = JSON.parse(data);			
+		} catch (e) {
+			return LOG.error(e, l_name);
+		}
+		if (typeof servers != 'object') {
+			return LOG.error('invalid started server log');
+		}
+
+		// NOTE: we don't store this list by default, as if the server is not started successfully, 
+		// 		it should be removed from the list
+		//SR.startedServers = servers;
+
+		setTimeout(function () { 
+			for (let serverID in servers) {
+				SR.API._START_SERVER({
+					owner: servers[serverID].owner, 
+					project: servers[serverID].project, 
+					name: servers[serverID].name,
+					size: servers[serverID].size,
+					onOutput: function (output) {
+
+						// make output HTML displable
+						// TODO: do this at the client to save bandwidth?
+						if (SR.Settings.REFORMAT_HTML_TEXT === true)
+							output.data = humanize.nl2br(ansi_up.ansi_to_html(output.data));
+
+						// record to file
+						SR.StreamManager.publish(output.id, output);
+					}
+				}, function (err, list) {
+					if (err) {
+						LOG.error(err, l_name);
+						return; 
+					}
+
+					LOG.warn('execute success:', l_name);
+					LOG.warn(list, l_name);
+					// SR.REST.reply(res, list);
+				});
+			}
+		}, 3000);
+	});	
+	
+	//} else {
+	//	SR.fs.writeFile(logfile, '', function(err) {
+	//		if (err) {
+	//			return console.log(err);
+	//		}
+	//		SR.startedServers = {};
+	//		LOG.warn("initialize started server log: " + logfile, l_name);
+	//	}); 
+	//}	
 })
 
 

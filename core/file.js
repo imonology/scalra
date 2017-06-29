@@ -94,12 +94,12 @@ icFile.prototype.open = function (filename, onDone, to_cache, direct_path) {
 	// check if file already exists 
 	// TODO: make async?
 	//var logpath = direct_path || SR.path.resolve(SR.Settings.FRONTIER_PATH, '..');
-	//logpath = SR.path.resolve(logpath, 'log');
-	//UTIL.validatePath(logpath);
-	var logpath = SR.Settings.LOG_PATH;
+	var logpath = direct_path || SR.Settings.LOG_PATH;
+	UTIL.validatePath(logpath);
 
 	var filepath = SR.path.resolve(logpath, filename);
 	LOG.warn('filepath to open: ' + filepath, l_name);
+	that.filepath = filepath;
 
 	var file_exist = SR.fs.existsSync(filepath);
 	
@@ -234,7 +234,8 @@ icFile.prototype.getTextArray = function () {
 icFile.prototype.write = function (str) {
 	
 	if (typeof this.fd === 'undefined') {
-		return console.log(SR.Tags.ERR + 'SR.fs.write() fd not found' + SR.Tags.ERREND);
+		LOG.stack();
+		return console.log(SR.Tags.ERR + 'SR.File.write fd not found for: ' + this.filepath + SR.Tags.ERREND);
 	}
         
 	SR.fs.writeSync(this.fd, str);
@@ -249,7 +250,8 @@ icFile.prototype.write = function (str) {
 icFile.prototype.writeLine = function (str) {
 
 	if (typeof this.fd === 'undefined') {
-		return console.log(SR.Tags.ERR + 'SR.fs.write() fd not found' + SR.Tags.ERREND);
+		LOG.stack();
+		return console.log(SR.Tags.ERR + 'SR.fs.writeLine() fd not found' + SR.Tags.ERREND);
 	}
 	
 	SR.fs.writeSync(this.fd, str + '\n');

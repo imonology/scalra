@@ -56,7 +56,7 @@ exports.customizeMethod = function (name, cb) {
 		return false;
 	}
 };
-//register(1,['SMS','email','phone'],);
+//ex. SR.Notify.register('critical', ['SMS','email','phone'], 'johnwu', onDone);
 exports.register = function (level, methods, account, cb) {
 	if (arguments.length === 3) {
 		cb = account;
