@@ -92,12 +92,22 @@ exports.icFrontier = function (config) {
 
 	// override system settings if there are project-specific settings of same names
 	for (var key in SR.Settings.Project) {
-		if (SR.Settings.hasOwnProperty(key)) {
-			if ((typeof SR.Settings.Project[key] === 'string' && SR.Settings.Project[key] === '') ||
-				(typeof SR.Settings.Project[key] === 'object' && Object.keys(SR.Settings.Project[key]).length === 0)) {
-				continue;
+		if (SR.Settings.hasOwnProperty(key) === false) {
+			continue;
+		}
+		
+		if ((typeof SR.Settings.Project[key] === 'string' && SR.Settings.Project[key] === '') ||
+			(typeof SR.Settings.Project[key] === 'object' && Object.keys(SR.Settings.Project[key]).length === 0)) {
+			continue;
+		}
+		
+		// augmnet the setting if it's an object, replace directly for strings
+		if (typeof SR.Settings.Project[key] === 'string') {
+			SR.Settings[key] = SR.Settings.Project[key];			
+		} else {
+			for (var setting_key in SR.Settings.Project[key]) {
+				SR.Settings[key][setting_key] = SR.Settings.Project[key][setting_key];
 			}
-			SR.Settings[key] = SR.Settings.Project[key];
 		}
 	}
 	
