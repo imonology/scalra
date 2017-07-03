@@ -13,6 +13,7 @@ var l_gmailAccessToken = undefined;
 //
 // module object
 var l_module = exports.module = {};
+var l_name = 'Module.gmail';
 
 //-----------------------------------------
 // API definitions
@@ -32,10 +33,10 @@ SR.API.add('_gmailText', {
 	
 	gmailSender.send(l_gmailAccessToken, args, function (err, resp) {
 		if (err) {
-			LOG.error(err);
+			LOG.error(err, l_name);
 			return onDone(err);
 		}
-		LOG.warn('email sent to Gmail with id: ' + resp.id);
+		LOG.warn('email sent to Gmail with id: ' + resp.id, l_name);
 		onDone(null, resp.id);
 	});
 })
@@ -52,31 +53,62 @@ l_module.start = function (config, onDone) {
 	if (typeof SR.Settings.EMAIL_CONFIG.gmailServerAuthCode === 'undefined') {
 		return onDone();
 	}
-		
-	var key_path = SR.path.resolve(SR.Settings.PROJECT_PATH, 'keys', 'client_secret.json');
-	gmailSender.setClientSecretsFile(key_path);	
 	
-	// get accessToken if available
-	if (SR.Settings.EMAIL_CONFIG.gmailAccessToken) {
-		l_gmailAccessToken = SR.Settings.EMAIL_CONFIG.gmailAccessToken;
-		return onDone();
+	var onAccessToken = function () {
+		LOG.warn('accessToken: ' + JSON.stringify(l_gmailAccessToken), l_name);			
+		
+		// replace UTIL.emailText
+		UTIL.emailText = function (msg, onD) {
+			SR.API._gmailText({
+				from:		msg.from,
+				to:			msg.to,
+				subject:	msg.subject,
+				body:		msg.text
+			}, onD)
+		}		
+		
+		UTIL.safeCall(onDone, null);		
+	}
+			
+	var loadSecret = function () {
+		gmailSender.setClientSecretsFile(key_path);	
+
+		// get accessToken if available
+		if (SR.Settings.EMAIL_CONFIG.gmailAccessToken) {
+			l_gmailAccessToken = SR.Settings.EMAIL_CONFIG.gmailAccessToken;
+			return onAccessToken();
+		}
+
+		// generate accessToken
+		var serverAuthCode = SR.Settings.EMAIL_CONFIG.gmailServerAuthCode;
+
+		gmailApiSync.setClientSecretsFile(key_path);
+		gmailApiSync.getNewAccesToken(serverAuthCode,function (err, token){
+			if (err) {
+				LOG.error(err, l_name);
+				return onDone(err);
+			} 
+
+			l_gmailAccessToken = token;
+			onAccessToken();
+		});		
 	}
 	
-	// generate accessToken
-	var serverAuthCode = SR.Settings.EMAIL_CONFIG.gmailServerAuthCode;
-	
-	gmailApiSync.setClientSecretsFile(key_path);
-	gmailApiSync.getNewAccesToken(serverAuthCode,function (err, token){
+	// load client_secret.json file
+	var key_path = SR.path.resolve(SR.Settings.PROJECT_PATH, 'keys', 'client_secret.json');
+	SR.fs.stat(key_path, function (err) {
 		if (err) {
-			LOG.error(err);
-			return onDone(err);
-		} 
-		else {
-			l_gmailAccessToken = token;
-			LOG.warn('accessToken: ' + JSON.stringify(token));
+			key_path = SR.path.resolve(SR.Settings.SR_PATH, 'keys', 'client_secret.json');
+			SR.fs.stat(key_path, function (err) {
+				if (err) {
+					LOG.error('cannot find client_secret.json under either project or scalra directory', l_name);
+					return onDone('client_secret.json not found');
+				}
+				loadSecret();
+			})	
 		}
-		UTIL.safeCall(onDone, null);			
-	});		
+		loadSecret();
+	});
 }
 
 // module shutdown
