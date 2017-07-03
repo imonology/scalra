@@ -323,7 +323,7 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 	})
 }
 
-// shutdown a given or a number of servers          
+// shutdown a given or a number of servers
 SR.API.add('_STOP_SERVER', {
 	id:	'string'
 }, function (args, onDone) {
@@ -361,6 +361,12 @@ SR.API.add('_STOP_SERVER', {
 			var url = 'http://' + info.IP + ':' + (info.port + SR.Settings.PORT_INC_HTTP) + '/shutdown/self';
 			LOG.warn('stopping server @ url: ' + url, l_name);
 			var stopTimeout = setTimeout(function () {
+				
+				if (!SR.startedServers[id]) {
+					LOG.warn('try to kill invalid server with id: [' + id + ']', l_name);
+					return;
+				}
+				
 				var pid = SR.startedServers[id].pid;
 				LOG.warn(`Fail to stop server ${id}, force to kill process ${pid}`, l_name);
 				process.kill(pid);

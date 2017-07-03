@@ -438,8 +438,9 @@ var l_output = function (level, msg, func, fid_array, colortag) {
 	
 	var curr = new Date();
 	var term = func || ' ';
-  if (typeof term === 'object')
-    term = JSON.stringify(term);
+	
+	if (typeof term === 'object')
+    	term = JSON.stringify(term);
 
 	// generate output string
 	var str = '-' + curr.getHours() + ':' + curr.getMinutes() + '-' + term + '::' + msg;
