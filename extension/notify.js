@@ -9,6 +9,9 @@
 //        2014-02-20    init
 //
 
+// cache reference of accounts
+var l_accounts = SR.State.get('_accountMap');
+
 //
 //	API
 //
@@ -107,16 +110,22 @@ exports.register = function (level, methods, account, cb) {
 							UTIL.safeCall(cb, null);
 						}
 					};
-					SR.User.setUser(account, customizable_user_data, setUserDone);
+					var user = l_accounts[account];
+					user.data = UTIL.mixin(user.data, customizable_user_data);
+					//user.data.setUser(account, customizable_user_data, cb);
+					user.sync(cb);
 				}
 			};
-			SR.User.getUser(account, getUserDone);
+			var user = l_accounts[account];
+			getUserDone(null, user.data);
+			//SR.User.getUser(account, getUserDone);
 		}
 };
 
 exports.alert = function (name, info, level) {
 	info.name = name;
-
+	//LOG.warn('----wake alert----');
+	
 	SR.Comm.publish(level, {level : level, event : name, msg : info.msg}, "SR_NOTIFY");
 	
 	var onSuccess = function (users) {
@@ -161,7 +170,9 @@ exports.subscribe = function (account, connection, cb) {
 			UTIL.safeCall(cb, null);
 		}
 	};
-	SR.User.getUser(account, getUserDone);
+	var user = l_accounts[account];
+	getUserDone(null, user.data);
+	//SR.User.getUser(account, getUserDone);
 };
 
 

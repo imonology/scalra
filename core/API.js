@@ -81,7 +81,7 @@ var l_add = exports.add = function (name, func, checker) {
 			var promise = undefined;
 			for (var i=0; i < posts.length; i++) {
 				if (!promise) {
-					promise = post_action(args, {err: err, result: result}, posts[i]);	
+					promise = post_action(args, {err: err, result: result}, posts[i], extra);	
 				} else {
 					promise = promise.then(post_action(args, {err: err, result: result}, posts[i]));	
 				}
