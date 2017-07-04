@@ -130,12 +130,9 @@ var settings = exports.settings = {
 	
 	// # of seconds to reload a modified script
 	TIMEOUT_RELOAD_SCRIPT	: 1,
-	
-	// # of milliseconds before an event is considered timeout
-	//TIMEOUT_EXECUTE		: 10000,
-	
+		
 	// millisecond limit before an incoming client event is considered timeout (combined with TIMEOUT_EXECUTE?)
-	TIMEOUT_EVENTHANDLE	: 10000,
+	TIMEOUT_EVENTHANDLE	: 30000,
 	
 	// # of milliseconds before an app server re-try to connect to AppManager
 	TIMEOUT_RECONNECT	: 5000,
