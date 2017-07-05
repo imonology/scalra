@@ -375,11 +375,11 @@ l_components['SocketIO'] = exports.SocketIO = function (type) {
 
 			// check if we'll use secured socket.io
 			var options = undefined;
-			var keys = UTIL.userSettings('keys');
-			if (type === 'HTTPS' && keys) {
+			
+			if (type === 'HTTPS' && SR.Keys) {
 				options = {
-					key: 	SR.fs.readFileSync(keys.privatekey),
-					cert: 	SR.fs.readFileSync(keys.certificate)
+					key: 	SR.Keys.privatekey,
+					cert: 	SR.Keys.certificate
 				}
 			}
 			

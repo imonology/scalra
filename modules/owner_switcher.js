@@ -1,14 +1,14 @@
 //
-//  key_loader.js
+//  owner_switcher.js
 //
-//	load the key files upon server start, then will switch process owner to regular level
+//	switch process owner/group to regular level
 //
 //	history:
 //		2017-07-05	init
 //
 // module object
 var l_module = exports.module = {};
-var l_name = 'Module.key_loader';
+var l_name = 'Module.owner_switcher';
 
 //-----------------------------------------
 // API definitions
@@ -43,47 +43,40 @@ SR.Callback.onDisconnect(function (conn) {
 l_module.start = function (config, onDone) {
 	// process config & verify correctness here
 
-	// load keys to memory (if any)
-	if (typeof SR.Settings.Project.keys === 'object') {
-		var keys = SR.Settings.Project.keys;
-		LOG.warn('loading keys...', l_name)
-		try {
-			SR.Keys = {
-				privatekey: SR.fs.readFileSync(keys.privatekey),
-				certificate: SR.fs.readFileSync(keys.certificate)
-			}
-
-			if (keys.ca) {
-				SR.Keys.ca = SR.fs.readFileSync(keys.ca)
-			}			
-		} catch (e) {
-			LOG.error(e, l_name);
-			SR.Keys = undefined;
-		}
-	}
-	/*
 	// change processing running user/group to allow icpm to write as user 'imoncloud' (specified in CONFIG.uid)
 	if (process.getuid && process.setuid && typeof SR.Settings.Project.process_id === 'object') {
-		try {
-			LOG.warn(`Current gid: ${process.getgid()}`, l_name);
-			process.setgid(SR.Settings.Project.process_id.gid);
+						
+		var onOwnerChanged = function () {
+		
+			try {
+				console.log(`Current gid: ${process.getgid()}`, l_name);
+				process.setgid(SR.Settings.Project.process_id.gid);
+			}
+			catch (err) {
+				LOG.error(`Failed to set gid: ${err}`, l_name);
+			}
+		
+			try {
+				console.log(`Current uid: ${process.getuid()}`, l_name);			
+				process.setuid(SR.Settings.Project.process_id.uid);
+			}
+			catch (err) {
+				LOG.error(`Failed to set uid: ${err}`, l_name);
+			}
 			LOG.warn(`New gid: ${process.getgid()}`, l_name);
-		}
-		catch (err) {
-			LOG.error(`Failed to set gid: ${err}`, l_name);
-		}
-	
-		try {
-			LOG.warn(`Current uid: ${process.getuid()}`, l_name);			
-			process.setuid(SR.Settings.Project.process_id.uid);
 			LOG.warn(`New uid: ${process.getuid()}`, l_name);
+
+			UTIL.safeCall(onDone);
 		}
-		catch (err) {
-			LOG.error(`Failed to set uid: ${err}`, l_name);
-		}
-	}		
-	*/
-	UTIL.safeCall(onDone);
+		
+		var child_process = require('child_process');
+		child_process.exec('chown -R ' + SR.Settings.Project.process_id.uid + ' log', {cwd: SR.Settings.PROJECT_PATH}, 
+		function (err) {
+			child_process.exec('chgrp -R ' + SR.Settings.Project.process_id.gid + ' log', {
+				cwd: SR.Settings.PROJECT_PATH
+			}, onOwnerChanged);			
+		});	
+	}
 }
 
 // module shutdown

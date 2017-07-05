@@ -317,6 +317,7 @@ exports.icFrontier = function (config) {
     //
 	
 	SR.Module.load('log', config);
+	SR.Module.load('key_loader', config);	
 	SR.Module.load('socketserver', config);
 	
 	//SR.Module.addStep(stepLog);	
@@ -393,4 +394,7 @@ exports.icFrontier = function (config) {
 		SR.Module.load('reporting', config);
 	}
 	
+	// change process / group id in the end (if another identity is desired for server execution)
+	SR.Module.load('owner_switcher', config);	
+		
 } // end icFrontier

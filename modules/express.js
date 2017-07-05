@@ -139,20 +139,17 @@ l_module.start = function (config, onDone) {
 	var express_port = (config.secured === true ? 
 						UTIL.getProjectPort('PORT_INC_EXPRESS_S') : 
 						UTIL.getProjectPort('PORT_INC_EXPRESS'));
-	
-	
-	var keys = SR.Settings.Project.keys;
-		
-	if (config.secured === true && typeof keys === 'object') {
+			
+	if (config.secured === true && SR.Keys) {
 				
 		var options = {
-			key: SR.fs.readFileSync(keys.privatekey),
-			cert: SR.fs.readFileSync(keys.certificate)
+			key: SR.Keys.privatekey,
+			cert: SR.Keys.certificate
 		};
 
 		// add CA info if available
-		if (keys.ca) {
-			options.ca = SR.fs.readFileSync(keys.ca)			
+		if (SR.Keys.ca) {
+			options.ca = SR.Keys.ca;			
 		}		
 		
 		var server = http_server.createServer(options, app).listen(express_port, function() {

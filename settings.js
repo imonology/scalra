@@ -147,7 +147,7 @@ var settings = exports.settings = {
 	WARN_SOCKET_POLSRY_SERVER : false,
 	
 	// how long a string to output when showing packets sent by server
-	LENGTH_OUTMSG : 250,
+	LENGTH_OUTMSG : 500,
 	
 	// list of event types excluded from showing in debug messages 
 	HIDDEN_EVENT_TYPES : {'SR_PUBLISH' : true},
@@ -215,8 +215,4 @@ else if (settings.MODE === 'prod') {
 
 settings.IP_MONITOR	= settings.IP_MONITOR || settings.IP_LOBBY;
 settings.IP_S_ENTRY	= settings.IP_S_ENTRY || settings.IP_LOBBY;
-
-// Module-specific settings
-// TODO: should move this elsewhere?
-//settings.PHP_BASE		= 'http://' + settings.DOMAIN_LOBBY + '/';
 

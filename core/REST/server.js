@@ -23,7 +23,7 @@ var HTTPserver = undefined;
 var HTTPSserver = undefined;
 
 // start server
-exports.start = function (type, route, port, keys) {
+exports.start = function (type, route, port) {
 	
 	// check to override default port
 	var serverPort = port || 39900;
@@ -96,19 +96,19 @@ exports.start = function (type, route, port, keys) {
 	var server = undefined;
 	if (type === 'HTTPS') {
 
-		if (keys === undefined) {
+		if (!SR.Keys) {
 			LOG.error('no keys provided in settings.js, cannot start HTTPS server', 'SR.REST');
 			return;
 		}
 
 		var options = {
-			key: SR.fs.readFileSync(keys.privatekey),
-			cert: SR.fs.readFileSync(keys.certificate)
+			key: SR.Keys.privatekey,
+			cert: SR.Keys.certificate
 		};
 
 		// add CA info if available
-		if (keys.ca) {
-			options.ca = SR.fs.readFileSync(keys.ca)			
+		if (SR.Keys.ca) {
+			options.ca = SR.Keys.ca			
 		}		
 				
 		server = HTTPSserver = https.createServer(options, handle_request);
