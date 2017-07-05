@@ -76,6 +76,8 @@ l_module.start = function (config, onDone) {
 				cwd: SR.Settings.PROJECT_PATH
 			}, onOwnerChanged);			
 		});	
+	} else {
+		UTIL.safeCall(onDone);
 	}
 }
 

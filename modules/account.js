@@ -591,6 +591,7 @@ l_models[l_name] = {
 };
 
 SR.Callback.onStart(function () {
+	LOG.warn('account module onStart called, init DS...');
 	SR.DS.init({models: l_models}, function (err, ref) {
 		if (err) {
 			LOG.error(err, l_name);	

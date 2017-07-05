@@ -261,6 +261,7 @@ exports.icFrontier = function (config) {
 		SR.Module.start(function () {
 			
 			// call other registered callbacks upon server start
+			LOG.warn('calling all onStart functions...', l_name);
 			SR.Callback.notify('onStart');
 			UTIL.safeCall(onDone);
 		});

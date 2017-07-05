@@ -65,6 +65,7 @@ var l_buildStep = function (module) {
 		config : {},
 		
         start : function (onDone) {
+			LOG.warn('starting module [' + module.name + ']...', l_name);
 			module.start(step.config, function () {
 				// NOTE: this is to prevent a project that calls onDone more than once by accident
 				if (onDone) {
@@ -89,12 +90,13 @@ var l_add = exports.add = function (name, module) {
 	if (typeof module !== 'object' ||
 		typeof module.start !== 'function' || 
 		typeof module.stop  !== 'function') {
-		LOG.warn('module [' + name + '] does not have start or stop functions, skip converting handlers...', l_name);
+		LOG.debug('module [' + name + '] does not have start or stop functions, skip converting handlers...', l_name);
 		return undefined;
 	}
 	
 	LOG.sys('adding new module [' + name + ']...', l_name);
-
+	module.name = name;
+	
 	// we'll replace the start / stop functions a bit	
 	l_modules[name] = l_buildStep(module);
 	

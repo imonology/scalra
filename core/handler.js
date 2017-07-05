@@ -190,7 +190,7 @@ var EventHandler = function () {
 			handlers = handler_app.getMessageHandlers();
 
 		if (!checkers || !handlers) {
-			LOG.warn('Checkers or handlers not found, possibly only SR.Callback used?', l_name);
+			LOG.debug('Checkers or handlers not found, possibly only SR.Callback used?', l_name);
 			return 0;
 		}
 	  

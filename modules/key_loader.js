@@ -57,32 +57,11 @@ l_module.start = function (config, onDone) {
 				SR.Keys.ca = SR.fs.readFileSync(keys.ca)
 			}			
 		} catch (e) {
-			LOG.error(e, l_name);
+			//LOG.error(e, l_name);
+			LOG.error('cannot find key files to load!', l_name);
 			SR.Keys = undefined;
 		}
 	}
-	/*
-	// change processing running user/group to allow icpm to write as user 'imoncloud' (specified in CONFIG.uid)
-	if (process.getuid && process.setuid && typeof SR.Settings.Project.process_id === 'object') {
-		try {
-			LOG.warn(`Current gid: ${process.getgid()}`, l_name);
-			process.setgid(SR.Settings.Project.process_id.gid);
-			LOG.warn(`New gid: ${process.getgid()}`, l_name);
-		}
-		catch (err) {
-			LOG.error(`Failed to set gid: ${err}`, l_name);
-		}
-	
-		try {
-			LOG.warn(`Current uid: ${process.getuid()}`, l_name);			
-			process.setuid(SR.Settings.Project.process_id.uid);
-			LOG.warn(`New uid: ${process.getuid()}`, l_name);
-		}
-		catch (err) {
-			LOG.error(`Failed to set uid: ${err}`, l_name);
-		}
-	}		
-	*/
 	UTIL.safeCall(onDone);
 }
 
