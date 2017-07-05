@@ -107,11 +107,11 @@ var l_queueEvent = function (event) {
 	var queue_size = Object.keys(socket.queuedEvents).length;
 	if (queue_size > l_queuedEventsPerSocket) {
 
-		LOG.warn('queued event size: ' + queue_size + ' limit exceeded (' + l_queuedEventsPerSocket + ')', 'SR.EventManager');
+		LOG.warn('queued event size: ' + queue_size + ' limit exceeded (' + l_queuedEventsPerSocket + ')', l_name);
 
 		// DEBUG purpose (print out events queued)
 		for (var i in socket.queuedEvents)
-			LOG.sys('queuedEvents[' + i + '] =' + UTIL.stringify(socket.queuedEvents[i].data), 'SR.EventManager');
+			LOG.sys('queuedEvents[' + i + '] =' + UTIL.stringify(socket.queuedEvents[i].data), l_name);
 
 		return false;
 	}
@@ -127,7 +127,7 @@ var l_unqueueEvent = function (event) {
 
 	// check if connection object exists
 	if (typeof event.conn === 'undefined') {
-		LOG.error('no connection records, cannot respond to request', 'SR.EventManager');
+		LOG.error('no connection records, cannot respond to request', l_name);
 		return false;
 	}
 
@@ -142,7 +142,7 @@ var l_unqueueEvent = function (event) {
 
 	// check if id exist
 	if (socket.queuedEvents.hasOwnProperty(event.id) === false) {
-		LOG.error('event not found. id = ' + event.id, 'SR.EventManager');
+		LOG.error('event not found. id = ' + event.id, l_name);
 		LOG.stack();
 		return false;
 	}
@@ -176,11 +176,11 @@ exports.createEvent = function (name, para, onResponse, from) {
 // force checkout on a given event
 var l_dropEvent = exports.dropEvent = function (event) {
 
-	LOG.error('dropping event [' + event.msgtype + '] (' + event.id + ')', 'SR.EventManager');
-	LOG.error('=== Please check if the event did not call event.done() correctly ===', 'SR.EventManager');
+	LOG.error('dropping event [' + event.msgtype + '] (' + event.id + ')', l_name);
+	LOG.error('=== Please check if the event did not call event.done() correctly ===', l_name);
 
-	LOG.error('event data: ', 'SR.EventManager');
-	LOG.error(event.data, 'SR.EventManager');
+	LOG.error('event data: ', l_name);
+	LOG.error(event.data, l_name);
 
 	// drop first event
 	l_checkout(event, {});
@@ -200,7 +200,7 @@ exports.checkin = function (event, dispatcher) {
 
 	// if we've checked in before
 	if (event.checkin === true) {
-		LOG.error('event already checkin', 'SR.EventManager');
+		LOG.error('event already checkin', l_name);
 		return false;
 	}
 
@@ -214,7 +214,7 @@ exports.checkin = function (event, dispatcher) {
 
 	var msgsize = Object.keys(l_eventPool).length;
 	if (msgsize > 0 && msgsize % l_pendingMessageLimit === 0)
- 		LOG.warn('eventPool size: ' + msgsize + ' exceeds limit: ' + l_pendingMessageLimit, 'SR.EventManager');
+ 		LOG.warn('eventPool size: ' + msgsize + ' exceeds limit: ' + l_pendingMessageLimit, l_name);
 
 	// emit the event
 	// process event regardless of whether there are pending events not yet done
@@ -268,13 +268,13 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 	
 	// check if target connections are valid
 	if (connections instanceof Array === false) {
-		LOG.error('connections undefined or is not an array, drop message', 'SR.EventManager');
+		LOG.error('connections undefined or is not an array, drop message', l_name);
 		LOG.stack();
 		return false;
 	}
 	
 	if (connections.length === 0) {
-    	LOG.sys('connection list is empty, drop message', 'SR.EventManager');
+    	LOG.sys('connection list is empty, drop message', l_name);
 		return false;
 	}
 
@@ -296,7 +296,7 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 		res_obj = packet_type;
 	}
 	else {
-		LOG.error('packet type is undefined or incorrect format, drop message', 'SR.EventManager');
+		LOG.error('packet type is undefined or incorrect format, drop message', l_name);
 		return false;
 	}
 	
@@ -310,8 +310,8 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 				connections[i].connector();
 			}
 			else {
-				LOG.warn('connector missing or not a function', 'SR.EventManager');
-				LOG.warn(connections[i], 'SR.EventManager');
+				LOG.warn('connector missing or not a function', l_name);
+				LOG.warn(connections[i], l_name);
 				LOG.stack();
 			}
 		}
@@ -321,7 +321,7 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 	
 	// show if we're sending to more than one client
 	if (connections.length > 1)
-		LOG.sys(SR.Tags.SND + 'send to '+ connections.length + ' clients' + SR.Tags.END, 'SR.EventManager');
+		LOG.sys(SR.Tags.SND + 'send to '+ connections.length + ' clients' + SR.Tags.END, l_name);
 	
 	// attach client defined id if exist (sent by the client in the event)
 	// NOTE: client event ID (cid) is a requester-generated unique ID
@@ -346,9 +346,9 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 	// avoid sending streaming data (skip it) 
 	// TODO: a better approach
 	if (SR.Settings.HIDDEN_EVENT_TYPES.hasOwnProperty(res_obj[SR.Tags.UPDATE]) === false)
-		LOG.debug(SR.Tags.SND + data.length + ' ' + data.substring(0, SR.Settings.LENGTH_OUTMSG) + SR.Tags.END, 'SR.EventManager');		
+		LOG.debug(SR.Tags.SND + data.length + ' ' + data.substring(0, SR.Settings.LENGTH_OUTMSG) + SR.Tags.END, l_name);		
 	//else
-	//	LOG.debug(SR.Tags.SND + data.length + ' ' + res_obj[SR.Tags.UPDATE] + SR.Tags.END, 'SR.EventManager');
+	//	LOG.debug(SR.Tags.SND + data.length + ' ' + res_obj[SR.Tags.UPDATE] + SR.Tags.END, l_name);
 	
 				
 	// number of messages dropped due to invalid connection
@@ -365,13 +365,13 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 			conn = SR.Conn.getConnObject(conn);
 
 		if (typeof conn === 'undefined') {
-			LOG.error('connection object is invalid, cannot send', 'SR.EventManager');
+			LOG.error('connection object is invalid, cannot send', l_name);
 			continue;
 		}
 		
 		// check if it's purely a socket (should not happen)
 		if (typeof conn.connector === 'undefined') {
-			LOG.error('connector not found', 'SR.EventManager');
+			LOG.error('connector not found', l_name);
 			LOG.error(conn);
 			continue;
 		}
@@ -379,7 +379,7 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 		// record size
 		SR.Stat.add('net_out', data.length);
 
-		LOG.sys('sending [' + conn.type + '] message...', 'SR.EventManager');		
+		LOG.sys('sending [' + conn.type + '] message...', l_name);		
 				
 		// NOTE: both object (res_obj) and string (data) formats are passed for flexibility			
 		// NOTE: conn object is also passed because right now conn.pid (polling id) may be used by http response
@@ -390,7 +390,7 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 
 	// print out dropped message
 	if (droppedMessage > 0)
-		LOG.error(droppedMessage + ' messages dropped.', 'SR.EventManager');
+		LOG.error(droppedMessage + ' messages dropped.', l_name);
 
 	return true;
 }
@@ -404,7 +404,7 @@ var l_waitSocketsEmptyPool = new SR.AdvQueue();
 exports.waitSocketsEmpty = function (socket, onDone) {
 
 	if (socket.hasOwnProperty('queuedEvents') === false) {
-		LOG.sys('socket does not have queuedEvents', 'SR.EventManager');
+		LOG.sys('socket does not have queuedEvents', l_name);
 		return UTIL.safeCall(onDone);
 	}
 
@@ -533,7 +533,7 @@ Event.prototype.send = function (packet_type, para, connections, to_self) {
 	}
 
 	if (send_self === true) {
-		LOG.sys('send to self true, adding self...', 'SR.EventManager');
+		LOG.sys('send to self true, adding self...', l_name);
 		connections.push(this.conn);
 	}
 
