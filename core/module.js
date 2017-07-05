@@ -192,7 +192,7 @@ var l_load = exports.load = function (name, config) {
 exports.start = function (onDone) {
 	
 	// create new processing queue
-	l_startqueue = SR.JobQueue.createQueue();
+	l_startqueue = SR.JobQueue.createQueue({timeout: 5000});
 
 	// various steps
 	for (var i in l_steps) {
@@ -201,7 +201,7 @@ exports.start = function (onDone) {
 	
 	// actually execute the steps
 	l_startqueue.run(function (result) {
-		LOG.warn('all start jobs are done, result: ' + result, l_name);
+		LOG.warn('all module inits are done, result: ' + result, l_name);
 		UTIL.safeCall(onDone, result);
 	});
 }

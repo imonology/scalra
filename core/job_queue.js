@@ -12,6 +12,7 @@
 // 2012-10-25 rename TaskQueue to JobQueue
 // 2014-06-18 simplify & debug, rename internal variables
 // 2014-06-21 remove requirement to call done() when a job's finished
+// 2017-07-05 add: "timeout" init parameter
 //
 
 
@@ -123,10 +124,11 @@ var l_done = exports.done = function (id, func) {
 var l_name = 'SR.JobQueue';
 
 // object-based JobQueue functions
-function JobQueue() {
+function JobQueue(para) {
 	this.queue = [];
 	this.curr = 0;
 	this.all_passed = true;
+	this.timeout = ((typeof para === 'object' && typeof para.timeout === 'number') ? para.timeout : 0);
 }
 
 // add a job to the queue
@@ -144,7 +146,7 @@ JobQueue.prototype.add = function (step, keep_execute, name) {
 	if (typeof step !== 'function')
 		LOG.error('job is not a function', l_name);
 	else
-		this.queue.push({job: step, keep: keep_execute, name: name});					 
+		this.queue.push({job: step, keep: keep_execute, name: name, done: false});
 }
 
 // execute all jobs in the queue sequentially
@@ -166,7 +168,18 @@ JobQueue.prototype.next = function () {
 	var item = this.queue[this.curr];
 	LOG.sys('running next job: ' + (item.name ? item.name : ''), l_name);
 	
-	UTIL.safeCall(item.job, function (result) {
+	var timeout_trigger = undefined;
+	
+	// if the job returns properly with success/fail result
+	var onJobDone = function (result) {
+		item.done = true;
+		
+		// clear timeout if any
+		if (timeout_trigger) {
+			clearTimeout(timeout_trigger);
+			timeout_trigger = undefined;
+		}
+		
 		if (result === false) {
 			that.all_passed = false;
 			
@@ -175,8 +188,27 @@ JobQueue.prototype.next = function () {
 				return that.done();
 		}
 		that.curr++;
-		that.next();		
-	});
+		that.next();
+	}
+	
+	// if the job does not finish in time
+	var onTimeout = function () {
+		if (item.done === false) {
+			LOG.error('job timeout! please check if the job calls onDone eventually. ' + (item.name ? '[' + item.name + ']' : ''), l_name);
+			
+			// force this job be done
+			onJobDone(false);
+		}
+	}
+	
+	// NOTE: it's possible that this job won't return and call the onDone callback
+	// if a timeout value exists then we should force stop this job with a result of 'false'
+	UTIL.safeCall(item.job, onJobDone);
+	
+	// still timeout if timeout value exists
+	if (this.timeout > 0) {
+		timeout_trigger = setTimeout(onTimeout, this.timeout);
+	}
 }
 
 // all jobs are done, return back
@@ -185,7 +217,7 @@ JobQueue.prototype.done = function () {
 	UTIL.safeCall(this.onDone, this.all_passed);
 }
 
-exports.createQueue = function () {
-	return new JobQueue();
+exports.createQueue = function (para) {
+	return new JobQueue(para);
 }
     
