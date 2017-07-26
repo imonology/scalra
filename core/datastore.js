@@ -141,10 +141,14 @@ var l_buildQuery = function (obj) {
 
 // check if a given datastore needs to build key-based mapping
 var l_checkMapper = function (name, data, onDone) {
+	LOG.warn('data to check:');
+	LOG.warn(data);
+	
 	// check if data contains key (if key is defined for this structure)
 	if (l_mappers.hasOwnProperty(name)) {
 		var key = l_mappers[name].key;
-		if (data.hasOwnProperty(key) === false || data[key] === '' || typeof data[key] !== 'string') {
+		if (data.hasOwnProperty(key) === false || data[key] === '' || 
+			(typeof data[key] !== 'string' && typeof data[key] !== 'number')) {
 			var errmsg = 'new record does not have a valid string for key field [' + key + ']';
 			LOG.error(errmsg, l_name);
 			UTIL.safeCall(onDone, errmsg);
