@@ -30,6 +30,16 @@ exports.config = {
 		ssl:		true
 	},		
 	
+	// mail server config
+	EMAIL_CONFIG: {
+		user:		'',
+		password:	'',
+		host:		'smtp.gmail.com',
+		ssl:		true,
+		gmailServerAuthCode:	'',
+		gmailAccessToken: 		{"access_token":"","refresh_token":"","token_type":"","expiry_date":0}		
+	},			
+	
 	DEFAULT_FILES:	['index.htm', 'index.html', 'default.htm', 'default.html'],
 	EMAIL_ADMIN:	'',
 	
