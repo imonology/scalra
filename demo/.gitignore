@@ -1,4 +1,10 @@
 log
 node_modules
 upload
+web/swagger.json
+
+# host-specific config file
+config.js
+keys
+
 
