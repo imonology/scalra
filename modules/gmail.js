@@ -63,7 +63,7 @@ l_module.start = function (config, onDone) {
 				from:		msg.from,
 				to:			msg.to,
 				subject:	msg.subject,
-				body:		msg.text
+				body:		msg.text,
 			}, onD)
 		}		
 		

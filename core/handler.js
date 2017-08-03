@@ -487,12 +487,16 @@ var EventHandler = function () {
 
 						// check for group specifications
 						if (para === '_groups' || para === '_permissions') {
+							//LOG.warn('checking group permission with session info:', l_name);
+							//LOG.warn(event.session, l_name);
+							
 							// check if logined user matches the group
 							var groups = checker['_groups'] || [];
 							var permissions = checker['_permissions'] || [];
 							// see if we've a group match
-							if (l_checkGroups(groups, event.session['_groups']) === false && 
-								l_checkGroups(permissions, event.session['_permissions']) === false) {
+							if (event.session.hasOwnProperty('_user') === true &&
+								l_checkGroups(groups, event.session._user.control.groups) === false && 
+								l_checkGroups(permissions, event.session._user.control.permissions) === false) {
 								err_str.push('group-permission denied, no group permission to access event');
 								break;
 							}
