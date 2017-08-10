@@ -71,7 +71,7 @@ SR.API.add('_gmailText', {
 			LOG.error(err, l_name);
 			return onDone(err);
 		}
-		LOG.warn('email sent to Gmail with id: ' + resp.id, l_name);
+		LOG.warn('email [' + args.subject + '] sent to: ' + args.to + ' (id: ' + resp.id + ')', l_name);
 		onDone(null, resp.id);
 	});
 })
