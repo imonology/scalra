@@ -1,3 +1,34 @@
+/*
+	gmail module - send mails to Gmail server via OAuth2.0
+	based on the gmail-sender-oauth npm 
+	
+	ref: https://www.npmjs.com/package/gmail-sender-oauth
+		
+	Usage:
+		this module will replace original behavior in UTIL.emailText if loaded
+		
+		steps to use:
+			1. prepare a "client_secret.json" file in /keys directory (of scalra module or project)
+			2. generate ServerAuthCode
+			3. generate AccessToken
+			
+		see: https://www.npmjs.com/package/gmail-sender-oauth#authentication-with-access-token
+		for how to perform step #2 and #3
+		
+			4. set generated ServerAuthCode and AccessToken into scalra's /config.js
+			
+				// mail server config
+				EMAIL_CONFIG: {
+					 user:   	'<GMAIL_USERNAME>',
+					 password:	'<GMAIL_USERPASS>',
+					 host:		'smtp.gmail.com',
+					 ssl:		true,
+					 gmailServerAuthCode: '<SERVER_AUTH_CODE>',
+					 gmailAccessToken: {"access_token":"","refresh_token":"","token_type":"Bearer","expiry_date":0000}
+				},			
+*/
+
+
 // init gmail OAuth2.0 access
 var gmailSender = require('gmail-sender-oauth');
 var gmailApiSync = require('gmail-api-sync');
