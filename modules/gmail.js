@@ -9,11 +9,15 @@
 		
 		steps to use:
 			1. prepare a "client_secret.json" file in /keys directory (of scalra module or project)
+				see: https://developers.google.com/gmail/api/quickstart/nodejs
+				
 			2. generate ServerAuthCode
 			3. generate AccessToken
 			
 		see: https://www.npmjs.com/package/gmail-sender-oauth#authentication-with-access-token
 		for how to perform step #2 and #3
+		NOTE: the file "client_secret.json" should be placed in same directory as the generator code,
+		when generating ServerAuthCode
 		
 			4. set generated ServerAuthCode and AccessToken into scalra's /config.js
 			
