@@ -487,7 +487,7 @@ exports.upload = function (path_array, res, para, req) {
 				var form = new formidable.IncomingForm();
 				form.on('end', function (err, result) {
 					if (err) {
-						LOG.error(err);	
+						LOG.error(err, l_name);	
 						return SR.Callback.notify('onUpload', {result: false, msg: err});
 					}
 					LOG.warn("file uploaded", l_name);
