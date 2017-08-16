@@ -443,12 +443,12 @@ l_components['SockJS'] = exports.SockJS = function (type) {
 			//if (l_components.hasOwnProperty(type)) {
 			if (SR.REST.server.hasOwnProperty(type)) {
 				LOG.sys('starting SockJS [' + type + '] server', 'SR.Component');
-				//http_server = l_components[type];
 				http_server = SR.REST.server[type];
 			}
 			else {
-				LOG.error('an HTTP or HTTPS server must be started first', 'SR.Component');
-				return;
+				var errmsg = 'an HTTP or HTTPS server must be started first';
+				LOG.error(errmsg, 'SR.Component');
+				return UTIL.safeCall(onDone, errmsg);
 			}
 			
 			SR.SockJS.start(http_server, function (s) {

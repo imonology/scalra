@@ -60,7 +60,6 @@ l_module.start = function (config, onDone) {
 		Web Frontend
 	*/
 	var express = require('express');
-	var http_server = (config.secured === true ? require('https') : require('http'));
 		
 	var app = express();
 	var cookieParser = require('cookie-parser')
@@ -135,13 +134,10 @@ l_module.start = function (config, onDone) {
 		} 
 		next(); // <-- important!
 	});	
-	
-	var express_port = (config.secured === true ? 
-						UTIL.getProjectPort('PORT_INC_EXPRESS_S') : 
-						UTIL.getProjectPort('PORT_INC_EXPRESS'));
-			
-	if (config.secured === true && SR.Keys) {
 				
+	if (config.secured === true && SR.Keys) {
+						
+		var express_port = UTIL.getProjectPort('PORT_INC_EXPRESS_S');
 		var options = {
 			key: SR.Keys.privatekey,
 			cert: SR.Keys.certificate
@@ -152,12 +148,13 @@ l_module.start = function (config, onDone) {
 			options.ca = SR.Keys.ca;			
 		}		
 		
-		var server = http_server.createServer(options, app).listen(express_port, function() {
+		var server = SR.https.createServer(options, app).listen(express_port, function() {
 			LOG.warn('Express server listening securely on port ' + express_port, l_name);
 		});
 				
 	} else {
-		var server = http_server.createServer(app).listen(express_port, function() {
+		var express_port = UTIL.getProjectPort('PORT_INC_EXPRESS');
+		var server = SR.http.createServer(app).listen(express_port, function() {
 			LOG.warn('Express server listening on port ' + express_port, l_name);
 		});
 		

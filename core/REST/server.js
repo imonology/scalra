@@ -98,7 +98,7 @@ exports.start = function (type, route, port) {
 
 		if (!SR.Keys) {
 			LOG.error('no keys provided in settings.js, cannot start HTTPS server', 'SR.REST');
-			return;
+			return undefined;
 		}
 
 		var options = {

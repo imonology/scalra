@@ -58,8 +58,10 @@ exports.init = function (type, port, keys) {
 	// start actual server instance, return the server created    
 	var instance = server.start(type, router.route, port, keys);
 	
-	// keep a record
-	exports.server[type] = instance;
+	// keep a record if a valid server is created
+	if (instance) {
+		exports.server[type] = instance;	
+	}
 	
     return instance;
 }
