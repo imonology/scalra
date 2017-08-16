@@ -75,7 +75,7 @@ var settings = exports.settings = {
 	PORT_INC_STREAM_IN	: 6,
 	PORT_INC_STREAM_OUT	: 7,
 	PORT_INC_EXPRESS	: 8,
-	PORT_INC_EXPRESS_S	: 9,
+	PORT_INC_EXPRESS_S	: 8,
 
 	//
 	//	entry server settings

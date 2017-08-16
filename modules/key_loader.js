@@ -47,6 +47,7 @@ l_module.start = function (config, onDone) {
 	if (typeof SR.Settings.Project.keys === 'object') {
 		var keys = SR.Settings.Project.keys;
 		LOG.warn('loading keys...', l_name)
+		LOG.warn(keys, l_name);
 		try {
 			SR.Keys = {
 				privatekey: SR.fs.readFileSync(keys.privatekey),
@@ -58,7 +59,8 @@ l_module.start = function (config, onDone) {
 			}			
 		} catch (e) {
 			//LOG.error(e, l_name);
-			LOG.error('cannot find key files to load!', l_name);
+			LOG.error('cannot find key files to load or permission denied!', l_name);
+			LOG.error(e, l_name);
 			SR.Keys = undefined;
 		}
 	}
