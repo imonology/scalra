@@ -1,4 +1,8 @@
 
+1.8.10 / 2018-08-16
+===================
+	* modify: update usage of gmail module in /modules
+ 	* modify: graceful fallback from secure to normal mode if keys are not provided (http server & sockjs)																				
 
 1.6.3 / 2017-03-11
 ==================
