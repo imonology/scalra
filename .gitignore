@@ -43,5 +43,5 @@ demo/web/swagger.json
 diff.*
 
 # host-specific config file
-config.js
+/config.js
 keys
