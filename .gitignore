@@ -1,3 +1,4 @@
+
 # Logs
 logs
 log
@@ -37,7 +38,6 @@ node_modules
 # swagger API doc generator
 lib/swagger-ui
 web/swagger.json
-demo/web/swagger.json
 
 # diff file before committing
 diff.*
@@ -45,3 +45,5 @@ diff.*
 # host-specific config file
 /config.js
 keys
+
+#NOTE: if ignore items are added/updated here, so should in /demo

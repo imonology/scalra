@@ -4,7 +4,7 @@ upload
 web/swagger.json
 
 # host-specific config file
-config.js
+/config.js
 keys
 
 
