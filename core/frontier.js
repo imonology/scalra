@@ -206,6 +206,7 @@ exports.icFrontier = function (config) {
 	SR.Settings.FRONTIER = this;
 	SR.Settings.SR_PATH = SR.path.resolve(__dirname, '..');
 	LOG.warn('set SR.Settings.FRONTIER_PATH to: ' + SR.Settings.FRONTIER_PATH, l_name);
+	LOG.warn('set SR.Settings.PROJECT_PATH to: ' + SR.Settings.PROJECT_PATH, l_name);	
 	LOG.warn('set SR.Settings.SR_PATH to: ' + SR.Settings.SR_PATH, l_name);	
 
 	// store paths to modules	
@@ -213,6 +214,9 @@ exports.icFrontier = function (config) {
 
 	var root_path = SR.path.resolve(SR.Settings.SR_PATH, '..');	
 	l_buildModulePath(root_path);
+	
+	// we search for modules one-level deeper
+	l_buildModulePath(SR.path.resolve(root_path, '..'), 'scalra');
 	
 	var project_module_path = SR.path.resolve(SR.Settings.PROJECT_PATH, 'node_modules');
 	l_buildModulePath(project_module_path, 'scalra');
