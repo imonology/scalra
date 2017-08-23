@@ -529,9 +529,11 @@ exports.upload = function (path_array, res, para, req) {
 					//LOG.debug("on progress: bytesReceived " + bytesReceived + ", bytesExpected " + bytesExpected);
 				});
 
+				
 				form.uploadDir = SR.Settings.UPLOAD_PATH;
 				form.keepExtensions = true;
 				form.multiples = true;
+
 				form.parse(req, function (error, fields, files) {
 					
 					if (error) {

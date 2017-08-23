@@ -141,8 +141,8 @@ var l_buildQuery = function (obj) {
 
 // check if a given datastore needs to build key-based mapping
 var l_checkMapper = function (name, data, onDone) {
-	LOG.warn('data to check:');
-	LOG.warn(data);
+	//LOG.warn('data to check:');
+	//LOG.warn(data);
 	
 	// check if data contains key (if key is defined for this structure)
 	if (l_mappers.hasOwnProperty(name)) {

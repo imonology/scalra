@@ -94,10 +94,22 @@ l_module.start = function (config, onDone) {
 		
 		// replace UTIL.emailText
 		UTIL.emailText = function (msg, onD) {
+			
+			// see if conversion is needed
+			// ref: https://stackoverflow.com/questions/11206443/how-can-i-check-if-variable-contains-chinese-japanese-characters
+			if (msg.subject.match(/[\u3400-\u9FBF]/)) {
+				// encode subject to allow Chinese
+				// ref: https://stackoverflow.com/questions/27695749/gmail-api-not-respecting-utf-encoding-in-subject
+				// base64: https://stackoverflow.com/questions/246801/how-can-you-encode-a-string-to-base64-in-javascript				
+				// example subject: =?utf-8?B?${convertToBase64(subject)}?=
+				LOG.warn('subject is Chinese/Japanese, convert it..', l_name);
+				msg.subject = '=?utf-8?B?${' + new Buffer(msg.subject).toString('base64') + '}?=';	
+			}
+			
 			SR.API._gmailText({
 				from:		msg.from,
 				to:			msg.to,
-				subject:	msg.subject,
+				subject:	msg.subject, 
 				body:		msg.text,
 			}, onD)
 		}		
