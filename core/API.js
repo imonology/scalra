@@ -206,17 +206,21 @@ l_add('_addRemote', {
 	onDisconnect: '+function'
 }, function (args, onDone) {
 	if (l_hosts.hasOwnProperty(args.name)) {
-		LOG.warn('remote host [' + args.name + '] already registered', l_name);
-		if (args.onDisconnect) {			
-			l_onDisconnect[args.name].push(args.onDisconnect);
-		}
-			
-		return onDone(null);	
+		var errmsg = 'remote host [' + args.name + '] already registered';
+		LOG.warn(errmsg, l_name);
+		return onDone(errmsg);
+		//if (args.onDisconnect) {			
+		//	l_onDisconnect[args.name].push(args.onDisconnect);
+		//}
+		//return onDone(null);
 	}
 		
 	l_hosts[args.name] = args.host;
 	
 	l_onDisconnect[args.name] = [];
+	if (args.onDisconnect) {			
+		l_onDisconnect[args.name].push(args.onDisconnect);
+	}	
 	
 	if (l_pending.hasOwnProperty(args.name) === false) {
 		LOG.warn('clearing & setup l_pending[' + args.name + ']...', l_name);
