@@ -562,57 +562,72 @@ exports.upload = function (path_array, res, para, req) {
 						}
 					*/
 					var uploaded = [];
-										
+					
+					if (typeof files.upload !== 'object') {
+						var result = {
+							message: 'fail',
+							upload : uploaded,
+						};
+
+						return SR.REST.reply(res, result);						
+					}
+					
+					// default to preserve original name
+					var preserve_name = (fields.toPreserveFileName !== 'false');
+
 					// modify uploaded file to have original filename
 					var renameFile = function (upload) {
-
+						
 						if (!upload || !upload.path || !upload.name || !upload.size) {
 							LOG.error('upload object incomplete:', l_name);
 							return;
 						}
+
+						// record basic file info
+						var arr = upload.path.split('/');
+						var upload_name = arr[arr.length-1];
+						var filename = (preserve_name ? upload.name : upload_name); 
+						LOG.warn("The file " + upload.name + " was uploaded as: " + filename + ". size: " + upload.size, l_name);
+						uploaded.push({name: filename, size: upload.size, type: upload.type});						
 						
-						LOG.warn("The file " + upload.name + " was uploaded. size: " + upload.size, l_name);
-						uploaded.push({name: upload.name, size: upload.size, type: upload.type});
+						// check if we might need to re-name
+						// default is to rename (preserve upload file names)
+						if (preserve_name === false) {
+							return;
+						}
 						
 						var new_name = SR.path.resolve(form.uploadDir, upload.name);
  						SR.fs.rename(upload.path, new_name, function (err) {
 							if (err) {
 								return LOG.error('rename fail: ' + new_name, l_name);
-								// remove old (no need?)
-								//SR.fs.unlink(form.uploadDir + d.name);
-								//SR.fs.rename(upload.path, new_name);
 							}
-							LOG.warn("File " + upload.name + " was uploaded. size: " + upload.size, l_name);							
+							LOG.warn("File " + upload_name + " renamed as: " + upload.name + " . size: " + upload.size, l_name);							
 						});
 					};
 
-					// check if we might need to re-name
-					// default is to rename (preserve upload file names)
-					if (fields.toPreserveFileName !== 'false' && typeof files.upload === 'object') {
-							
-						// for single file upload
-						if (files.upload.name) {
-							LOG.warn('single file uploaded, rename upload obj:', l_name);
-							LOG.warn(files.upload, l_name);
-							renameFile(files.upload);
+					// check for single or multiple file processing							
+					// for single file upload
+					if (files.upload.name) {
+						LOG.warn('single file uploaded, rename upload obj:', l_name);
+						LOG.warn(files.upload, l_name);
+						renameFile(files.upload);
+					}
+					// for multiple files in an array
+					else if (files.upload.length) {
+						LOG.warn('multiple files uploaded [' + files.upload.length +']:', l_name);
+						LOG.warn(files.upload, l_name);
+
+						for (var i in files.upload) {
+							var upload = files.upload[i];
+							renameFile(upload);
 						}
-						// for multiple files in an array
-						else if (files.upload.length) {
-							LOG.warn('multiple files uploaded [' + files.upload.length +'], rename upload objects:', l_name);
-							LOG.warn(files.upload, l_name);
-							
-							for (var i in files.upload) {
-								var upload = files.upload[i];
-								renameFile(upload);
-							}
-						}
-						else {
-							LOG.error('file upload error, no upload file(s)', l_name);
-							SR.REST.reply(res, {message: 'failure (no file)'});
-							return;
-						}
-					} 
-					
+					}
+					else {
+						LOG.error('file upload error, no upload file(s)', l_name);
+						SR.REST.reply(res, {message: 'failure (no file)'});
+						return;
+					}
+
 					// remove sensitive info (such as path) from response
 					var result = {
 						message: 'success',

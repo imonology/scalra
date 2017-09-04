@@ -60,7 +60,7 @@ l_module.start = function (config, onDone) {
 		} catch (e) {
 			//LOG.error(e, l_name);
 			LOG.error('cannot find key files to load or permission denied!', l_name);
-			LOG.error(e, l_name);
+			//LOG.error(e, l_name);
 			SR.Keys = undefined;
 		}
 	}
