@@ -185,6 +185,9 @@ var l_load = exports.load = function (name, config) {
 	// add to steps (for starting/stopping the module later)
 	l_addStep(module, name);
 	
+	// expose module functions in easily accessible interface
+	SR.Module[name] = module.api;
+	
 	return true;
 }
 

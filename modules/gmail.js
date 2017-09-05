@@ -103,7 +103,7 @@ l_module.start = function (config, onDone) {
 				// base64: https://stackoverflow.com/questions/246801/how-can-you-encode-a-string-to-base64-in-javascript				
 				// example subject: =?utf-8?B?${convertToBase64(subject)}?=
 				LOG.warn('subject is Chinese/Japanese, convert it..', l_name);
-				msg.subject = '=?utf-8?B?${' + new Buffer(msg.subject).toString('base64') + '}?=';	
+				msg.subject = '=?utf-8?B?' + new Buffer(msg.subject).toString('base64') + '?=';	
 			}
 			
 			SR.API._gmailText({
