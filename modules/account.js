@@ -397,10 +397,29 @@ SR.API.add('_ACCOUNT_RESETPASS', {
 
 // set new password by token
 SR.API.add('_ACCOUNT_SETPASS', {
-	password:		'string',
-	token:			'string'
-}, function (args, onDone) {
-	
+	_login:			true,
+	original_password:		'string',
+	password:				'string',
+	token:			'+string'
+}, function (args, onDone, extra) {
+	var account = (extra && extra.session && extra.session._user ? extra.session._user.account : args.account);
+	SR.API._ACCOUNT_GETDATA({account: account, type: 'password' }, function (err, result) {
+		// _ACCOUNT_SETDATA
+		LOG.warn('密碼修改');
+		
+		if (result.password !== l_encryptPass(args.original_password)) 
+			return onDone(null, {success:0, desc:'密碼不正確'});
+		var data = l_accounts[account];
+		data.password = l_encryptPass(args.password);
+		data.sync(function (err) {
+			if (err) {
+				LOG.error(err, l_name);
+				return onDone('DB_ERROR', err);	
+			}
+			return onDone(null, {success:1, desc:'修改密碼成功'});
+		});
+	});
+	// l_encryptPass
 });
 
 // which fields are not allowed to be modified directly
