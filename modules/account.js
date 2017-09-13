@@ -400,7 +400,8 @@ SR.API.add('_ACCOUNT_SETPASS', {
 	_login:			true,
 	original_password:		'string',
 	password:				'string',
-	token:			'+string'
+	token:			'+string',
+	account:		'+string'
 }, function (args, onDone, extra) {
 	var account = (extra && extra.session && extra.session._user ? extra.session._user.account : args.account);
 	SR.API._ACCOUNT_GETDATA({account: account, type: 'password' }, function (err, result) {
