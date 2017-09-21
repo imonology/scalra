@@ -198,7 +198,7 @@ var l_convertArray = function (obj, array_names) {
 		var array_obj = obj[key];
 
 		LOG.warn('array field [' + key + '] is treated as object!', l_name);
-		LOG.warn(array_obj);
+		LOG.warn(array_obj, l_name);
 
 		// convert array object to js array
 		var temp_arr = [];

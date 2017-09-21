@@ -90,7 +90,7 @@ l_module.start = function (config, onDone) {
 	}
 	
 	var onAccessToken = function () {
-		LOG.warn('accessToken: ' + JSON.stringify(l_gmailAccessToken), l_name);			
+		//LOG.warn('accessToken: ' + JSON.stringify(l_gmailAccessToken), l_name);			
 		
 		// replace UTIL.emailText
 		UTIL.emailText = function (msg, onD) {

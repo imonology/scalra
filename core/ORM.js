@@ -175,6 +175,9 @@ exports.create = function (args, onDone) {
 	//}
 	
 	var obj = l_obj[args.name];
+	LOG.warn('creating', l_name);
+	LOG.warn(args.data, l_name);
+	
 	obj.create(args.data, function (err, result) {
 		//SR.Load.check(l_loadtype, -1);
 		UTIL.safeCall(onDone, err, result);	

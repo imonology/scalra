@@ -743,7 +743,7 @@ var l_incrementData = exports.incrementData = function (clt_name, query, change,
 
         // make this update an 'upsert' (insert if not exist)
         // also 'multi' (if multiple records match, then they will all be modified)
-        collection.update(query, {$inc: change},
+        collection.update(query, {"$inc": change},
             function (err) {
 
                 if (err) {
