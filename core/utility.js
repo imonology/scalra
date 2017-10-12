@@ -26,6 +26,7 @@ isBinary(str)										// test if a string is binary (non-printable characters)
 mixin()												// mix two objects into the same object
 merge()												// mix two objects into the same object
 
+
 // config-related
 userSettings										// get project-specific settings
 getProjectPort										// obtain the project-specific port for a given purpose
@@ -1255,6 +1256,19 @@ exports.getEntryServer = function (secured) {
 
 // mix two objects into same object
 exports.mixin = exports.merge = require('merge');
+
+// compare if two arrays are the same
+// ref: https://stackoverflow.com/questions/4025893/how-to-check-identical-array-in-most-efficient-way
+var l_arraysEqual = exports.arraysEqual = function (arr1, arr2) {
+    if (arr1.length !== arr2.length)
+        return false;
+    for (var i = arr1.length; i--;) {
+        if (arr1[i] !== arr2[i])
+            return false;
+    }
+
+    return true;
+}
 
 // read a JSON file as js object
 exports.readJSON = function (path, onDone) {
