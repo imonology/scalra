@@ -1,4 +1,14 @@
 
+1.8.16 / 2017-10-17
+===================
+	* add: UTIL.arraysEqual to compare if two arrays are the same
+	* modify: upgrade "mongodb" npm to "2.2.31" 
+	* fix _ACCOUNT_SETPASS function & allow server-side usage
+	* modify: set default select text color to be "black" in demo project's css
+	* fix: gmail module Chinese subject display 
+	* add: expose module functions via SR.Module['mode_name'].func_name
+	* fix: /upload does not return uploaded file info if renaming to original filenames is not performed
+
 1.8.10 / 2018-08-16
 ===================
 	* modify: update usage of gmail module in /modules
