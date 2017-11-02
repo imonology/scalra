@@ -161,14 +161,20 @@ exports.getTrimedByteStringByLength = function (pString, trimedByteSz) {
 
 //-----------------------------------------
 // public method
-var extend = require('util')._extend;
 
 // version 2 (copied from _basekit originally)
 // ref: http://stackoverflow.com/questions/5055746/cloning-an-object-in-node-js
 // make a copy of an object
+
+//var extend = require('util')._extend;
+//var clone = exports.clone = function (src) {
+//	var obj2 = extend({}, src);
+//	return obj2;
+//}
+
 var clone = exports.clone = function (src) {
-	var obj2 = extend({}, src);
-	return obj2;
+	let cloned = Object.assign({}, src);
+	return cloned;
 }
 
 //-----------------------------------------

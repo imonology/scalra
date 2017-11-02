@@ -66,10 +66,17 @@ var l_add = exports.add = function (name, func, checker) {
 		// TODO: move checker to here
 		
 		// make actual call to user-defined function
-		UTIL.safeCall(l_list[name], args, function (err, result) {
+		UTIL.safeCall(l_list[name], args, function (err, result, unsupported_return) {
 			if (err) {
 				LOG.error('[' + name + '] error:', l_name);
 				LOG.error(err, l_name);
+			}
+			
+			if (unsupported_return) {
+				var errmsg = 'onDone() in SR.API does not support more than one return variable, please return everything inside a result object';
+				LOG.error(errmsg, l_name);
+				LOG.stack();
+				return UTIL.safeCall(onDone, errmsg);				
 			}
 			
 			// perform post-event actions, if any
