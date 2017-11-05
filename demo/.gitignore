@@ -1,6 +1,6 @@
 log
 node_modules
-upload
+upload/*
 web/swagger.json
 
 # host-specific config file
