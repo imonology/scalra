@@ -528,7 +528,6 @@ exports.upload = function (path_array, res, para, req) {
 				form.on('progress', function (bytesReceived, bytesExpected) { 
 					//LOG.debug("on progress: bytesReceived " + bytesReceived + ", bytesExpected " + bytesExpected);
 				});
-
 				
 				form.uploadDir = SR.Settings.UPLOAD_PATH;
 				form.keepExtensions = true;
@@ -551,6 +550,11 @@ exports.upload = function (path_array, res, para, req) {
 						SR.Status.latestUploadedFile = {};
 						SR.Status.latestUploadedFile[fields.firstOption] = {};
 						SR.Status.latestUploadedFile[fields.firstOption] = files.upload;
+					}
+
+					// specific path to upload
+					if (fields.path) {
+						form.uploadDir = fields.path;
 					}
 					
 					// process one file, assume following fields
