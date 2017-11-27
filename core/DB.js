@@ -6,7 +6,10 @@
 // DB Management
 //
 // for mongo driver usage, see doc:
-//    https://github.com/christkv/node-mongodb-native/blob/master/Readme.md
+//		https://github.com/christkv/node-mongodb-native/blob/master/Readme.md
+//
+// for MongoDB backup/restore using commands:
+//		https://docs.mongodb.com/manual/tutorial/backup-and-restore-tools/
 //
 // history:
 //	2014-06-21 change return value in onDone to true/false instead of messages
