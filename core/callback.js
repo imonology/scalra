@@ -274,6 +274,7 @@ var l_shutdown = exports.shutdown = function () {
 
 	LOG.stack();
 	console.log('shutdown called, delay for: ' + (l_crashDelay ? l_crashDelay : 0) + ' ms');
+	SR.Settings.FRONTIER.dispose();
 	if (l_crashDelay) {
 		setTimeout(function () {
 			process.exit();
