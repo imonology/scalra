@@ -21,6 +21,9 @@ exports.config = {
 		account:  'dbadmin',
 		pass:     'dbadmin-pass'
 	},
+
+	// use pm2
+	PM2_ENABLE: true,
 	
 	// mail server config
 	EMAIL_CONFIG: {

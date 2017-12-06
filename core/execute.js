@@ -17,6 +17,8 @@
 
 var l_name = 'SR.Execute';
 
+const pm2 = require('pm2');
+
 const spawn = require('child_process').spawn;	// for starting servers
 
 // convert raw binary to string
@@ -673,13 +675,79 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 		}
 	 
 		LOG.warn('cmd: ' + cmd + ' para: ' + para);
-		var new_proc = spawn(cmd, para, {cwd: exec_path});
+		
+		if (SR.Settings.PM2_ENABLE) {
+			pm2.connect((err) => {
+				if (err) {
+					LOG.error(err);
+					onDone(err);
+					return;
+				}
 
-		// log project pid
-		SR.serverPID = SR.serverPID || {};
-		SR.serverPID[`${info.owner}-${info.project}-${info.name}`] = new_proc.pid;
+				pm2.start({
+					name: `${info.owner}::${info.project}`,
+					script: SR.path.resolve(exec_path, `${info.name}/frontier.js`),
+					args: '--CONNECT_MONITOR_ONSTART=true',
+					output: SR.path.resolve(log_path, 'output.log'),
+					error: SR.path.resolve(log_path, 'output.log')
+				}, (err, proc) => {
+					if (err) {
+						LOG.error(err);
+						onDone(err);
+						return;
+					}
 
-		var onStdData = function (data) {
+					LOG.warn(proc);
+					UTIL.safeCall(onDone, id);
+					// log project pid
+					SR.serverPID = SR.serverPID || {};
+					SR.serverPID[`${info.owner}-${info.project}-${info.name}`] = proc[0].pid;
+				});
+			})
+		} else {
+			var new_proc = spawn(cmd, para, {cwd: exec_path});
+
+			// log screen output & re-direct
+			new_proc.stdout.setEncoding('utf8');
+			new_proc.stdout.on('data', function (data) {
+
+				// notify the process run has been executed for once (but may or may not be successful)
+				if (typeof onDone === 'function') {
+					UTIL.safeCall(onDone, id);
+					onDone = undefined;
+				}
+
+				onStdData(data);
+			});
+
+			// print error if start fail
+			new_proc.stderr.setEncoding('utf8');
+			new_proc.stderr.on('data', function (data) {
+				if (/^execvp\(\)/.test(data)) {
+					LOG.error('Failed to execute: ' + exec_name + ' path: ' + exec_path, l_name);
+				}
+				LOG.error(data, l_name);
+				onStdData(data);
+			});
+
+			// NOTE: should we call some callback when process exits?
+			new_proc.on('exit', function (code) {
+				LOG.warn('program [' + exec_name + '] process exited with code ' + code, l_name);
+
+				if (log_file) {
+					log_file.close(function () {
+						log_file = undefined;
+					});
+				}
+			});
+
+			// catch errors
+			new_proc.on('error', function (err) {
+				LOG.error(err, l_name);
+			});
+		}
+
+		function onStdData(data) {
 
 			// convert to utf8 text chunk
  	 	    var textChunk = decoder.write(data);
@@ -700,45 +768,6 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
                 UTIL.safeCall(onOutput, msg);
 			}
 		}
-		
-		// log screen output & re-direct
-		new_proc.stdout.setEncoding('utf8');
-		new_proc.stdout.on('data', function (data) {
-			
-			// notify the process run has been executed for once (but may or may not be successful)
-			if (typeof onDone === 'function') {	
-        		UTIL.safeCall(onDone, id);
-				onDone = undefined;
-			}
-			
-			onStdData(data);
-		});
-        	
-		// print error if start fail
-		new_proc.stderr.setEncoding('utf8');
-		new_proc.stderr.on('data', function (data) {
-  	  		if (/^execvp\(\)/.test(data)) {
-				LOG.error('Failed to execute: ' + exec_name + ' path: ' + exec_path, l_name);
-  	  		}
-			LOG.error(data, l_name);		
-			onStdData(data);
-		});
-		
-		// NOTE: should we call some callback when process exits?
-		new_proc.on('exit', function (code) {
-			LOG.warn('program [' + exec_name + '] process exited with code ' + code, l_name);
-						
-			if (log_file) {
-				log_file.close(function () {
-					log_file = undefined;
-				});
-			}
-		});
-		
-		// catch errors
-		new_proc.on('error', function (err) {
-			LOG.error(err, l_name);
-		});
 	}
 	
 	// filename, onSuccess, onFail, to_cache
