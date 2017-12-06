@@ -357,27 +357,47 @@ SR.API.add('_STOP_SERVER', {
 			// to shutdown app servers, notify the app server directly
 			SR.AppConn.sendApp(id, 'APP_SHUTDOWN', {});	
 			onDone(null);
-		}
-		else {
-			var info = stat;
-			var url = 'http://' + info.IP + ':' + (info.port + SR.Settings.PORT_INC_HTTP) + '/shutdown/self';
-			LOG.warn('stopping server @ url: ' + url, l_name);
-			var stopTimeout = setTimeout(function () {
-				
-				if (!SR.startedServers[id]) {
-					LOG.warn('try to kill invalid server with id: [' + id + ']', l_name);
-					return;
-				}
-				
-				var pid = SR.startedServers[id].pid;
-				LOG.warn(`Fail to stop server ${id}, force to kill process ${pid}`, l_name);
-				process.kill(pid);
-			}, 10*1000);
-			UTIL.HTTPget(url, function () {
-				LOG.warn('stop lobby HTTP request done', l_name);
-				clearTimeout(stopTimeout);
-				onDone(null);
-			});
+		} else {
+			if (SR.Settings.PM2_ENABLE) {
+				pm2.connect((err) => {
+					if (err) {
+						LOG.error(err);
+						onDone(err);
+						return;
+					}
+
+					pm2.stop(`${stat.owner}-${stat.project}-${stat.name}`, (err, data) => {
+						if (err) {
+							LOG.error(err);
+							onDone(err);
+							return;
+						}
+
+						LOG.warn(data);
+						onDone(null);
+					});
+				});
+			} else {
+				var info = stat;
+				var url = 'http://' + info.IP + ':' + (info.port + SR.Settings.PORT_INC_HTTP) + '/shutdown/self';
+				LOG.warn('stopping server @ url: ' + url, l_name);
+				var stopTimeout = setTimeout(function () {
+					
+					if (!SR.startedServers[id]) {
+						LOG.warn('try to kill invalid server with id: [' + id + ']', l_name);
+						return;
+					}
+					
+					var pid = SR.startedServers[id].pid;
+					LOG.warn(`Fail to stop server ${id}, force to kill process ${pid}`, l_name);
+					process.kill(pid);
+				}, 10*1000);
+				UTIL.HTTPget(url, function () {
+					LOG.warn('stop lobby HTTP request done', l_name);
+					clearTimeout(stopTimeout);
+					onDone(null);
+				});
+			}
 		}
 	});	
 });
@@ -396,8 +416,28 @@ SR.API.add('_STOP_SERVER', {
 ///   onDone 
 var l_stop = exports.stop = function (list, project, onDone) {
 	if (list == 'undefined' && project) {
-		var pid = SR.serverPID[project];
-		process.kill(pid);
+		if (SR.Settings.PM2_ENABLE) {
+			pm2.connect((err) => {
+				if (err) {
+					LOG.error(err);
+					onDone(err);
+					return;
+				}
+
+				pm2.delete(project, (err, data) => {
+					if (err) {
+						LOG.error(err);
+						onDone(err);
+						return;
+					}
+
+					LOG.warn(data);
+				});
+			});
+		} else {
+			var pid = SR.serverPID[project];
+			process.kill(pid);
+		}
 	}
 
 	// first check if it's just a single server
@@ -685,7 +725,7 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 				}
 
 				pm2.start({
-					name: `${info.owner}::${info.project}`,
+					name: `${info.owner}-${info.project}-${info.name}`,
 					script: SR.path.resolve(exec_path, `${info.name}/frontier.js`),
 					args: '--CONNECT_MONITOR_ONSTART=true',
 					output: SR.path.resolve(log_path, 'output.log'),
