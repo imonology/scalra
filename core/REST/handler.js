@@ -464,6 +464,21 @@ SR.Callback.onStart(function () {
 	UTIL.validatePath(SR.Settings.UPLOAD_PATH);
 });
 
+
+var uploadProgress = require('node-upload-progress');
+uploadHandler = new uploadProgress.UploadHandler;
+exports.upload_progress = function(path_array, res, para, req) {
+	uploadHandler.configure(function() {
+	  this.uploadDir = SR.Settings.UPLOAD_PATH ;
+	});
+	
+	// uploadHandler.upload(req, res);
+
+
+    uploadHandler.progress(req, res);
+
+}
+
 // handle file upload requests
 exports.upload = function (path_array, res, para, req) {
 
@@ -482,9 +497,18 @@ exports.upload = function (path_array, res, para, req) {
 			});
 		*/
 		// TODO: move this block of code elsewhere
+	LOG.warn('--------------------path_array');
+	LOG.warn(path_array);
+	LOG.warn('--------------------res');
+	LOG.warn(res);
+	LOG.warn('--------------------para');
+	LOG.warn(para);
+	LOG.warn('--------------------req');
+	LOG.warn(req);
 		if (req.headers['content-type']) {
 			if (req.headers['content-type'].startsWith('multipart/form-data; boundary=')) {
 				var form = new formidable.IncomingForm();
+				var file_names = {};
 				form.on('end', function (err, result) {
 					if (err) {
 						LOG.error(err, l_name);	
@@ -515,6 +539,8 @@ exports.upload = function (path_array, res, para, req) {
  
 				form.on('fileBegin', function (name, file) {
 					LOG.warn("fileBegin: name " + name + ", file " + JSON.stringify(file));
+					file_names['original_name'] = JSON.stringify(file);
+					
 				});
 
 				form.on('file', function (name, file) {
@@ -526,6 +552,7 @@ exports.upload = function (path_array, res, para, req) {
 				});
 
 				form.on('progress', function (bytesReceived, bytesExpected) { 
+					SR.Callback.notify('onUploadProgress', {bytesReceived: bytesReceived, bytesExpected: bytesExpected, form: form, file_names: file_names});
 					//LOG.debug("on progress: bytesReceived " + bytesReceived + ", bytesExpected " + bytesExpected);
 				});
 				

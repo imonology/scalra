@@ -269,6 +269,10 @@ var l_onUpload = exports.onUpload = function (callback) {
 	return l_register('onUpload', callback);
 }
 
+var l_onUploadProgress = exports.onUploadProgress = function (callback) {
+	return l_register('onUploadProgress', callback);
+}
+
 // quit current server process
 var l_shutdown = exports.shutdown = function () {
 
