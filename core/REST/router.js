@@ -32,7 +32,7 @@ exports.addHandler = function (handler) {
 			names += (key + ', ');
 		}
 	}
-	LOG.sys(count + ' handler(s) added: ' + names, 'SR.REST');
+	LOG.warn(count + ' handler(s) added: ' + names, 'SR.REST');
 
 	// provide redundent loading warning
 	if (redundent) {

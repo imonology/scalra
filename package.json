@@ -1,6 +1,6 @@
 {
   "name": "scalra",
-  "version": "1.8.16",
+  "version": "1.8.17",
   "description": "node.js framework to prototype and scale rapidly",
   "main": "index.js",
   "scripts": {
@@ -52,6 +52,7 @@
     "mongodb": "2.2.31",
     "mysql": "2.12.0",
     "node-df": "0.1.1",
+    "node-upload-progress": "0.0.1",
     "orm": "3.1.0",
     "os-utils": "0.0.14",
     "parse-filepath": "1.0.1",
