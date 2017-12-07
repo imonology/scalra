@@ -8,6 +8,7 @@ require('scalra')('dev');
 
 const ansi_up = require('ansi_up');				// converts console message to colorful HTML
 const humanize = require('humanize');			// better human readability
+const pm2 = require('pm2');
 
 // show debug / warning / error messages
 LOG.setLevel(2);
@@ -146,32 +147,70 @@ var l_tailOutput = function (owner, project, name, subscriber) {
 	
 	// start tailing the project's output
 	try {
-		
-		var log_file = SR.path.resolve(SR.Settings.PATH_USERBASE, 
-									   owner,
-									   project,
-									   'log',
-									   'output.log');
-		
-		LOG.warn('tailing [' + log_file + ']...', l_name);
-		subscriber.proc = spawn('tail', ['-n', '1000', '-f', log_file]);
-		
-		var onData = function (d) {
-			// NOTE: strings like '[monitor]' will get replaced as well (incorrectly)
-			var logData = d.toString().replace(/\[m/g, '[');
+		new Promise((resolve, reject) => {
+			if (SR.Settings.PM2_ENABLE) {
+				pm2.connect((err) => {
+					if (err) {
+						LOG.error(err);
+						reject(err);
+						return;
+					}
 
-			SR.EventManager.send('_SUBSCRIBE_LOG', 
-								 {err: null, result: {subID: subscriber.subID, data: logData}},
-								 subscriber.conns);
-		}
-		
-		subscriber.proc.stdout.on('data', onData);
-		subscriber.proc.stderr.on('data', onData);
-		
-		subscriber.proc.on('exit', function (code) {
-			LOG.warn('screen spawn exit: ' + code, l_name);
-			subscriber.proc = undefined;
-			delete l_subscribers[serverID];
+					pm2.describe(`${owner}-${project}-${name}`, (err, data) => {
+						if (err) {
+							LOG.error(err);
+							reject(err);
+							return;
+						}
+
+						if (!data[0]) {
+							LOG.error(`Cannot get pm2 info of server "${owner}-${project}-${name}"`);
+							reject(`Cannot get pm2 info of server "${owner}-${project}-${name}"`);
+							return;
+						}
+
+						const pmID = data[0].pm_id;
+						resolve(SR.path.resolve(
+							SR.Settings.PATH_USERBASE,
+							owner,
+							project,
+							'log',
+							`output-${pmID}.log`
+						));
+					})
+				})
+			} else {
+				resolve(SR.path.resolve(
+					SR.Settings.PATH_USERBASE,
+					owner,
+					project,
+					'log',
+					'output.log'
+				));
+			}
+		}).then((log_file) => {
+			LOG.warn('tailing [' + log_file + ']...', l_name);
+			subscriber.proc = spawn('tail', ['-n', '1000', '-f', log_file]);
+
+			var onData = function (d) {
+				// NOTE: strings like '[monitor]' will get replaced as well (incorrectly)
+				var logData = d.toString().replace(/\[m/g, '[');
+
+				SR.EventManager.send('_SUBSCRIBE_LOG',
+					{ err: null, result: { subID: subscriber.subID, data: logData } },
+					subscriber.conns);
+			}
+
+			subscriber.proc.stdout.on('data', onData);
+			subscriber.proc.stderr.on('data', onData);
+
+			subscriber.proc.on('exit', function (code) {
+				LOG.warn('screen spawn exit: ' + code, l_name);
+				subscriber.proc = undefined;
+				delete l_subscribers[serverID];
+			});
+		}).catch((err) => {
+			LOG.error(err);
 		});
 	}
 	catch (e) {

@@ -275,13 +275,15 @@ var l_shutdown = exports.shutdown = function () {
 	LOG.stack();
 	console.log('shutdown called, delay for: ' + (l_crashDelay ? l_crashDelay : 0) + ' ms');
 	SR.Settings.FRONTIER.dispose();
-	if (l_crashDelay) {
-		setTimeout(function () {
-			process.exit();
-		}, l_crashDelay);
-	}	else {
-    	process.exit();	
-	}
+	setTimeout(function () {
+		if (l_crashDelay) {
+			setTimeout(function () {
+				process.exit();
+			}, l_crashDelay);
+		}	else {
+			process.exit();	
+		}
+	}, 2000);
 }
 
 // forward crash or Ctrl-C events to onCrash callback
