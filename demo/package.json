@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "demo for the Scalra node.js framework",
   "scripts": {
-    "start": "node lobby/frontier.js"
+    "start": "node lobby/frontier.js --CONNECT_MONITOR_ONSTART=true"
   },
   "keywords": [
     "prototyping",

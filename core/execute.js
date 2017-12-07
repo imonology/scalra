@@ -726,8 +726,9 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 
 				pm2.start({
 					name: `${info.owner}-${info.project}-${info.name}`,
-					script: SR.path.resolve(exec_path, `${info.name}/frontier.js`),
-					args: '--CONNECT_MONITOR_ONSTART=true',
+					cwd: exec_path,
+					script: 'npm',
+					args: 'start',
 					output: SR.path.resolve(log_path, 'output.log'),
 					error: SR.path.resolve(log_path, 'output.log')
 				}, (err, proc) => {
