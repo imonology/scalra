@@ -493,6 +493,54 @@ exports.do_progress = function (path_array, res, para, req) {
 
 }
 
+exports.new_upload = function (path_array, res, para, req) {
+
+	// create an incoming form object
+	var form = new formidable.IncomingForm();
+
+	// specify that we want to allow the user to upload multiple files in a single request
+	form.multiples = true;
+
+	// store all uploads in the /uploads directory
+	form.uploadDir = SR.Settings.UPLOAD_PATH;
+	LOG.warn('form.uploadDir')
+	LOG.warn(form.uploadDir)
+	// every time a file has been uploaded successfully,
+	// rename it to it's orignal name
+	form.on('file', function(field, file) {
+		// fs.rename(file.path, path.join(form.uploadDir, file.name));
+		LOG.warn('on file')
+	});
+
+	// log any errors that occur
+	form.on('error', function(err) {
+		LOG.warn('on error')
+		SR.Callback.notify('onUpload', {result: false, msg: 'fail reason: error'});
+		var result = {
+			message: 'error',
+		};
+		SR.REST.reply(res, result);
+	});
+
+	// once all the files have been uploaded, send a response to the client
+	form.on('end', function() {
+		LOG.warn('on end')
+		// res.end('success');
+		var uploaded = [];
+		var result = {
+			message: 'success',
+			upload : uploaded,
+		};
+
+		SR.REST.reply(res, result);
+	});
+
+	// parse the incoming request containing the form data
+	form.parse(req);
+	
+	
+}
+
 // handle file upload requests
 exports.upload = function (path_array, res, para, req) {
 
