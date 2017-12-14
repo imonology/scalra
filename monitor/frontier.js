@@ -142,7 +142,7 @@ var l_subscribers = {};
 const spawn = require('child_process').spawn;
 
 var l_tailOutput = function (owner, project, name, subscriber) {
-
+	project = project.replace(/\[.*\]$/, '');
 	var serverID = owner + '-' + project + '-' + name;
 	
 	// start tailing the project's output
