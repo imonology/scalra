@@ -70,7 +70,7 @@ SR.API.add('_START_SERVER', {
 	if (SR.Settings.hasOwnProperty('SERVER_INFO') === false) {
 		return onDone('SR.Settings.SERVER_INFO not set');
 	}
-			
+
 	// construct server_info (if not provided, use default value in SERVER_INFO)
 	var size = args.size || 1;	
 	args.owner   = args.owner   || SR.Settings.SERVER_INFO.owner;
