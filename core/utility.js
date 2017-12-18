@@ -701,17 +701,23 @@ exports.getDateTimeString = function () {
 }
 
 // check if a directory exists or create if not
-exports.validatePath = function (path) {
+exports.validatePath = function (path, create_if_invalid) {
+	
+	// by default we'd always create path if not exist
+	var create_path = (create_if_invalid === false ? false : true);
 
-	LOG.warn('validating path: ' + path, l_name);
+	LOG.warn('validating path: ' + path + ' create_if_invalid: ' + create_path, l_name);
 	try {
 		if (SR.fs.existsSync(path) === false) {
-			LOG.warn('creating new directory: ' + path + SR.Tags.ERREND, l_name);
-			//SR.fs.ensureDirSync(path);
-			SR.fs.mkdirSync(path);
-			//return false;
-		}
-		return true;		
+			
+			if (create_path === true) {
+				LOG.warn('creating new directory: ' + path + SR.Tags.ERREND, l_name);
+				//SR.fs.ensureDirSync(path);
+				SR.fs.mkdirSync(path);
+				return true;
+			}
+			return false;
+		}			
 	} catch (e) {
 		LOG.error(e, l_name);
 		LOG.error('validatePath failed: ' + path, l_name);
