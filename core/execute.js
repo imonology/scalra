@@ -744,7 +744,8 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 					script: 'npm',
 					args: 'start -- --CONNECT_MONITOR_ONSTART=true',
 					output: SR.path.resolve(log_path, 'output.log'),
-					error: SR.path.resolve(log_path, 'output.log')
+					error: SR.path.resolve(log_path, 'output.log'),
+					autorestart: SR.Settings.PM2_AUTO_RESTART
 				}, (err, proc) => {
 					if (err) {
 						LOG.error(err);

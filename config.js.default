@@ -24,6 +24,9 @@ exports.config = {
 
 	// use pm2
 	PM2_ENABLE: true,
+
+	// pm2 auto restart
+	PM2_AUTO_RESTART: false,
 	
 	// mail server config
 	EMAIL_CONFIG: {
