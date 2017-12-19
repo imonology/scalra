@@ -755,9 +755,14 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 
 					LOG.warn(proc);
 					UTIL.safeCall(onDone, id);
-					// log project pid
-					SR.serverPID = SR.serverPID || {};
-					SR.serverPID[`${info.owner}-${info.project}-${info.name}`] = proc[0].pid;
+					try {
+						// log project pid
+						SR.serverPID = SR.serverPID || {};
+						SR.serverPID[`${info.owner}-${info.project}-${info.name}`] = proc[0].pid;
+					} catch (e) {
+						LOG.error(e);
+						onDone(e);
+					}
 				});
 			})
 		} else {
