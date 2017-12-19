@@ -728,7 +728,7 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 					name: `${info.owner}-${info.project}-${info.name}`,
 					cwd: exec_path,
 					script: 'npm',
-					args: 'start',
+					args: 'start -- --CONNECT_MONITOR_ONSTART=true',
 					output: SR.path.resolve(log_path, 'output.log'),
 					error: SR.path.resolve(log_path, 'output.log')
 				}, (err, proc) => {
