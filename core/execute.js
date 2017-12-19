@@ -59,6 +59,7 @@ var l_started = {};
 //-----------------------------------------
 
 // start a certain number (size) of servers of a particular type
+// TODO: should move part of this elsewhere? as it makes assumptions as to where the executable is
 SR.API.add('_START_SERVER', {
 	owner:		'+string',
 	project:	'+string',
@@ -70,25 +71,41 @@ SR.API.add('_START_SERVER', {
 	if (SR.Settings.hasOwnProperty('SERVER_INFO') === false) {
 		return onDone('SR.Settings.SERVER_INFO not set');
 	}
-			
+
 	// construct server_info (if not provided, use default value in SERVER_INFO)
 	var size = args.size || 1;	
 	args.owner   = args.owner   || SR.Settings.SERVER_INFO.owner;
 	args.project = args.project || SR.Settings.SERVER_INFO.project;
 	args.name = args.name || '';
 	
-	LOG.warn('start ' + size + ' server(s), info: ', l_name);
-	LOG.warn(args, l_name);
-	
 	if (!args.owner || !args.project) {
 		return onDone('server_info incomplete');
 	}
-
-	var server_type = args.owner + '-' + args.project + '-' + args.name;
+	
+	// NOTE: we assume PATH_USERBASE only exists at the monitor (a non-user project)
+	var base_path = SR.path.resolve((SR.Settings.PATH_USERBASE ? SR.path.join(SR.Settings.PATH_USERBASE, args.owner, args.project) : '.'));
+		
+	// if path does not exist on first check, try one-level below for owner
+	// NOTE: still buggy, consider move this to editor
+	if (UTIL.validatePath(base_path, false) === false) {
+		LOG.warn('basepath not found, try one-level deeper', l_name);
+		var path_names = base_path.split('/');
+		LOG.warn(path_names, l_name);
+		args.owner = path_names[path_names.length-4];
+		base_path = SR.path.resolve((SR.Settings.PATH_USERBASE ? SR.path.join(SR.Settings.PATH_USERBASE, args.owner, args.project) : '.'));
+		
+		if (UTIL.validatePath(base_path, false) === false) {
+			return onDone('project path does not exist');
+		}
+	}
+	
+	LOG.warn('start ' + size + ' server(s), info: ', l_name);
+	LOG.warn(args, l_name);
+	var server_type = args.owner + '-' + args.project + '-' + args.name;				  
 				
 	// notify if a server process has started
 	var onStarted = function (id) {
-					  
+		
 		LOG.warn('server started: ' + server_type, l_name);
     
 		// check if we should notify start server request
@@ -155,13 +172,13 @@ SR.API.add('_START_SERVER', {
 	};
 
 	// try to execute on a given path	
-	var validate_path = function (base_path, onExec) {
+	var validate_path = function (exec_path, onExec) {
 
 		var onFound = function () {
 			
-			// if file found, execute directly			
+			// if file found, execute directly
 			// store starting path
-			args.exec_path = base_path;
+			args.exec_path = exec_path;
 			
 			LOG.warn('starting ' + size + ' [' + server_type + '] servers', l_name);
 			
@@ -175,10 +192,10 @@ SR.API.add('_START_SERVER', {
 				servers: []
 			});
 			
-			start_server();		
+			start_server();
 		}
 		
-		var file_path = SR.path.join(base_path, args.name, 'frontier.js');
+		var file_path = SR.path.join(exec_path, args.name, 'frontier.js');
 		LOG.warn('validate file_path: ' + file_path, l_name);
 		
 		// verify frontier file exists, if not then we try package.json
@@ -186,7 +203,7 @@ SR.API.add('_START_SERVER', {
 
 			// file not found
 			if (err) {
-				file_path = SR.path.join(base_path, 'package.json');
+				file_path = SR.path.join(exec_path, 'package.json');
 				
 				// remove server name from parameter 
 				args.name = '';
@@ -201,10 +218,7 @@ SR.API.add('_START_SERVER', {
 			onFound();
 		});
 	}
-
-	// NOTE: we assume PATH_USERBASE only exists at the monitor (a non-user project)
-	var base_path = (SR.Settings.PATH_USERBASE ? SR.path.join(SR.Settings.PATH_USERBASE, args.owner, args.project) : '.');
-	
+		
 	// try relative path first
 	validate_path(base_path, function (err) {
 		if (err) {
