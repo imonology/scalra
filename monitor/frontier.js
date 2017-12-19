@@ -107,34 +107,6 @@ SR.Callback.onDisconnect(function (conn) {
 	}
 });
 
-/*
-// API to start servers
-SR.API.add('_START_SERVER', {
-	owner:		'string',
-	project:	'string',
-	name:		'string',
-	size:		'+number'
-}, function (args, onDone) {
-		
-
-	
-});
-
-// API to stop servers (based on serverID)
-SR.API.add('_STOP_SERVER', {
-	id:		'string'
-}, function (args, onDone) {
-	if (l_servers.hasOwnProperty(args.id) === false) {
-		return onDone('server [' + args.id + '] not registered');
-	}
-	
-	LOG.warn('sending MONITOR_ALERT to [' + args.id + ']...', l_name);
-
-	// notify server to shutdown via previous connection
-	SR.EventManager.send('_MONITOR_ALERT', {type: 'SHUTDOWN'}, [l_servers[args.id]]);
-	onDone(null);
-});
-*/
 
 // list of subscribers to screen (server id -> conn object list)
 var l_subscribers = {};
@@ -142,7 +114,7 @@ var l_subscribers = {};
 const spawn = require('child_process').spawn;
 
 var l_tailOutput = function (owner, project, name, subscriber) {
-
+	project = project.replace(/\[.*\]$/, '');
 	var serverID = owner + '-' + project + '-' + name;
 	
 	// start tailing the project's output
