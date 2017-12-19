@@ -18,6 +18,7 @@ var l_name = 'SR.API';
 
 // list of functions
 var l_list = {};
+var l_direct_list = {};
 
 // add a new API function 
 var l_add = exports.add = function (name, func, checker) {
@@ -40,6 +41,10 @@ var l_add = exports.add = function (name, func, checker) {
 		LOG.warn('API [' + name +'] already defined, replace it...', l_name);
 	}
 
+	// store direct calling functions (return results directly and not via callback)
+	if (typeof checker === 'object' && checker['_direct'])
+		l_direct_list[name] = func.toString();
+	
 	// store the user-defined function
 	l_list[name] = func;
 	
@@ -66,7 +71,8 @@ var l_add = exports.add = function (name, func, checker) {
 		// TODO: move checker to here
 		
 		// make actual call to user-defined function
-		UTIL.safeCall(l_list[name], args, function (err, result, unsupported_return) {
+		// NOTE: we also return values for direct function calls
+		return UTIL.safeCall(l_list[name], args, function (err, result, unsupported_return) {
 			if (err) {
 				LOG.error('[' + name + '] error:', l_name);
 				LOG.error(err, l_name);
@@ -168,7 +174,20 @@ var l_add = exports.add = function (name, func, checker) {
 // add first API (allow querying of API name from client-side)
 l_add('SR_API_QUERY', function (args, onDone) {
 	// return a list of registered API directly
-	onDone(null, Object.keys(l_list));
+	var list = Object.keys(l_list);
+	
+	// remove direct functions
+	for (var i=list.length-1; i >= 0; i--) {
+		if (l_direct_list.hasOwnProperty(list[i])) {
+			list.splice(i, 1);
+		}
+	}
+	onDone(null, list);
+});
+
+l_add('SR_API_QUERY_DIRECT', function (args, onDone) {
+	// return a list of registered API directly
+	onDone(null, l_direct_list);
 });
 
 var l_afterActions = {};
