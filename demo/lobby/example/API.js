@@ -20,6 +20,14 @@ SR.API.after('HelloWorld', function (args, result, onDone) {
 	onDone();
 });
 
+// pre-event handler
+SR.API.before('HelloWorld', function (args, onDone) {
+	LOG.warn('before HelloWorld is called');
+	LOG.warn('original parameters:');
+	LOG.warn(args);
+	onDone();
+});
+
 // negative test
 SR.API.HelloWorld(function (err, result) {
 	LOG.warn('SR.API negative test result: ');
