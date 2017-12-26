@@ -217,7 +217,7 @@ SR.API.add('_ACCOUNT_REGISTER', {
 		if (err) {
 			return onDone('UID_ERROR');
 		}
-	
+		var ip = (extra) ? extra.conn.host : "server";
 		// NOTE: by default a user is a normal user, user 'groups' can later be customized
 		var reg = {
 			uid: 		uid, 
@@ -228,7 +228,7 @@ SR.API.add('_ACCOUNT_REGISTER', {
 			enc_type:	l_enc_type,
 			control:	{groups: [], permissions: []}, 
 			data: 		args.data || {},
-			login: 		{IP: extra.conn.host, time: extra.conn.time, count: 1}
+			login: 		{IP: ip, count: 1}
 		};
 		
 		// special handling (by default 'admin' account is special and will be part of the 'admin' group by default
@@ -285,9 +285,10 @@ SR.API.add('_ACCOUNT_LOGIN', {
 		return onDone('INVALID_PASSWORD_OR_TOKEN');
 	}
 
+	var ip = (extra) ? extra.conn.host : "server";
 	// update login time
 	user.login = {
-		IP: extra.conn.host,
+		IP: ip,
 		time_in: new Date(),
 		time_out: null,
 		count: user.login.count+1

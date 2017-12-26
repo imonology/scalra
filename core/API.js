@@ -57,9 +57,25 @@ var l_add = exports.add = function (name, func, checker) {
 		});
 	}
 	
+	// define pre-event action
+	var pre_action = function (args, func) {
+		return new SR.promise(function (resolve, reject) {
+			UTIL.safeCall(func, args, function (err) {
+				if (err) {
+					LOG.error(err, l_name);
+					return reject(new Error(err));
+					// throw new Error(err);
+					// return UTIL.safeCall(reject, new Error(err));
+				}
+				UTIL.safeCall(resolve);
+			});
+		});
+	}
+	
+
+	
 	// define wrapper function
 	var wrapper = function (args, onDone, extra) {
-		
 		// if args are not provided then we shift the parameters
 		if (typeof args === 'function') {
 			extra = onDone;
@@ -70,44 +86,75 @@ var l_add = exports.add = function (name, func, checker) {
 		// TODO: perform argument type check (currently there's none, so internal API calls won't do type checks)
 		// TODO: move checker to here
 		
-		// make actual call to user-defined function
-		// NOTE: we also return values for direct function calls
-		return UTIL.safeCall(l_list[name], args, function (err, result, unsupported_return) {
-			if (err) {
-				LOG.error('[' + name + '] error:', l_name);
-				LOG.error(err, l_name);
-			}
-			
-			if (unsupported_return) {
-				var errmsg = 'onDone() in SR.API does not support more than one return variable, please return everything inside a result object';
-				LOG.error(errmsg, l_name);
-				LOG.stack();
-				return UTIL.safeCall(onDone, errmsg);				
-			}
-			
-			// perform post-event actions, if any
-			if (l_afterActions.hasOwnProperty(name) === false) {
-				return UTIL.safeCall(onDone, err, result);
-			}
-			
-			var posts = l_afterActions[name];
-			var promise = undefined;
-			for (var i=0; i < posts.length; i++) {
-				if (!promise) {
-					promise = post_action(args, {err: err, result: result}, posts[i], extra);	
-				} else {
-					promise = promise.then(post_action(args, {err: err, result: result}, posts[i]));	
+		var onError = function(err) {
+			LOG.error('onError '+ err, l_name);
+			UTIL.safeCall(onDone, err);	
+		}
+		
+		function onExec() {
+			// make actual call to user-defined function
+			// NOTE: we also return values for direct function calls
+			return UTIL.safeCall(l_list[name], args, function (err, result, unsupported_return) {
+				if (err) {
+					LOG.error('[' + name + '] error:', l_name);
+					LOG.error(err, l_name);
 				}
-			}
-			
-			// last action
-			promise.then(new SR.promise(function (resolve, reject) {
-				//LOG.warn('everything is done... call original onDone...', l_name);
-				UTIL.safeCall(onDone, err, result);	
-				resolve();
-			}));
 
-		}, extra);
+				if (unsupported_return) {
+					var errmsg = 'onDone() in SR.API does not support more than one return variable, please return everything inside a result object';
+					LOG.error(errmsg, l_name);
+					LOG.stack();
+					return UTIL.safeCall(onDone, errmsg);				
+				}
+
+				// perform post-event actions, if any
+				if (l_afterActions.hasOwnProperty(name) === false) {
+					return UTIL.safeCall(onDone, err, result);
+				}
+
+				var posts = l_afterActions[name];
+				var promise = undefined;
+				for (var i=0; i < posts.length; i++) {
+					if (!promise) {
+						promise = post_action(args, {err: err, result: result}, posts[i], extra);	
+					} else {
+						promise = promise.then(post_action(args, {err: err, result: result}, posts[i]));	
+					}
+				}
+
+				// last action
+				promise.then(new SR.promise(function (resolve, reject) {
+					//LOG.warn('everything is done... call original onDone...', l_name);
+					UTIL.safeCall(onDone, err, result);	
+					resolve();
+				}));
+
+			}, extra);
+		}
+		
+		// perform pre-event actions, if any
+		if (l_beforeActions.hasOwnProperty(name) === false) {
+			return onExec();
+		}
+
+		var pres = l_beforeActions[name];
+		var promise = undefined;
+		for (var i=0; i < pres.length; i++) {
+			if (!promise) {
+				promise = pre_action(args, pres[i], extra);	
+			} else {
+				promise = promise.then(pre_action(args, pres[i]), onError);
+			}
+		}
+
+		// last action
+		promise.then(new SR.promise(function (resolve, reject) {
+			//LOG.warn('everything is done... call original onDone...', l_name);
+			onExec();
+			resolve();
+		}), onError);
+
+		
 	};
 	
 	// store a new wrapper function for calling the specified API
@@ -209,6 +256,27 @@ exports.after = function (name, handler) {
 	l_afterActions[name].push(handler);
 	return true;
 };
+	
+var l_beforeActions = {};
+
+// register pre-event actions
+exports.before = function (name, handler) {
+
+	// type check
+	if (typeof name !== 'string' || typeof handler !== 'function') {
+		LOG.error('SR.API.before parameters incorrect (need "name" and "callback function")');
+		return false;
+	}
+	
+	if (l_beforeActions.hasOwnProperty(name) === false) {
+		l_beforeActions[name] = [];
+	}
+	
+	// store action
+	l_beforeActions[name].push(handler);
+	return true;
+};
+
 
 const SockJS = require('sockjs-client');
 
