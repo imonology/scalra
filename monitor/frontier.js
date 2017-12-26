@@ -346,7 +346,11 @@ SR.Callback.onStart(function () {
 		// NOTE: we don't store this list by default, as if the server is not started successfully, 
 		// 		it should be removed from the list
 		//SR.startedServers = servers;
-
+		
+		if (SR.Settings.PM2_ENABLE) {
+			return;
+		}
+		
 		setTimeout(function () { 
 			for (let serverID in servers) {
 				SR.API._START_SERVER({
