@@ -492,9 +492,16 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 
 // helper to send a HTTP get request to an URL and get response
 var l_HTTPget = exports.HTTPget = function (url, onDone) {
+	get_function(http, url, onDone);
+}
 
+var l_HTTPSget = exports.HTTPSget = function (url, onDone) {
+	get_function(https, url, onDone);
+}
+
+function get_function(obj, url, onDone){
 	// send request to app server to get stat
-	http.get(url, function (res) {
+	obj.get(url, function (res) {
 
 		// temp buffer for incoming request
 		var data = '';
