@@ -554,7 +554,6 @@ exports.upload = function (path_array, res, para, req) {
 				}
 				// fail
 				else {
-				
 				}
 			});
 		*/
