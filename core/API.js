@@ -60,15 +60,13 @@ var l_add = exports.add = function (name, func, checker) {
 	// define pre-event action
 	var pre_action = function (args, func) {
 		return new SR.promise(function (resolve, reject) {
-			UTIL.safeCall(func, args, function (err) {
-				if (err) {
-					LOG.error(err, l_name);
-					return reject(new Error(err));
-					// throw new Error(err);
-					// return UTIL.safeCall(reject, new Error(err));
-				}
-				UTIL.safeCall(resolve);
-			});
+			try {
+				func(args);
+				resolve();
+			} catch (err) {
+				LOG.error(err, l_name);
+				reject(err);
+			}
 		});
 	}
 	
@@ -148,13 +146,10 @@ var l_add = exports.add = function (name, func, checker) {
 		}
 
 		// last action
-		promise.then(new SR.promise(function (resolve, reject) {
-			//LOG.warn('everything is done... call original onDone...', l_name);
-			onExec();
-			resolve();
-		}), onError);
-
-		
+		promise.then(onExec).catch((err) => {
+			LOG.error(err);
+			onDone(err);
+		});
 	};
 	
 	// store a new wrapper function for calling the specified API
