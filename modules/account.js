@@ -424,6 +424,27 @@ SR.API.add('_ACCOUNT_SETPASS', {
 	// l_encryptPass
 });
 
+SR.API.add('_ADMIN_ACCOUNT_SETPASS', {
+	password:				'string',
+	account:				'string'
+}, function (args, onDone, extra) {
+	if (extra)
+		return onDone(null);
+	var account = args.account;
+	if (!l_accounts[account])
+		return onDone('no this account');
+
+	var data = l_accounts[account];
+	data.password = l_encryptPass(args.password);
+	data.sync(function (err) {
+		if (err) {
+			LOG.error(err, l_name);
+			return onDone('DB_ERROR', err);	
+		}
+		return onDone(null, {success:1, desc:'修改密碼成功'});
+	});
+});
+
 // which fields are not allowed to be modified directly
 var l_protected_fields = {'uid': true, 'account': true, 'password': true};
 
