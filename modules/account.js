@@ -224,6 +224,7 @@ SR.API.add('_ACCOUNT_REGISTER', {
 			account:	args.account, 
 			password:	l_encryptPass(args.password), 
 			email:		args.email,
+			verify:		{email_verify: false, phone_verify: false},
 			tokens: 	{reset: '', pass: {}},
 			enc_type:	l_enc_type,
 			control:	{groups: [], permissions: []}, 
