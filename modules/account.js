@@ -9,9 +9,11 @@
 		_ACCOUNT_SETPASS	// set new password by token
 		_ACCOUNT_SETDATA	// set user data by account name & type:value mapping
 		_ACCOUNT_GETDATA	// get user data by account name		
+		_ACCOUNT_DELETE		// delete account by account name
 		
 	history:
 		2016-09-27		start
+		2018-04-30		add _ACCOUNT_DELETE
 */
 
 // module name
@@ -618,6 +620,18 @@ SR.API.add('_ACCOUNT_REMOVEGROUP', {
 	onDone('GROUP_ERROR', 'account [' + account + '] does no belong to group [' + args.group + ']');
 });
 
+// add an account to a given group membership
+SR.API.add('_ACCOUNT_DELETE', {
+	_admin: true,
+	account: 'string',
+}, function (args, onDone) {
+	l_accounts.remove({account:args.account}, function(err, result) {
+		if(err) {
+			return err;
+		}
+		onDone(null);
+	});
+});
 
 
 var l_models = {};
