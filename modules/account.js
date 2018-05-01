@@ -625,6 +625,8 @@ SR.API.add('_ACCOUNT_DELETE', {
 	_admin: true,
 	account: 'string',
 }, function (args, onDone) {
+	if (!l_accounts[args.account])
+		return onDone(args.account + ' account is not defined!');
 	l_accounts.remove({account:args.account}, function(err, result) {
 		if(err) {
 			return err;
