@@ -49,11 +49,11 @@ var l_add = exports.add = function (name, func, checker) {
 	l_list[name] = func;
 	
 	// define post-event action
-	var post_action = function (args, result, func) {
+	var post_action = function (args, result, func, extra) {
 		return new SR.promise(function (resolve, reject) {
 			UTIL.safeCall(func, args, result, function () {
 				UTIL.safeCall(resolve);
-			});
+			}, extra);
 		});
 	}
 	
@@ -114,9 +114,9 @@ var l_add = exports.add = function (name, func, checker) {
 				var promise = undefined;
 				for (var i=0; i < posts.length; i++) {
 					if (!promise) {
-						promise = post_action(args, {err: err, result: result}, posts[i], extra);	
+						promise = post_action(args, { err: err, result: result }, posts[i], extra);
 					} else {
-						promise = promise.then(post_action(args, {err: err, result: result}, posts[i]));	
+						promise = promise.then(post_action(args, { err: err, result: result }, posts[i], extra));
 					}
 				}
 
