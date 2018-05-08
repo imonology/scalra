@@ -193,9 +193,9 @@ SR.API.add('_ACCOUNT_REGISTER', {
 	account:	'string',
 	password:	'string',
 	email:		'string',
-	data:		'+object'
+	data:		'+object',
+	authWP:		'+boolean'
 }, function (args, onDone, extra) {
-	
 	// check if DB is initialized
 	if (typeof l_accounts === 'undefined') {
 		return onDone('DB_NOT_LOADED');	
@@ -208,14 +208,32 @@ SR.API.add('_ACCOUNT_REGISTER', {
 	if (l_accounts.hasOwnProperty(args.account)) {
 		return onDone('ACCOUNT_EXISTS', args.account);
 	}
-	
-	// check email correctness
-	if (l_validateEmail(args.email) === false) {
-		return onDone('INVALID_EMAIL', args.email);
+
+	// to login via wordpres
+	if (!!args.authWP) {
+		SR.API._wpGenerateAuthCookie({
+			username: args.account,
+			password: args.password
+		}, (err, data) => {
+			if (err) {
+				onDone(err);
+				return;
+			}
+			// set email
+			args.email = data.user.email;
+			l_getUID(getUIDCallback);
+		});
+	} else {
+		// check email correctness
+		if (l_validateEmail(args.email) === false) {
+			return onDone('INVALID_EMAIL', args.email);
+		}
+
+		l_getUID(getUIDCallback);
 	}
 	
 	// generate unique user_id
-	l_getUID(function (err, uid) {
+	function getUIDCallback (err, uid) {
 		if (err) {
 			return onDone('UID_ERROR');
 		}
@@ -248,7 +266,7 @@ SR.API.add('_ACCOUNT_REGISTER', {
 			LOG.warn('account register success', l_name);
 			onDone(null);
 		});
-	});
+	}
 });
 
 // login by account
