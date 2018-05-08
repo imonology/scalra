@@ -276,7 +276,8 @@ SR.API.add('_ACCOUNT_REGISTER', {
 SR.API.add('_ACCOUNT_LOGIN', {
 	account:	'string',
 	password:	'string',
-	from:		'+string'		// which server relays this login request
+	from:		'+string',		// which server relays this login request
+	authWP:		'+boolean'
 }, function (args, onDone, extra) {
 
 	// check if DB is initialized
@@ -300,55 +301,75 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	
 	var user = l_accounts[account];
 
-	// perform password or token verification	
-	if (l_encryptPass(args.password) !== user.password &&
-		user.tokens.pass.hasOwnProperty(args.password) === false) {
-		return onDone('INVALID_PASSWORD_OR_TOKEN');
-	}
+	new Promise((resolve, reject) => {
+		if (!!args.authWP) {
+			SR.API._wpGenerateAuthCookie({
+				username: account,
+				password: args.password
+			}, (err, data) => {
+				if (err) {
+					reject(err);
+					return;
+				}
 
-	var ip = (extra) ? extra.conn.host : "server";
-	// update login time
-	user.login = {
-		IP: ip,
-		time_in: new Date(),
-		time_out: null,
-		count: user.login.count+1
-	}
-	
-	// generate unique token if the request is relayed from a server
-	var token = undefined;
-	if (args.from) {
-		token = UTIL.createToken();
-		user.tokens.pass[token] = args.from;
-	}
-	
-	// save data
-	user.sync(function (err) {
-		if (err) {
-			LOG.error(err, l_name);
-			return onDone('DB_ERROR', err);
+				resolve();
+			});
+		} else {
+			// perform password or token verification
+			if (l_encryptPass(args.password) !== user.password &&
+				user.tokens.pass.hasOwnProperty(args.password) === false) {
+				reject('INVALID_PASSWORD_OR_TOKEN');
+			} else {
+				resolve();
+			}
+		}
+	}).then(() => {
+		var ip = (extra) ? extra.conn.host : "server";
+		// update login time
+		user.login = {
+			IP: ip,
+			time_in: new Date(),
+			time_out: null,
+			count: user.login.count+1
 		}
 
-		// attach login (account) to connection
-		// NOTE: we use session because login could come from an HTTP request
-		// that does not have a persistent connection record in SR.Conn
-		SR.Conn.setSessionName(extra.conn, account);
-
-		// init session by recording login-related info
-		// NOTE: 'control' info may change during the session
-		extra.session._user = {
-			account: account,
-			control: user.control,
-			login: user.login
+		// generate unique token if the request is relayed from a server
+		var token = undefined;
+		if (args.from) {
+			token = UTIL.createToken();
+			user.tokens.pass[token] = args.from;
 		}
-				
-		// record current login (also the conn object for logout purpose)
-		l_logins[account] = extra.conn;	
-						
-		// return login success
-		LOG.warn('[' + account + '] login success, total online accounts: ' + Object.keys(l_logins).length, l_name);	
-		onDone(null, {account: account, token: token});
-	});	
+
+		// save data
+		user.sync(function (err) {
+			if (err) {
+				LOG.error(err, l_name);
+				return onDone('DB_ERROR', err);
+			}
+
+			// attach login (account) to connection
+			// NOTE: we use session because login could come from an HTTP request
+			// that does not have a persistent connection record in SR.Conn
+			SR.Conn.setSessionName(extra.conn, account);
+
+			// init session by recording login-related info
+			// NOTE: 'control' info may change during the session
+			extra.session._user = {
+				account: account,
+				control: user.control,
+				login: user.login
+			}
+
+			// record current login (also the conn object for logout purpose)
+			l_logins[account] = extra.conn;	
+
+			// return login success
+			LOG.warn('[' + account + '] login success, total online accounts: ' + Object.keys(l_logins).length, l_name);
+			onDone(null, {account: account, token: token});
+		});	
+	}).catch((err) => {
+		onDone(err);
+	});
 });
 
 // logout by account
