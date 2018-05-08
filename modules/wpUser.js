@@ -20,7 +20,6 @@ SR.API.add('_wpGenerateAuthCookie', {
 			return;
 		}
 
-		console.log(args);
 		request.post(`${l_wpHost}/api/auth/generate_auth_cookie/`, {
 			form: {
 				nonce,
@@ -33,7 +32,14 @@ SR.API.add('_wpGenerateAuthCookie', {
 				return;
 			}
 
-			onDone(null, JSON.parse(body));
+			const result = JSON.parse(body);
+			if (result.status === 'ok') {
+				onDone(null, result);
+			}
+
+			if (result.status === 'error') {
+				onDone(result.error);
+			}
 		})
 	})
 });
@@ -97,14 +103,3 @@ l_module.start = function (config, onDone) {
 
 l_module.stop = function (onDone) {
 };
-
-setTimeout(() => {
-	console.log('====');
-	SR.API._wpGetCurrentuserinfo({
-		cookie: 'x3388638|1526965418|8KMYzOrRBgMg7xQMomLGf83TcTuThzJlWIRqInPOm0m|4556646ca94d5d645d289bd8dcd02976f2e51f8fd9617e79aacfb2473d7b855f'
-	}, (err, data) => {
-		if (err) {
-			console.log(err);
-		}
-	});
-}, 5000);
