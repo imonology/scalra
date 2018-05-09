@@ -277,7 +277,8 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	account:	'string',
 	password:	'string',
 	from:		'+string',		// which server relays this login request
-	authWP:		'+boolean'
+	authWP:		'+boolean',		// login via wordpress
+	data:		'+object'
 }, function (args, onDone, extra) {
 
 	// check if DB is initialized
@@ -288,9 +289,14 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	var account = args.account;	
 	LOG.warn('login: [' + account + '] pass: ' + args.password + (args.from ? ' from: ' + args.from : ''), l_name);
 	
+	let userExist = true;
 	// check if account exists
 	if (l_accounts.hasOwnProperty(account) === false) {
-		return onDone('INVALID_ACCOUNT', account);	
+		if (!args.authWP) {
+			return onDone('INVALID_ACCOUNT', account);
+		} else {
+			userExist = false;
+		}
 	}
 	
 	// check if already logined
@@ -312,7 +318,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 					return;
 				}
 
-				resolve();
+				resolve(data);
 			});
 		} else {
 			// perform password or token verification
@@ -323,7 +329,30 @@ SR.API.add('_ACCOUNT_LOGIN', {
 				resolve();
 			}
 		}
-	}).then(() => {
+	}).then((wpInfo) => {
+		if (!wpInfo || (!!wpInfo && userExist)) {
+			Promise.resolve();
+			return;
+		}
+
+		// create user in server first
+		return new Promise((resolve, reject) => {
+			SR.API._ACCOUNT_REGISTER({
+				account: account,
+				password: args.password,
+				email: wpInfo.user.email,
+				data: args.data
+			}, (err, data) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+
+				resolve(SR.State.get('_accountMap')[account]);
+			});
+		});
+	}).then((u) => {
+		user = u || user;
 		var ip = (extra) ? extra.conn.host : "server";
 		// update login time
 		user.login = {
@@ -692,11 +721,11 @@ SR.Callback.onStart(function () {
 	LOG.warn('account module onStart called, init DS...');
 	SR.DS.init({models: l_models}, function (err, ref) {
 		if (err) {
-			LOG.error(err, l_name);	
+			LOG.error(err, l_name);
 			return;
 		}
-		
-		l_accounts = ref[l_name];	
+
+		l_accounts = ref[l_name];
 		LOG.warn('l_accounts initialized with size: ' + l_accounts.size());
 	});
 });
