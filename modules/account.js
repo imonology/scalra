@@ -193,9 +193,9 @@ SR.API.add('_ACCOUNT_REGISTER', {
 	account:	'string',
 	password:	'string',
 	email:		'string',
-	data:		'+object'
+	data:		'+object',
+	authWP:		'+boolean'
 }, function (args, onDone, extra) {
-	
 	// check if DB is initialized
 	if (typeof l_accounts === 'undefined') {
 		return onDone('DB_NOT_LOADED');	
@@ -208,14 +208,32 @@ SR.API.add('_ACCOUNT_REGISTER', {
 	if (l_accounts.hasOwnProperty(args.account)) {
 		return onDone('ACCOUNT_EXISTS', args.account);
 	}
-	
-	// check email correctness
-	if (l_validateEmail(args.email) === false) {
-		return onDone('INVALID_EMAIL', args.email);
+
+	// to login via wordpres
+	if (!!args.authWP) {
+		SR.API._wpGenerateAuthCookie({
+			username: args.account,
+			password: args.password
+		}, (err, data) => {
+			if (err) {
+				onDone(err);
+				return;
+			}
+			// set email
+			args.email = data.user.email;
+			l_getUID(getUIDCallback);
+		});
+	} else {
+		// check email correctness
+		if (l_validateEmail(args.email) === false) {
+			return onDone('INVALID_EMAIL', args.email);
+		}
+
+		l_getUID(getUIDCallback);
 	}
 	
 	// generate unique user_id
-	l_getUID(function (err, uid) {
+	function getUIDCallback (err, uid) {
 		if (err) {
 			return onDone('UID_ERROR');
 		}
@@ -248,7 +266,7 @@ SR.API.add('_ACCOUNT_REGISTER', {
 			LOG.warn('account register success', l_name);
 			onDone(null);
 		});
-	});
+	}
 });
 
 // login by account
@@ -258,7 +276,9 @@ SR.API.add('_ACCOUNT_REGISTER', {
 SR.API.add('_ACCOUNT_LOGIN', {
 	account:	'string',
 	password:	'string',
-	from:		'+string'		// which server relays this login request
+	from:		'+string',		// which server relays this login request
+	authWP:		'+boolean',		// login via wordpress
+	data:		'+object'
 }, function (args, onDone, extra) {
 
 	// check if DB is initialized
@@ -269,9 +289,14 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	var account = args.account;	
 	LOG.warn('login: [' + account + '] pass: ' + args.password + (args.from ? ' from: ' + args.from : ''), l_name);
 	
+	let userExist = true;
 	// check if account exists
 	if (l_accounts.hasOwnProperty(account) === false) {
-		return onDone('INVALID_ACCOUNT', account);	
+		if (!args.authWP) {
+			return onDone('INVALID_ACCOUNT', account);
+		} else {
+			userExist = false;
+		}
 	}
 	
 	// check if already logined
@@ -282,55 +307,98 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	
 	var user = l_accounts[account];
 
-	// perform password or token verification	
-	if (l_encryptPass(args.password) !== user.password &&
-		user.tokens.pass.hasOwnProperty(args.password) === false) {
-		return onDone('INVALID_PASSWORD_OR_TOKEN');
-	}
+	new Promise((resolve, reject) => {
+		if (!!args.authWP) {
+			SR.API._wpGenerateAuthCookie({
+				username: account,
+				password: args.password
+			}, (err, data) => {
+				if (err) {
+					reject(err);
+					return;
+				}
 
-	var ip = (extra) ? extra.conn.host : "server";
-	// update login time
-	user.login = {
-		IP: ip,
-		time_in: new Date(),
-		time_out: null,
-		count: user.login.count+1
-	}
-	
-	// generate unique token if the request is relayed from a server
-	var token = undefined;
-	if (args.from) {
-		token = UTIL.createToken();
-		user.tokens.pass[token] = args.from;
-	}
-	
-	// save data
-	user.sync(function (err) {
-		if (err) {
-			LOG.error(err, l_name);
-			return onDone('DB_ERROR', err);
+				resolve(data);
+			});
+		} else {
+			// perform password or token verification
+			if (l_encryptPass(args.password) !== user.password &&
+				user.tokens.pass.hasOwnProperty(args.password) === false) {
+				reject('INVALID_PASSWORD_OR_TOKEN');
+			} else {
+				resolve();
+			}
+		}
+	}).then((wpInfo) => {
+		if (!wpInfo || (!!wpInfo && userExist)) {
+			Promise.resolve();
+			return;
 		}
 
-		// attach login (account) to connection
-		// NOTE: we use session because login could come from an HTTP request
-		// that does not have a persistent connection record in SR.Conn
-		SR.Conn.setSessionName(extra.conn, account);
+		// create user in server first
+		return new Promise((resolve, reject) => {
+			SR.API._ACCOUNT_REGISTER({
+				account: account,
+				password: args.password,
+				email: wpInfo.user.email,
+				data: args.data
+			}, (err, data) => {
+				if (err) {
+					reject(err);
+					return;
+				}
 
-		// init session by recording login-related info
-		// NOTE: 'control' info may change during the session
-		extra.session._user = {
-			account: account,
-			control: user.control,
-			login: user.login
+				resolve(SR.State.get('_accountMap')[account]);
+			});
+		});
+	}).then((u) => {
+		user = u || user;
+		var ip = (extra) ? extra.conn.host : "server";
+		// update login time
+		user.login = {
+			IP: ip,
+			time_in: new Date(),
+			time_out: null,
+			count: user.login.count+1
 		}
-				
-		// record current login (also the conn object for logout purpose)
-		l_logins[account] = extra.conn;	
-						
-		// return login success
-		LOG.warn('[' + account + '] login success, total online accounts: ' + Object.keys(l_logins).length, l_name);	
-		onDone(null, {account: account, token: token});
-	});	
+
+		// generate unique token if the request is relayed from a server
+		var token = undefined;
+		if (args.from) {
+			token = UTIL.createToken();
+			user.tokens.pass[token] = args.from;
+		}
+
+		// save data
+		user.sync(function (err) {
+			if (err) {
+				LOG.error(err, l_name);
+				return onDone('DB_ERROR', err);
+			}
+
+			// attach login (account) to connection
+			// NOTE: we use session because login could come from an HTTP request
+			// that does not have a persistent connection record in SR.Conn
+			SR.Conn.setSessionName(extra.conn, account);
+
+			// init session by recording login-related info
+			// NOTE: 'control' info may change during the session
+			extra.session._user = {
+				account: account,
+				control: user.control,
+				login: user.login
+			}
+
+			// record current login (also the conn object for logout purpose)
+			l_logins[account] = extra.conn;	
+
+			// return login success
+			LOG.warn('[' + account + '] login success, total online accounts: ' + Object.keys(l_logins).length, l_name);
+			onDone(null, {account: account, token: token});
+		});	
+	}).catch((err) => {
+		onDone(err);
+	});
 });
 
 // logout by account
@@ -653,11 +721,11 @@ SR.Callback.onStart(function () {
 	LOG.warn('account module onStart called, init DS...');
 	SR.DS.init({models: l_models}, function (err, ref) {
 		if (err) {
-			LOG.error(err, l_name);	
+			LOG.error(err, l_name);
 			return;
 		}
-		
-		l_accounts = ref[l_name];	
+
+		l_accounts = ref[l_name];
 		LOG.warn('l_accounts initialized with size: ' + l_accounts.size());
 	});
 });
