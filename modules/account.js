@@ -269,6 +269,13 @@ SR.API.add('_ACCOUNT_REGISTER', {
 	}
 });
 
+SR.API.add('_ACCOUNT_UPDATE', {
+	account:	'string',
+	fields:		'object',
+}, (args, onDone, extra) => {
+	l_accounts.update(args.account, args.fields, onDone);
+});
+
 // login by account
 // NOTE: account & password can either be a string/string pair or number/string pair,
 // 		 in the latter case it's actuall checked against uid + pass_tokens
@@ -330,9 +337,29 @@ SR.API.add('_ACCOUNT_LOGIN', {
 			}
 		}
 	}).then((wpInfo) => {
-		if (!wpInfo || (!!wpInfo && userExist)) {
+		if (!wpInfo) {
 			Promise.resolve();
 			return;
+		}
+
+		if (!!wpInfo && userExist) {
+			// update user data in local server
+			return new Promise((resolve, reject) => {
+				SR.API._ACCOUNT_UPDATE({
+					account: account,
+					fields: {
+						password: l_encryptPass(args.password),
+						email: wpInfo.user.email
+					}
+				}, (err, record) => {
+					if (err) {
+						reject(err);
+						return;
+					}
+
+					resolve(SR.State.get('_accountMap')[account]);
+				});
+			});
 		}
 
 		// create user in server first

@@ -214,8 +214,13 @@ exports.update = function (args, onDone) {
 		
 	var obj = l_obj[args.name];
 	obj.find(args.query, function (err, result) {
-		if (err)
+		if (err) {
 			return UTIL.safeCall(onDone, err);
+		}
+
+		if (!result.length) {
+			return UTIL.safeCall(onDone, `Query ${args.query} not found`);
+		}
 				
 		LOG.warn('result found:', l_name);
 		l_print(result[0]);
