@@ -194,7 +194,8 @@ SR.API.add('_ACCOUNT_REGISTER', {
 	password:	'string',
 	email:		'string',
 	data:		'+object',
-	authWP:		'+boolean'
+	authWP:		'+boolean',
+	groups:		'+array'
 }, function (args, onDone, extra) {
 	// check if DB is initialized
 	if (typeof l_accounts === 'undefined') {
@@ -247,13 +248,13 @@ SR.API.add('_ACCOUNT_REGISTER', {
 			// verify:		{email_verify: false, phone_verify: false},
 			tokens: 	{reset: '', pass: {}},
 			enc_type:	l_enc_type,
-			control:	{groups: [], permissions: []}, 
+			control:	{groups: args.groups || [], permissions: []}, 
 			data: 		args.data || {},
 			login: 		{IP: ip, count: 1}
 		};
 		
 		// special handling (by default 'admin' account is special and will be part of the 'admin' group by default
-		if (reg.account === 'admin') {
+		if (!args.authWP && reg.account === 'admin') {q
 			reg.control.groups.push('admin');
 		}
 				
@@ -342,6 +343,8 @@ SR.API.add('_ACCOUNT_LOGIN', {
 			return;
 		}
 
+		const wpGroups = Object.keys(wpInfo.user.capabilities).filter((key) => wpInfo.user.capabilities[key] === true);
+
 		if (!!wpInfo && userExist) {
 			// update user data in local server
 			return new Promise((resolve, reject) => {
@@ -349,7 +352,8 @@ SR.API.add('_ACCOUNT_LOGIN', {
 					account: account,
 					fields: {
 						password: l_encryptPass(args.password),
-						email: wpInfo.user.email
+						email: wpInfo.user.email,
+						control: { groups: wpGroups, permissions: [] }
 					}
 				}, (err, record) => {
 					if (err) {
@@ -368,7 +372,8 @@ SR.API.add('_ACCOUNT_LOGIN', {
 				account: account,
 				password: args.password,
 				email: wpInfo.user.email,
-				data: args.data
+				data: args.data,
+				groups: wpGroups
 			}, (err, data) => {
 				if (err) {
 					reject(err);
