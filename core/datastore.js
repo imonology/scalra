@@ -452,6 +452,19 @@ var l_load = function (arr, name, model, cache, onDone) {
 					UTIL.safeCall(onAddDone, null, record);
 				});
 			}
+
+			arr.update = function (account, data, onDone) {
+				const record = arr.find((r) => r.account === account);
+				Object.keys(data).forEach((key) => {
+					record[key] = data[key];
+				});
+
+				SR.ORM.update({
+					name,
+					data,
+					query: { account }
+				}, onDone);
+			}
 		
 			// external dependency: name, arr, l_mappers
 			// remove a given element based on query (from both memory & DB)
@@ -739,6 +752,7 @@ var l_get = exports.get = function (args, onDone) {
 	// NOTE: this works even if select is specified and the attributes returned is only a subset
 	result.add = arr.add;
 	result.remove = arr.remove;
+	result.update = arr.update;
 	result.size = arr.size;
 		
 	//LOG.warn('result after select:');
@@ -811,6 +825,7 @@ var l_map = exports.map = function (args, onDone) {
 	// append add/remove element functions
 	map.add = arr.add;
 	map.remove = arr.remove;
+	map.update = arr.update;
 	map.size = arr.size;
 	
 	// store the mapping relations & the key name used
