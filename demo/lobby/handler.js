@@ -74,6 +74,24 @@ SR.API.add('addDevice', {
 	});
 });
 
+SR.API.add('addUser', {
+	name: 'string',
+	tel: 'string',
+	addr: 'string'
+}, (args, onDone, err) => {
+	const { name, tel, addr } = args;
+	const uid = UTIL.createUUID();
+	SR.API.UPDATE_FORM({
+		form_name: 'Users',
+		values: {
+			uid,
+			name,
+			tel,
+			addr
+		}
+	});
+});
+
 //
 // custom logic
 //
@@ -134,9 +152,9 @@ SR.API.after('UPDATE_FORM', function (args, output, onDone) {
 // system events
 //
 var l_devices = undefined;
+var l_users = undefined;
 
 SR.Callback.onStart(function () {
-
 	SR.API.INIT_FORM({
 		name: 'DeviceInfo',
 		fields: [
@@ -159,6 +177,32 @@ SR.Callback.onStart(function () {
 			SR.API.addDevice({ name: 'Camera9', ip: '163.22.32.199', port: 24567 });
 			SR.API.addDevice({ name: 'Camera lobby', ip: '192.168.5.66', port: 21104 });
 			SR.API.addDevice({ name: 'DVRRR', ip: '10.32.21.193', port: 30057 });
+		}
+	});
+
+	SR.API.INIT_FORM({
+		name: 'Users',
+		fields: [
+			{id: '*uid', name: 'UID', type: 'string', desc: '', must: true, show: true, option: ''},			
+			{id: 'name', name: 'Name', type: 'string', desc: '', must: true, show: true, option: undefined},
+			{id: 'tel', name: 'Tel', type: 'string', desc: '', must: true, show: true, option: ''},
+			{id: 'addr', name: 'Address', type: 'number', desc: '', must: true, show: true, option: undefined}
+		]
+	}, function (err, ref) {
+		if (err) {
+			return LOG.error(err);
+		}
+
+		l_users = ref['Users'];
+		LOG.warn('l_users');
+		LOG.warn(l_users);
+
+		// init some demo data
+		if (!Object.keys(l_users).length) {
+			SR.API.addUser({ name: '張三', tel: '07-5573526', addr: '436台中市清水區忠貞路21號' });
+			SR.API.addUser({ name: '李四', tel: '06-3287725', addr: '330桃園市桃園區中正路1188號' });
+			SR.API.addUser({ name: '吳五', tel: '049-2917366', addr: '116台北市文山區新光路二段30號' });
+			SR.API.addUser({ name: '劉六', tel: '02-2344958', addr: '806高雄市前鎮區中華五路656號' });
 		}
 	});
 });
