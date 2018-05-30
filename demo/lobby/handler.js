@@ -54,8 +54,25 @@ SR.API.add('HELLO_EVENT', {
 	onDone(null, {name: args.name, age: age, 中文: '中文也通!', 
 				  reset_counter: reset_counter, 
 				  persist_counter: l_states['counter']});
-})
+});
 
+SR.API.add('addDevice', {
+	name: 'string',
+	ip: 'string',
+	port: 'number'
+}, (args, onDone, err) => {
+	const { name, ip, port } = args;
+	const id = UTIL.createUUID();
+	SR.API.UPDATE_FORM({
+		form_name: 'DeviceInfo',
+		values: {
+			id,
+			name,
+			ip,
+			port
+		}
+	});
+});
 
 //
 // custom logic
@@ -135,6 +152,14 @@ SR.Callback.onStart(function () {
 		l_devices = ref['DeviceInfo'];
 		LOG.warn('l_devices');
 		LOG.warn(l_devices);
+
+		// init some demo data
+		if (!Object.keys(l_devices).length) {
+			SR.API.addDevice({ name: 'Device 001', ip: '10.32.21.147', port: 10035 });
+			SR.API.addDevice({ name: 'Camera9', ip: '163.22.32.199', port: 24567 });
+			SR.API.addDevice({ name: 'Camera lobby', ip: '192.168.5.66', port: 21104 });
+			SR.API.addDevice({ name: 'DVRRR', ip: '10.32.21.193', port: 30057 });
+		}
 	});
 });
 
