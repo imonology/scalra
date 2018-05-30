@@ -90,10 +90,51 @@ l_handles.query = function (path_array, res, para, req) {
 	var project = path_array[3];
 	var name    = path_array[4];
 
-	SR.Execute.query({owner: owner, project: project, name: name}, function (list) {
-		LOG.sys('SR.Execute.query return info on ' + list.length + ' servers', 'SR.REST');
-		SR.REST.reply(res, list);
-	});
+	let auth = req.headers['authorization'];
+	// LOG.warn("Authorization Header is: ", auth);
+
+	if (!auth) {
+
+		try {
+			res.statusCode = 401;
+			res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
+			res.end('<html><body>Need some creds son</body></html>');
+
+			SR.REST.reply(res, "");
+		} catch (err) {
+			let known_problemn = 'Can\'t set headers after they are sent.';
+			// LOG.warn(typeof(err.message));
+			// LOG.warn(err.message);
+			if (err.message === known_problemn) {
+				LOG.warn('sending 401');
+			} else {
+				LOG.error(err);
+			}
+		}
+	} else if (auth) {
+
+		let tmp = auth.split(' ');
+
+		let buf = new Buffer(tmp[1], 'base64');
+		let plain_auth = buf.toString();
+
+		// console.log("Decoded Authorization ", plain_auth);
+
+		let creds = plain_auth.split(':');
+		let username = creds[0];
+		let password = creds[1];
+
+		if ((username == SR.Settings.httpAuth.username) && (password == SR.Settings.httpAuth.password)) {
+			SR.Execute.query({owner: owner, project: project, name: name}, function (list) {
+				LOG.sys('SR.Execute.query return info on ' + list.length + ' servers', 'SR.REST');
+				SR.REST.reply(res, list);
+			});
+		} else {
+			res.statusCode = 401; // Force them to retry authentication
+			res.setHeader('WWW-Authenticate', 'Basic realm="Secure Area"');
+			res.end('<html><body>You shall not pass</body></html>');
+		}
+	}
 }
 
 SR.REST.addHandler(l_handles);
