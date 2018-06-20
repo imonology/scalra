@@ -286,7 +286,8 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	password:	'string',
 	from:		'+string',		// which server relays this login request
 	authWP:		'+boolean',		// login via wordpress
-	data:		'+object'
+	data:		'+object',
+	authMySQL:	'+boolean'
 }, function (args, onDone, extra) {
 
 	// check if DB is initialized
@@ -300,8 +301,10 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	let userExist = true;
 	// check if account exists
 	if (l_accounts.hasOwnProperty(account) === false) {
-		if (!args.authWP) {
-			return onDone('INVALID_ACCOUNT', account);
+		if (!args.authWP && !args.authMySQL) {
+			LOG.warn(args.authWP);
+			LOG.warn(args.authMySQL);
+			return onDone('INVALID_ACCOUNT', args.authMySQL);
 		} else {
 			userExist = false;
 		}
@@ -328,6 +331,16 @@ SR.API.add('_ACCOUNT_LOGIN', {
 
 				resolve(data);
 			});
+		} else if (!!args.authMySQL) {
+			SR.API._mysql_user_login({
+				username: account,
+				password: args.password
+			}, (err, data) => {
+				if (err) {
+					return reject(err);
+				}
+				resolve(data);
+			});
 		} else {
 			// perform password or token verification
 			if (l_encryptPass(args.password) !== user.password &&
@@ -337,25 +350,46 @@ SR.API.add('_ACCOUNT_LOGIN', {
 				resolve();
 			}
 		}
+	// FIXME: should be userInfo
 	}).then((wpInfo) => {
 		if (!wpInfo) {
 			Promise.resolve();
 			return;
 		}
 
-		const wpGroups = Object.keys(wpInfo.user.capabilities).filter((key) => wpInfo.user.capabilities[key] === true);
+		if (!!args.authWP) {
+			const wpGroups = Object.keys(wpInfo.user.capabilities).filter((key) => wpInfo.user.capabilities[key] === true);
 
-		if (!!wpInfo && userExist) {
-			// update user data in local server
+			if (!!wpInfo && userExist) {
+				// update user data in local server
+				return new Promise((resolve, reject) => {
+					SR.API._ACCOUNT_UPDATE({
+						account: account,
+						fields: {
+							password: l_encryptPass(args.password),
+							email: wpInfo.user.email,
+							control: { groups: wpGroups, permissions: [] }
+						}
+					}, (err, record) => {
+						if (err) {
+							reject(err);
+							return;
+						}
+
+						resolve(SR.State.get('_accountMap')[account]);
+					});
+				});
+			}
+
+			// create user in server first
 			return new Promise((resolve, reject) => {
-				SR.API._ACCOUNT_UPDATE({
+				SR.API._ACCOUNT_REGISTER({
 					account: account,
-					fields: {
-						password: l_encryptPass(args.password),
-						email: wpInfo.user.email,
-						control: { groups: wpGroups, permissions: [] }
-					}
-				}, (err, record) => {
+					password: args.password,
+					email: wpInfo.user.email,
+					data: args.data,
+					groups: wpGroups
+				}, (err, data) => {
 					if (err) {
 						reject(err);
 						return;
@@ -366,23 +400,45 @@ SR.API.add('_ACCOUNT_LOGIN', {
 			});
 		}
 
-		// create user in server first
-		return new Promise((resolve, reject) => {
-			SR.API._ACCOUNT_REGISTER({
-				account: account,
-				password: args.password,
-				email: wpInfo.user.email,
-				data: args.data,
-				groups: wpGroups
-			}, (err, data) => {
-				if (err) {
-					reject(err);
-					return;
-				}
+		if (!!args.authMySQL) {
 
-				resolve(SR.State.get('_accountMap')[account]);
+			if (!!wpInfo && userExist) {
+				// update user data in local server
+				return new Promise((resolve, reject) => {
+					SR.API._ACCOUNT_UPDATE({
+						account: account,
+						fields: {
+							password: l_encryptPass(args.password),
+						}
+					}, (err, record) => {
+						if (err) {
+							reject(err);
+							return;
+						}
+
+						resolve(SR.State.get('_accountMap')[account]);
+					});
+				});
+			}
+
+			// create user in server first
+			return new Promise((resolve, reject) => {
+				SR.API._ACCOUNT_REGISTER({
+					account: account,
+					password: args.password,
+					email: `${account}@mysql.localhost`,
+					groups: [],
+					data: {}
+				}, (err, data) => {
+					if (err) {
+						reject(err);
+						return;
+					}
+
+					resolve(SR.State.get('_accountMap')[account]);
+				});
 			});
-		});
+		}
 	}).then((u) => {
 		user = u || user;
 		var ip = (extra) ? extra.conn.host : "server";
