@@ -13,41 +13,34 @@
 //
 // history:
 //	2014-06-21 change return value in onDone to true/false instead of messages
-
 supported functions:
-
 // standard init/dispose for everything (used by modulized DB loading)
 // config: {collections: <array>, shutdown_if_fail: <bool>}
 init(config, onDone)
-
 // setup a number of collections, load from DB if already exist
 // 開啟資料庫 Collections
 //
 // [I] str[] name: 欲建立的 Collection 名稱字串
 // [O]
 initCollections(name, onDone)
-
 // add a collection to those to be initialized
 // 新增一組 collection 名稱以利初始化
 //
 // [I] str[] names: 欲建立的 Collection 名稱字串集合
 // [O]
 useCollections(names, onDone)
-
 // add a new collection to be used during run-time
 // 新增一組 collection 名稱可使用
 //
 // [I] str[] names: 欲建立的 Collection 名稱字串集合
 // [O]
 addCollection(name, onDone)
-
 // convert a UUID string to javascript object form
 // 把 UUID 從字串轉成 object 型態
 //
 // [I] str uuid_str: 字串型態的 UUID
 // [O]
 toObjectID(uuid_str)
-
 // store a given data record to a collection, create new record if not exist
 // 儲存某筆資料到 Collection 中, 若不存在會存新資料
 //
@@ -56,7 +49,6 @@ toObjectID(uuid_str)
 // [O] obj onSuccess:   存成功的資料 record
 // [O] str onFail:      錯誤訊息
 setData(clt_name, data, onSuccess, onFail)
-
 // get a record from a given collection
 // 從某個 Collection 中抓出一筆資料 Record
 //
@@ -65,7 +57,6 @@ setData(clt_name, data, onSuccess, onFail)
 // [O] obj onSuccess:   符合結果的一筆 record
 // [O] str onFail:      錯誤訊息
 getData(clt_name, query, onSuccess, onFail)
-
 // update a given data record to a collection
 // 更新 Collection 中某筆資料
 //
@@ -75,7 +66,6 @@ getData(clt_name, query, onSuccess, onFail)
 // [O] obj onSuccess:   更新成功的資料 record
 // [O] str onFail:      錯誤訊息
 updateData(clt_name, query, data, onSuccess, onFail)
-
 // delete a given data record to a collection
 // 刪除 Collection 中某筆資料
 //
@@ -85,7 +75,6 @@ updateData(clt_name, query, data, onSuccess, onFail)
 // [I] str query_or_id: 欲刪除 record 的 uuid (_id)
 //     obj query_or_id	欲刪除 record 內的欄位
 deleteData(clt_name, onSuccess, onFail, id_or_obj)
-
 // remove a particular field within a record
 // 將某筆 record 內的屬性移除
 //
@@ -95,7 +84,6 @@ deleteData(clt_name, onSuccess, onFail, id_or_obj)
 // [O] obj onSuccess:   刪除成功
 // [O] str onFail:      錯誤訊息
 removeField(clt_name, query, field, onSuccess, onFail)
-
 // increment/decrement a given data by some number
 // 替某筆資料增加/減少某數值
 //
@@ -105,8 +93,6 @@ removeField(clt_name, query, field, onSuccess, onFail)
 // [O] obj onSuccess:   成功的回傳
 // [O] str onFail:      錯誤訊息
 incrementData(clt_name, query, change, onSuccess, onFail)
-
-
 // count the number of records in a collection
 // 算 Collection 中資料數
 //
@@ -114,7 +100,6 @@ incrementData(clt_name, query, change, onSuccess, onFail)
 // [O] obj onSuccess:   資料個數
 // [O] str onFail:      錯誤訊息
 count(clt_name, onSuccess, onFail)
-
 // get an array of records matching a query from a given collection
 // 從某個 Collection 中抓出符合搜尋條件的多筆資料 Record
 //
@@ -124,7 +109,6 @@ count(clt_name, onSuccess, onFail)
 // [I] obj query:       搜尋條件的 js object (例: {account:account, _id:objID})
 // [I] obj condition:   條件 (例: {limit: mail_limit, sort:[['send_time', -1]]})
 getArray(clt_name, onSuccess, onFail, query, condition)
-
 // update elements in an array that matches a query from a given collection
 // 從某個 Collection 中的特定欄位更新某個特定陣列內容
 //
@@ -134,8 +118,6 @@ getArray(clt_name, onSuccess, onFail, query, condition)
 // [O] str onSuccess:   成功訊息
 // [O] str onFail:      錯誤訊息
 updateArray(clt_name, query, array_data, onSuccess, onFail)
-
-
 // get a record from a given collection
 // 從某個 Collection 取得所有 records 或單筆 record 並存於 cache
 // 若已存在 cache 中則不會有 DB 讀取
@@ -148,7 +130,6 @@ updateArray(clt_name, query, array_data, onSuccess, onFail)
 // [O] str onFail:      錯誤訊息
 // [I] obj query_item:  針對特定 record 的條件 (例: {account: acc})
 getCachedData(clt_name, onSuccess, onFail, query_item)
-
 // store back a cached record to DB
 // 將 cached 中存的 records 存回 DB 的 collection
 //
@@ -157,7 +138,6 @@ getCachedData(clt_name, onSuccess, onFail, query_item)
 // [O] obj onSuccess:   存成功的 record
 // [O] str onFail:      錯誤訊息
 syncCachedDataByID(clt_name, id, onSuccess, onFail)
-
 // delete a cached record
 // 將 cached 中存的 record 刪除
 //
@@ -166,7 +146,6 @@ syncCachedDataByID(clt_name, id, onSuccess, onFail)
 // [O] obj onSuccess:   存成功的 record
 // [O] str onFail:      錯誤訊息
 deleteCachedDataByID(clt_name, id, onSuccess, onFail)
-
 // update a cached record
 // 將 cached 中存的 record 某些欄位更新
 //
@@ -176,7 +155,6 @@ deleteCachedDataByID(clt_name, id, onSuccess, onFail)
 // [O] obj onSuccess:   存成功的 record
 // [O] str onFail:      錯誤訊息
 updateCachedDataByID(clt_name, id, new_values, onSuccess, onFail)
-
 // initialize DB
 // 初始化 DB
 //
@@ -184,13 +162,11 @@ updateCachedDataByID(clt_name, id, new_values, onSuccess, onFail)
 // [I] str[] names:     相關 collection 名稱
 // [O] onDone:          結束通知
 initDB(setting, names, onDone)
-
 // shutdown DB
 // 關閉 DB
 //
 // [O] onDone:          結束通知
 disposeDB(onDone)
-
 // 2012-05-10  inital version
 //             (refactored code from aere_lobby_db.js)
 //
@@ -244,7 +220,7 @@ var l_getCollection = exports.getCollection = function (clt_name, onFail) {
 
 	var DB_name = l_DBname;
 
-    if (l_clts.hasOwnProperty(DB_name) === false || l_clts[DB_name].hasOwnProperty(clt_name) === false) {
+	if (l_clts.hasOwnProperty(DB_name) === false || l_clts[DB_name].hasOwnProperty(clt_name) === false) {
 
 		/* TODO: make DB init easier and automatic?
 		LOG.warn('DB name [' + clt_name + '] not known previously, initialize it... Please try to use SR.DB.useCollections beforehand to initialize DBs to be used', l_name);
@@ -260,34 +236,34 @@ var l_getCollection = exports.getCollection = function (clt_name, onFail) {
 		}
 
 		if (onFail) {
-		    LOG.error('DB [' + DB_name + '] collection [' + clt_name + '] invalid', 'SR.DB');
+			LOG.error('DB [' + DB_name + '] collection [' + clt_name + '] invalid', 'SR.DB');
 			LOG.error('did you forget to specify collection name using SR.DB.useCollections()?', 'SR.DB');
-		    if (typeof clt_name === 'object') {
-			    LOG.error(clt_name, 'SR.DB');
-		    }
-		    LOG.stack();
-		    UTIL.safeCall(onFail, 'invalid DB/collection pair');
+			if (typeof clt_name === 'object') {
+				LOG.error(clt_name, 'SR.DB');
+			}
+			LOG.stack();
+			UTIL.safeCall(onFail, 'invalid DB/collection pair');
 		}
 		return undefined;
 	}
 
 	// return collection instance
-    return l_clts[DB_name][clt_name];
-}
+	return l_clts[DB_name][clt_name];
+};
 
-var l_getCollectionAsync = exports.getCollectionAsync = function(clt_name){
+var l_getCollectionAsync = exports.getCollectionAsync = function(clt_name) {
 	return new promise(function(resolve, reject) {
 		l_getCollection(clt_namem, reject);
 		// var result = l_getCollection(clt_namem, reject);
 		// resolve(result);
 	});
-}
+};
 
 // helper to notify DB error
 var l_notifyError = function (clt_name, op, err, onFail, is_exception) {
 
 	var msg = 'DB ' + op + ' error for [' + clt_name + ']';
-    LOG.error(msg, 'SR.DB');
+	LOG.error(msg, 'SR.DB');
 	LOG.error(err, 'SR.DB');
 	if (typeof err.stack !== 'undefined') {
 		LOG.error(err.stack, 'SR.DB');
@@ -305,13 +281,13 @@ var l_notifyError = function (clt_name, op, err, onFail, is_exception) {
 		'[SR DB error: ' + clt_name + ']',
 		msg
 	);
-}
+};
 
-var l_notifyErrorAsync = function(clt_name, op, err, is_exception){
+var l_notifyErrorAsync = function(clt_name, op, err, is_exception) {
 	return new promise(function(resolve, reject) {
 		l_notifyError(clt_name, op, err, reject, is_exception);
 	});
-}
+};
 
 //---------------------------------------------------
 // callback to load existing DB collections to memory
@@ -339,10 +315,10 @@ var l_initCollection = function (DB_name, name, onDone, prefix) {
 	// original simple version
 	//var collection_name = name;
 
-    l_DBclient[DB_name].collection(collection_name,
-        function (err, collection) {
-            if (err) {
-                LOG.error(err, 'SR.DB');
+	l_DBclient[DB_name].collection(collection_name,
+		function (err, collection) {
+			if (err) {
+				LOG.error(err, 'SR.DB');
 				LOG.error('init DB [' + DB_name + ' ] collection [' + collection_name + '] error', 'SR.DB');
 				UTIL.safeCall(onDone, false);
 			} else {
@@ -362,15 +338,15 @@ var l_initCollection = function (DB_name, name, onDone, prefix) {
 
 				UTIL.safeCall(onDone, true);
 			}
-        }
-    );
-}
+		}
+	);
+};
 
 var l_initCollectionAsync = function(DB_name, name, prefix) {
 	return new promise(function(resolve, reject) {
 		l_initCollection(DB_name, name, resolve, prefix);
 	});
-}
+};
 
 // helper
 var l_add = function (name) {
@@ -378,7 +354,7 @@ var l_add = function (name) {
 	return function (onD) {
 		l_addCollection(name, onD);
 	}
-}
+};
 
 // add a collection to those to be initialized
 exports.useCollections = function (names, onDone) {
@@ -409,14 +385,14 @@ exports.useCollections = function (names, onDone) {
 		jq.add(l_add(name));
 	}
 	jq.run(onDone);
-}
+};
 
 // FIXME: onDone for resolve or reject?
-exports.useCollectionsAsync = function(names){
+exports.useCollectionsAsync = function(names) {
 	return new promise(function(resolve, reject) {
 		useCollections(names, resolve);
 	});
-}
+};
 
 // add a new collection to be used during run-time
 // returns a message string
@@ -435,14 +411,14 @@ var l_addCollection = exports.addCollection = function (name, onDone) {
 	l_initCollection(l_DBname, name, function (result) {
 		UTIL.safeCall(onDone, result);
 	});
-}
+};
 
 // FIXME: onDone for resolve or reject?
 var l_addCollectionAsync = exports.addCollectionAsync = function (name) {
 	return new promise(function(resolve, reject) {
 		l_addCollection(name, resolve);
 	});
-}
+};
 
 //-----------------------------------------
 // define external functions
@@ -455,39 +431,38 @@ exports.isEnabled = function () {
 		return false;
 	}
 	return true;
-}
+};
 
 //-----------------------------------------
 // convert a string to objectID
 var l_toObjectID = exports.toObjectID = function (s) {
 
-    var str = s;
+	var str = s;
 
-    if (typeof s === 'object') {
+	if (typeof s === 'object') {
 
-        // see if already an object ID
-        if (typeof s.toHexString === 'function') {
+		// see if already an object ID
+		if (typeof s.toHexString === 'function') {
 			return s;
-        } else {
-            LOG.warn('not objectID, return undefined', 'SR.DB');
-            return undefined;
-        }
-    }
+		} else {
+			LOG.warn('not objectID, return undefined', 'SR.DB');
+			return undefined;
+		}
+	}
 
-    try {
+	try {
 		var obj = new SR.mongo.ObjectID(str);
-        return obj;
-    }
-    catch (e) {
-        LOG.error('convert to ObjectID failed for: ' + str, 'SR.DB');
-        return undefined;
-    }
+		return obj;
+	} catch (e) {
+		LOG.error('convert to ObjectID failed for: ' + str, 'SR.DB');
+		return undefined;
+	}
 };
 
 //-----------------------------------------
 // store some data given collection name
 // NOTE: this will allow entries be both inserted & updated
-//          data with the same id will be overwritten
+//		  data with the same id will be overwritten
 // NOTE: the data field may be inserted a '_id' field after the operation
 var l_setData = exports.setData = function (clt_name, data_obj, onSuccess, onFail) {
 
@@ -518,25 +493,24 @@ var l_setData = exports.setData = function (clt_name, data_obj, onSuccess, onFai
 				}
 			}
 		);
-	}
-	catch (err) {
+	} catch (err) {
 		l_notifyError(clt_name, 'setData.exception', err, onFail, true);
 	}
-}
+};
 
 var l_setDataAsync = exports.setDataAsync = function (clt_name, data_obj) {
 	return new promise(function(resolve, reject) {
 		l_setData(clt_name, data_obj, resolve, reject);
 	});
-}
+};
 
 //-----------------------------------------
 // extract a particular DB document by ID
 exports.getData = function (clt_name, query, onSuccess, onFail) {
 
-    //LOG.sys('clt_name: ' + clt_name + ' query: ' + JSON.stringify(query), 'SR.DB');
+	//LOG.sys('clt_name: ' + clt_name + ' query: ' + JSON.stringify(query), 'SR.DB');
 
-    // error check
+	// error check
 	var collection = l_getCollection(clt_name, onFail);
 	if (collection === undefined) {
 		return;
@@ -551,36 +525,35 @@ exports.getData = function (clt_name, query, onSuccess, onFail) {
 
 	try {
 		// TODO: change to find()
-        collection.findOne(query, options,
-            function (err, cursor) {
+		collection.findOne(query, options,
+			function (err, cursor) {
 
-                if (err) {
+				if (err) {
 					return l_notifyError(clt_name, 'getData', err, onFail);
-                }
+				}
 
-                // check if the returned cursor is empty
-                if (cursor === null ||
-                    cursor === '') {
+				// check if the returned cursor is empty
+				if (cursor === null ||
+					cursor === '') {
 
-                    LOG.debug('[' + clt_name + '] null returned for query: ' + JSON.stringify(query), 'SR.DB');
+					LOG.debug('[' + clt_name + '] null returned for query: ' + JSON.stringify(query), 'SR.DB');
 					UTIL.safeCall(onSuccess, null);
-                    return;
-                }
+					return;
+				}
 
 				UTIL.safeCall(onSuccess, cursor);
-            }
-        );
-	}
-	catch (err) {
+			}
+		);
+	} catch (err) {
 		l_notifyError(clt_name, 'getData.exception', err, onFail, true);
 	}
-}
+};
 
 exports.getDataAsync = function(clt_name, query) {
 	return new pormise(function(resolve, reject) {
 		l_getData(clt_name, query, resolve, reject);
 	});
-}
+};
 
 //-----------------------------------------
 var l_updateData = exports.updateData = function (clt_name, query, data_obj, onSuccess, onFail) {
@@ -638,68 +611,66 @@ var l_updateData = exports.updateData = function (clt_name, query, data_obj, onS
 				}
 			);
 		}
-	}
-	catch (err) {
+	} catch (err) {
 		l_notifyError(clt_name, 'updateData.exception', err, onFail, true);
 	}
-}
+};
 
 var l_updateDataAsync = exports.updateDataAsync = function (clt_name, query, data_obj) {
 	return new promise(function(resolve, reject) {
 		l_updateData(clt_name, query, data_obj, resolve, reject);
 	});
-}
+};
 
 
 //-----------------------------------------
 var l_deleteData = exports.deleteData = function (clt_name, onSuccess, onFail, query_or_id) {
 
-    //LOG.warn('removing collection [' + clt_name + ']', 'SR.DB');
+	//LOG.warn('removing collection [' + clt_name + ']', 'SR.DB');
 
-    // error check
+	// error check
 	var collection = l_getCollection(clt_name, onFail);
 	if (collection === undefined) {
 		return;
 	}
 
-    // if id is not specified, means to remove all records,
-    // default query is {}
-    var query = {};
+	// if id is not specified, means to remove all records,
+	// default query is {}
+	var query = {};
 
-    if (typeof query_or_id === 'string') {
-        query = {_id:query_or_id};
-    } else if (typeof query_or_id === 'object') {
-        query = query_or_id;
-    }
+	if (typeof query_or_id === 'string') {
+		query = {_id:query_or_id};
+	} else if (typeof query_or_id === 'object') {
+		query = query_or_id;
+	}
 
 	try {
-        collection.remove(query,
-            function (err, res) {
-                if (err) {
+		collection.remove(query,
+			function (err, res) {
+				if (err) {
 					l_notifyError(clt_name, 'deleteData', err, onFail);
-                } else {
-                    //LOG.warn('remove collection [' + clt_name + '] successful', 'SR.DB');
-                    UTIL.safeCall(onSuccess, res);
-                }
-            }
-        );
-	}
-	catch (err) {
+				} else {
+					//LOG.warn('remove collection [' + clt_name + '] successful', 'SR.DB');
+					UTIL.safeCall(onSuccess, res);
+				}
+			}
+		);
+	} catch (err) {
 		l_notifyError(clt_name, 'deleteData.exception', err, onFail, true);
 	}
-}
+};
 
 var l_deleteDataAsync = exports.deleteDataAsync = function (clt_name, query_or_id) {
 	return new promise(function(resolve, reject) {
 		l_deleteData(clt_name, resolve, reject, query_or_id);
 	});
-}
+};
 
 // remove a particular field within a record
 // ref: http://stackoverflow.com/questions/6851933/how-do-i-remove-a-field-completely-from-mongo
 var l_removeField = exports.removeField = function (clt_name, query, field, onSuccess, onFail) {
 
-    // error check
+	// error check
 	var collection = l_getCollection(clt_name, onFail);
 	if (collection === undefined) {
 		return;
@@ -710,84 +681,82 @@ var l_removeField = exports.removeField = function (clt_name, query, field, onSu
 		action[field] = 1;
 
 		collection.update(query, {$unset: action},
-            function (err, res) {
-                if (err) {
+			function (err, res) {
+				if (err) {
 					l_notifyError(clt_name, 'removeField', err, onFail);
-                } else {
-                    LOG.sys('remove field (' + field + ') from collection [' + clt_name + '] record ' + JSON.stringify(query) + ' successful', 'SR.DB');
-                    UTIL.safeCall(onSuccess, res);
-                }
-            }
-        );
-	}
-	catch (err) {
+				} else {
+					LOG.sys('remove field (' + field + ') from collection [' + clt_name + '] record ' + JSON.stringify(query) + ' successful', 'SR.DB');
+					UTIL.safeCall(onSuccess, res);
+				}
+			}
+		);
+	} catch (err) {
 		l_notifyError(clt_name, 'removeField.exception', err, onFail, true);
 	}
-}
+};
 
 var l_removeFieldAsync = exports.removeFieldAsync = function (clt_name, query, field) {
 	return new promise(function(resolve, reject) {
 		l_removeField(clt_name, query, field, resolve, reject);
 	});
-}
+};
 
 //-----------------------------------------
 // increase a given field by a certain amount
 var l_incrementData = exports.incrementData = function (clt_name, query, change, onSuccess, onFail) {
 
-    // error check
+	// error check
 	var collection = l_getCollection(clt_name, onFail);
 	if (collection === undefined) {
 		return;
 	}
 
-    try {
-        LOG.sys('[' + clt_name + '] increment record: ' + JSON.stringify(query), 'SR.DB');
+	try {
+		LOG.sys('[' + clt_name + '] increment record: ' + JSON.stringify(query), 'SR.DB');
 
-        // make this update an 'upsert' (insert if not exist)
-        // also 'multi' (if multiple records match, then they will all be modified)
-        collection.update(query, {"$inc": change},
-            function (err) {
+		// make this update an 'upsert' (insert if not exist)
+		// also 'multi' (if multiple records match, then they will all be modified)
+		collection.update(query, {"$inc": change},
+			function (err) {
 
-                if (err) {
+				if (err) {
 					l_notifyError(clt_name, 'incrementData', err, onFail);
-                } else {
+				} else {
 					UTIL.safeCall(onSuccess, 'updated');
-                }
-            }
-        );
-    }
-    catch (err) {
+				}
+			}
+		);
+	} catch (err) {
 		l_notifyError(clt_name, 'incrementData.exception', err, onFail, true);
-    }
-}
+	}
+};
 
 var l_incrementDataAsync = exports.incrementDataAsync = function (clt_name, query, change) {
 	return new promise(function(resolve, reject) {
 		l_incrementData(clt_name, query, change, resolve, reject);
 	});
-}
+};
 
 //-----------------------------------------
 // count the number of records in a collection
 exports.count = function (clt_name, onSuccess, onFail) {
 
-    // error check
+	// error check
 	var collection = l_getCollection(clt_name, onFail);
 	if (collection === undefined) {
 		return;
 	}
 
-    var count = collection.find({}).count(function (e, count) {
-	    UTIL.safeCall(onSuccess, count);
-    });
-}
+	var count = collection.find({}).count(function (e, count) {
+		UTIL.safeCall(onSuccess, count);
+	});
+};
 
 exports.countAsync = function (clt_name) {
 	return new promise(function(resolve, reject) {
 		l_count(clt_name, resolve, reject);
 	});
-}
+};
 
 
 //-----------------------------------------
@@ -795,33 +764,33 @@ exports.countAsync = function (clt_name) {
 // NOTE: if array does not exist, it may return a valid (but empty) array
 exports.getArray = function (clt_name, onSuccess, onFail, query, condition, start, end) {
 
-    // error check
+	// error check
 	var collection = l_getCollection(clt_name, onFail);
 	if (collection === undefined) {
 		return;
 	}
 
-    // default is to get all without query string
+	// default is to get all without query string
 	query = query || {};
 	condition = condition || {};
 
 	LOG.sys('[' + clt_name + '] getArray, query: ' + JSON.stringify(query) + ' condition: ' + JSON.stringify(condition), 'SR.DB');
 	try {
 
-        collection.find (query, condition,
-            function (err, cursor) {
+		collection.find (query, condition,
+			function (err, cursor) {
 
-                if (err) {
+				if (err) {
 					l_notifyError(clt_name, 'getArray.find', err, onFail);
-                    return;
-                }
+					return;
+				}
 
-                // found nothing
-                if (cursor === null) {
+				// found nothing
+				if (cursor === null) {
 					LOG.warn('[' + clt_name + '] null returned for query: ' + JSON.stringify(query), 'SR.DB');
-				    UTIL.safeCall(onSuccess, null);
-                    return;
-                }
+					UTIL.safeCall(onSuccess, null);
+					return;
+				}
 
 				// NOTE: we first sort before skip, because we expect to skip from the newest, not oldest
 				// however, Mongo's default is to skip from oldest
@@ -831,15 +800,15 @@ exports.getArray = function (clt_name, onSuccess, onFail, query, condition, star
 					cursor.sort({_id: -1}).skip(start).limit(limit);
 				}
 
-                // convert result to an array
-                cursor.toArray(
-                    function (err, array) {
+				// convert result to an array
+				cursor.toArray(
+					function (err, array) {
 
 						//LOG.sys('calling cursor.toArray success', 'SR.DB');
 
-                        if (err) {
+						if (err) {
 							return l_notifyError(clt_name, 'getArray.toArray', err, onFail);
-                        }
+						}
 
 						// reverse if we've applied start & end
 						// NOTE: this is a hack, prefer to have better way..
@@ -848,14 +817,13 @@ exports.getArray = function (clt_name, onSuccess, onFail, query, condition, star
 						}
 
 						LOG.sys('array found succces, length: ' + array.length, 'SR.DB');
-                        // NOTE: probably no need to check
+						// NOTE: probably no need to check
 						UTIL.safeCall(onSuccess, array);
-                    }
-                );
-            }
-        );
-	}
-	catch (err) {
+					}
+				);
+			}
+		);
+	} catch (err) {
 		l_notifyError(clt_name, 'getArray.exception', err, onFail, true);
 	}
 };
@@ -1006,7 +974,7 @@ exports.paginateAsync = function (name, clt_name, query, opts) {
 	return new promise(function(resolve, reject) {
 		l_paginate(name, clt_name, query, opts, reject);
 	});
-}
+};
 
 exports.getPage = function (name, page_num, cb) {
 	var page = l_Pages[name];
@@ -1018,11 +986,11 @@ exports.getPageAsync = function(name, page_num) {
 	return new promise(function(resolve, reject) {
 		l_getPage(name, page_num, reject);
 	});
-}
+};
 
 // update elements in an array that matches a query from a given collection
 // NOTE: to insert a single element to an array: { scores: 89 }
-//       to insert multiple elements: { scores: { $each: [ 90, 92, 85 ] }
+//	   to insert multiple elements: { scores: { $each: [ 90, 92, 85 ] }
 //
 // ref:
 // http://docs.mongodb.org/manual/reference/operator/update/push/#up._S_push
@@ -1031,7 +999,7 @@ exports.getPageAsync = function(name, page_num) {
 // NOTE: pushAll is Deprecated since version 2.4: Use the $push operator with $each instead.
 //
 exports.updateArray = function (clt_name, query, data, onSuccess, onFail) {
-    // error check
+	// error check
 	var collection = l_getCollection(clt_name, onFail);
 	if (collection === undefined) {
 		return;
@@ -1052,30 +1020,29 @@ exports.updateArray = function (clt_name, query, data, onSuccess, onFail) {
 		}
 	}
 
-    try {
+	try {
 		// NOTE: to push mulitple array elements at once, add $each
 		// see: http://docs.mongodb.org/manual/reference/operator/update/push/
 		collection.update(query, operation,
-            function (err) {
+			function (err) {
 
-                if (err) {
+				if (err) {
 					l_notifyError(clt_name, 'updateArray', err, onFail);
-                } else {
+				} else {
 					UTIL.safeCall(onSuccess, 'array updated');
 				}
-            }
-        );
-    }
-    catch (err) {
+			}
+		);
+	} catch (err) {
 		l_notifyError(clt_name, 'updateArray.exception', err, onFail, true);
-    }
-}
+	}
+};
 
 exports.updateArrayAsync = function (clt_name, query, data) {
 	return new promise(function(resolve, reject) {
 		l_updateArray(clt_name, query, data, resolve, reject);
 	});
-}
+};
 
 // to remove array element
 // ref: http://stackoverflow.com/questions/9048424/removing-specific-items-from-array-with-mongodb
@@ -1085,73 +1052,72 @@ exports.updateArrayAsync = function (clt_name, query, data) {
 // helper to check if a javascript object is empty
 var l_isEmpty = function (obj) {
    return (Object.keys(obj).length === 0);
-}
+};
 
 //-----------------------------------------
 // cache data for a given collection
 var l_cacheData = function (clt_name, onSuccess, onFail, query_obj) {
 
-    // error check
+	// error check
 	var collection = l_getCollection(clt_name, onFail);
 	if (collection === undefined) {
 		return;
 	}
 
-    var is_empty = (query_obj === undefined ||
-                    l_isEmpty(query_obj));
-    var query = {};
+	var is_empty = (query_obj === undefined ||
+					l_isEmpty(query_obj));
+	var query = {};
 
-    // check if there's a specific query
-    if (query_obj !== undefined) {
-        query = query_obj;
-    }
+	// check if there's a specific query
+	if (query_obj !== undefined) {
+		query = query_obj;
+	}
 
-    // if not in cache, get data from DB and cache in memory
-    //LOG.sys('data caching from [' + clt_name + '], query: ' + query + '...', 'SR.DB');
+	// if not in cache, get data from DB and cache in memory
+	//LOG.sys('data caching from [' + clt_name + '], query: ' + query + '...', 'SR.DB');
 
 	try {
 
-        // load all documents from the DB
-        collection.findOne(query,
-            function (err, data)
-            {
-                if (err) {
+		// load all documents from the DB
+		collection.findOne(query,
+			function (err, data)
+			{
+				if (err) {
 					return l_notifyError(clt_name, 'cacheData', err, onFail);
-                }
+				}
 
-                // something returned but is empty
-                if (data === undefined ||
-                    data === null ||
-                    data === '') {
+				// something returned but is empty
+				if (data === undefined ||
+					data === null ||
+					data === '') {
 
-                    LOG.warn('data not found for [' + clt_name + '] query: ' + JSON.stringify(query), 'SR.DB');
-                    return UTIL.safeCall(onSuccess, null);
-                }
+					LOG.warn('data not found for [' + clt_name + '] query: ' + JSON.stringify(query), 'SR.DB');
+					return UTIL.safeCall(onSuccess, null);
+				}
 
-                // store all if is_empty, or store single object
-                if (is_empty) {
-                    collection.cache = data;
-                    //LOG.sys('caching all objects...', 'SR.DB');
-                } else {
-                    collection.cache[data._id] = data;
-                    //LOG.sys('caching single object, query: ' + query_obj, 'SR.DB');
-                }
+				// store all if is_empty, or store single object
+				if (is_empty) {
+					collection.cache = data;
+					//LOG.sys('caching all objects...', 'SR.DB');
+				} else {
+					collection.cache[data._id] = data;
+					//LOG.sys('caching single object, query: ' + query_obj, 'SR.DB');
+				}
 
-                //LOG.sys('returning data for id: ' + data._id, 'SR.DB');
-                UTIL.safeCall(onSuccess, data);
-            }
-        );
-	}
-	catch (err) {
+				//LOG.sys('returning data for id: ' + data._id, 'SR.DB');
+				UTIL.safeCall(onSuccess, data);
+			}
+		);
+	} catch (err) {
 		l_notifyError(clt_name, 'cacheData.exception', err, onFail, true);
 	}
-}
+};
 
 var l_cacheDataAsync = function (clt_name, query_obj) {
 	return new promise(function(resolve, reject) {
 		l_cacheData(clt_name, resolve, reject, query_obj);
 	});
-}
+};
 
 //-----------------------------------------
 // get cache data from a given collection
@@ -1164,106 +1130,104 @@ var l_getCachedData = exports.getCachedData = function (clt_name, onSuccess, onF
 		return;
 	}
 
-    // a query term to DB if data of interest is not yet cached
-    var query = {};
+	// a query term to DB if data of interest is not yet cached
+	var query = {};
 
-    // if no search term is specified (cached all)
-    if (query_item === undefined) {
-        // return directly if already cached
-        if (Object.keys(collection.cache).length > 0) {
-		    UTIL.safeCall(onSuccess, collection.cache);
-            return;
-        }
-    }
-    // some condition is provided
-    else {
+	// if no search term is specified (cached all)
+	if (query_item === undefined) {
+		// return directly if already cached
+		if (Object.keys(collection.cache).length > 0) {
+			UTIL.safeCall(onSuccess, collection.cache);
+			return;
+		}
+	} else {
+		// some condition is provided
 
-        // check if query_item is already an object id
-        var objID = l_toObjectID(query_item);
+		// check if query_item is already an object id
+		var objID = l_toObjectID(query_item);
 
-        // query term is an objectID in string format, or an object with properties
-        if (objID !== undefined) {
+		// query term is an objectID in string format, or an object with properties
+		if (objID !== undefined) {
 
 			// return cached object if available
-            if (collection.cache.hasOwnProperty(objID)) {
-                UTIL.safeCall(onSuccess, collection.cache[objID]);
-                return;
-            }
+			if (collection.cache.hasOwnProperty(objID)) {
+				UTIL.safeCall(onSuccess, collection.cache[objID]);
+				return;
+			}
 
-            query = {_id: objID};
-        } else if (typeof query_item === 'object') {
-            query = query_item;
-        } else {
-            LOG.error('invalid query_item in collection: ' + clt_name, 'SR.DB');
-            LOG.error(query_item, 'SR.DB');
+			query = {_id: objID};
+		} else if (typeof query_item === 'object') {
+			query = query_item;
+		} else {
+			LOG.error('invalid query_item in collection: ' + clt_name, 'SR.DB');
+			LOG.error(query_item, 'SR.DB');
 			UTIL.safeCall(onFail, 'invalid query item');
-            return;
-        }
-    }
+			return;
+		}
+	}
 
-    // if entry doesn't exist, load it from DB
-    l_cacheData(clt_name,
-        onSuccess,
-        onFail,
-        query
-    );
-}
+	// if entry doesn't exist, load it from DB
+	l_cacheData(clt_name,
+		onSuccess,
+		onFail,
+		query
+	);
+};
 
 var l_getCachedDataAsync = exports.getCachedDataAsync = function (clt_name, query_item) {
 	return new promise(function(resolve, reject) {
 		l_getCachedData(clt_name, resolve, reject, query_item);
 	});
-}
+};
 
 //-----------------------------------------
 // sync currently cached data back to DB
 var l_syncCachedDataByID = exports.syncCachedDataByID = function (clt_name, id, onSuccess, onFail) {
 
-    // error check
+	// error check
 	var collection = l_getCollection(clt_name, onFail);
 	if (collection === undefined) {
 		return;
 	}
 
-    // check if cache exists
-    if (collection.cache.hasOwnProperty(id) === false) {
-        LOG.error('_id: ' + id + ' not found.', 'SR.DB');
-        return UTIL.safeCall(onFail, 'id not found: ' + id);
-    }
+	// check if cache exists
+	if (collection.cache.hasOwnProperty(id) === false) {
+		LOG.error('_id: ' + id + ' not found.', 'SR.DB');
+		return UTIL.safeCall(onFail, 'id not found: ' + id);
+	}
 
-    l_setData(clt_name, collection.cache[id], onSuccess, onFail);
+	l_setData(clt_name, collection.cache[id], onSuccess, onFail);
 
 	// NOTE: using update does not seem to properly store the data to DB
 	//l_updateData(clt_name, {_id: id}, collection.cache[id], onSuccess, onFail);
-}
+};
 
 //-----------------------------------------
 // delete cached data from DB
 exports.deleteCachedDataByID = function (clt_name, id, onSuccess, onFail) {
 
-    // error check
+	// error check
 	var collection = l_getCollection(clt_name, onFail);
 	if (collection === undefined) {
 		return;
 	}
 
-    // check if cache exists
-    if (collection.cache.hasOwnProperty(id) === true) {
-        delete collection.cache[id];
+	// check if cache exists
+	if (collection.cache.hasOwnProperty(id) === true) {
+		delete collection.cache[id];
 		UTIL.safeCall(onSuccess);
-    }
-    else {
-        var err_msg = 'id: ' + id + ' not found';
-        LOG.error(err_msg, 'SR.DB');
-        UTIL.safeCall(onFail, err_msg);
-    }
-}
+	} else {
+		var err_msg = 'id: ' + id + ' not found';
+		LOG.error(err_msg, 'SR.DB');
+		UTIL.safeCall(onFail, err_msg);
+	}
+};
 
 exports.deleteCachedDataByIDAsync = function (clt_name, id) {
 	return new promise(function(resolve, reject) {
 		l_deleteCachedDataByID(clt_name, id, resolve, reject);
 	});
-}
+};
 
 //-----------------------------------------
 // update existing data in DB
@@ -1271,54 +1235,54 @@ exports.deleteCachedDataByIDAsync = function (clt_name, id) {
 // (but then the cached version will not be updated)
 exports.updateCachedDataByID = function (clt_name, id, new_values, onSuccess, onFail) {
 
-    //LOG.sys('try to get cached data first for id: ' + id + ' type: ' + typeof id, 'SR.DB');
-    // error check
+	//LOG.sys('try to get cached data first for id: ' + id + ' type: ' + typeof id, 'SR.DB');
+	// error check
 	if (l_getCollection(clt_name, onFail) === false) {
 		return;
 	}
 
-    // get cached data first
-    l_getCachedData(clt_name,
+	// get cached data first
+	l_getCachedData(clt_name,
 
-        // data obtained
-        function (data) {
+		// data obtained
+		function (data) {
 
-            //LOG.sys('got cached data for id: ' + id, 'SR.DB');
+			//LOG.sys('got cached data for id: ' + id, 'SR.DB');
 
-            // store whatever fields exist in data to cache
-            for (var field_name in new_values) {
-                LOG.sys('updating [' + field_name + '] to be: ' + new_values[field_name], 'SR.DB');
+			// store whatever fields exist in data to cache
+			for (var field_name in new_values) {
+				LOG.sys('updating [' + field_name + '] to be: ' + new_values[field_name], 'SR.DB');
 
-                data[field_name] = new_values[field_name];
-            }
+				data[field_name] = new_values[field_name];
+			}
 
-            // sync data from cache to DB
-            l_syncCachedDataByID(clt_name, id, onSuccess,
+			// sync data from cache to DB
+			l_syncCachedDataByID(clt_name, id, onSuccess,
 
-                // sync fail
-                function () {
-                    LOG.error('l_syncCachedDataByID() fails for collection [' + clt_name + '] id: ' + id, 'SR.DB');
-                    UTIL.safeCall(onFail, 'sync fail');
-                }
-            );
-        },
+				// sync fail
+				function () {
+					LOG.error('l_syncCachedDataByID() fails for collection [' + clt_name + '] id: ' + id, 'SR.DB');
+					UTIL.safeCall(onFail, 'sync fail');
+				}
+			);
+		},
 
-        // did not get cached data
-        function () {
-            LOG.error('did not get cached data for collection [' + clt_name + '] id: ' + id, 'SR.DB');
-            UTIL.safeCall(onFail, 'did not get cached data');
-        },
+		// did not get cached data
+		function () {
+			LOG.error('did not get cached data for collection [' + clt_name + '] id: ' + id, 'SR.DB');
+			UTIL.safeCall(onFail, 'did not get cached data');
+		},
 
-        // ID of the record
-        id
-    );
-}
+		// ID of the record
+		id
+	);
+};
 
 exports.updateCachedDataByIDAsync = function (clt_name, id, new_values) {
 	return new promise(function(resolve, reject) {
 		l_updateCachedDataByID(clt_name, id, new_values, resolve, reject);
 	});
-}
+};
 
 // get DB setting for MongoDB
 var l_getSettings = exports.getSettings = function () {
@@ -1337,7 +1301,7 @@ var l_getSettings = exports.getSettings = function () {
 
 	// use project-specific DB password, so RockMongo can use it...
 	var settings = {
-		account:	project_name,
+		account:    project_name,
 		DB_name:    DB_name,
 		serverIP:   SR.Settings.DB_IP,
 		serverPort: SR.Settings.DB_PORT
@@ -1347,38 +1311,38 @@ var l_getSettings = exports.getSettings = function () {
 		settings.account = UTIL.userSettings("mongoAccess","username");
 		settings.password = UTIL.userSettings("mongoAccess","password");
 		settings.DB_type = 'mongodb';
-		
+
 		if (UTIL.userSettings("mongoAccess","DB_name")) {
 			settings.DB_name = UTIL.userSettings("mongoAccess","DB_name");
 		}
-		
+
 	} else if (UTIL.userSettings("DB_AUTH", "username") && UTIL.userSettings("DB_AUTH","password")) {
 		settings.account = UTIL.userSettings("DB_AUTH","username");
 		settings.password = UTIL.userSettings("DB_AUTH","password");
-	
+
 		if (UTIL.userSettings("DB_AUTH","DB_name")) {
 			settings.DB_name = UTIL.userSettings("DB_AUTH","DB_name");
 		}
-				
+
 	} else {
 		settings.password = Math.random().toString().substring(3,9);
 		var DBauth = "\nsettings.DB_AUTH = " + JSON.stringify({DB_name: DB_name, username: settings.account, password: settings.password}) + ";\n";
 		LOG.warn("Creating a new credential " + DBauth, 'SR.DB');
 		LOG.warn('append at: ' + SR.Settings.PATH_SETTINGS, 'SR.DB');
-    	SR.fs.appendFile(SR.Settings.PATH_SETTINGS, DBauth, function (err) {
+		SR.fs.appendFile(SR.Settings.PATH_SETTINGS, DBauth, function (err) {
 			if (err) {
 				LOG.error(err);
 			}
 		});
 	}
-	
+
 	// set DB type if available
 	if (UTIL.userSettings("DB_TYPE")) {
 		settings.DB_type = UTIL.userSettings("DB_TYPE");
 	}
 
 	return settings;
-}
+};
 
 //-----------------------------------------
 // initialize connection to DB
@@ -1387,22 +1351,22 @@ var l_getSettings = exports.getSettings = function () {
 //
 exports.initDB = function (dbSetting, collections, onDone) {
 
-    // if DB is already initialized
-    if (Object.keys(l_DBconn).length > 0) {
-        LOG.warn('DB is already initialized, please check your code to avoid redundent init', 'SR.DB');
-        return UTIL.safeCall(onDone, false);
+	// if DB is already initialized
+	if (Object.keys(l_DBconn).length > 0) {
+		LOG.warn('DB is already initialized, please check your code to avoid redundent init', 'SR.DB');
+		return UTIL.safeCall(onDone, false);
 	}
 
 	// check if DB setting is correct
 	if (dbSetting.hasOwnProperty('DB_name') === false ||
 		dbSetting.hasOwnProperty('serverIP') === false ||
 		dbSetting.hasOwnProperty('serverPort') === false) {
-        LOG.error('DB_name or DB IP/port not found', 'SR.DB');
+		LOG.error('DB_name or DB IP/port not found', 'SR.DB');
 		return UTIL.safeCall(onDone, false);
 	}
 
-    // store reference to setting (NOTE: currently not used beyond this function)
-    l_DBsetting = dbSetting;
+	// store reference to setting (NOTE: currently not used beyond this function)
+	l_DBsetting = dbSetting;
 
 	// store default DB_name
 	l_DBname = dbSetting.DB_name;
@@ -1427,11 +1391,11 @@ exports.initDB = function (dbSetting, collections, onDone) {
 		}
 	}
 
-    // warn if no collection names specified
+	// warn if no collection names specified
 	// NOTE: we still proceed as even if no project DBs are used, there can still be system DB
-    if (l_names.length === 0) {
-        LOG.warn('No collection names specified', 'SR.DB');
-    }
+	if (l_names.length === 0) {
+		LOG.warn('No collection names specified', 'SR.DB');
+	}
 
 	var jobqueue = SR.JobQueue.createQueue();
 
@@ -1439,50 +1403,50 @@ exports.initDB = function (dbSetting, collections, onDone) {
 	// onOpenDone returns true/false
 	var openDB = function (DB_name, account, pass, onOpenDone) {
 
-        var conn = SR._storage.openDB(DB_name, dbSetting.serverIP, dbSetting.serverPort);
+		var conn = SR._storage.openDB(DB_name, dbSetting.serverIP, dbSetting.serverPort);
 
-        // load fail
-        if (conn === undefined) {
-            LOG.error('cannot open DB: ' + DB_name, 'SR.DB');
-            return onOpenDone(false);
-        }
+		// load fail
+		if (conn === undefined) {
+			LOG.error('cannot open DB: ' + DB_name, 'SR.DB');
+			return onOpenDone(false);
+		}
 
-        // open DB & load the collection data from DB
-        conn.open(function (err, client) {
+		// open DB & load the collection data from DB
+		conn.open(function (err, client) {
 
-            // check if error
-            if (err) {
-                LOG.error(err, 'SR.DB');
-                return UTIL.safeCall(onOpenDone, false);
-            }
+			// check if error
+			if (err) {
+				LOG.error(err, 'SR.DB');
+				return UTIL.safeCall(onOpenDone, false);
+			}
 
 			var user_created = false;
 
 			var auth_user = function () {
 
 				// authenticate into the DB
-                LOG.sys('authenticating DB [' + DB_name + ']...', 'SR.DB');
+				LOG.sys('authenticating DB [' + DB_name + ']...', 'SR.DB');
 
-                // NOTE: use client.admin().authenticate will force using admin account
-                //       but in general we should not do that
+				// NOTE: use client.admin().authenticate will force using admin account
+				//	   but in general we should not do that
 
-                client.authenticate(account, pass, function (err, replies) {
+				client.authenticate(account, pass, function (err, replies) {
 
 					if (err) {
 
-					    // if this is repeated call
-					    if (user_created === true) {
+						// if this is repeated call
+						if (user_created === true) {
 							LOG.error(err, 'SR.DB');
 							LOG.warn('DB authentication failure', 'SR.DB');
 							return UTIL.safeCall(onOpenDone, false);
 						}
 
-    					// create DB user/pass (assume it's a new DB)
+						// create DB user/pass (assume it's a new DB)
 						LOG.warn('auth error, assume DB does not exist, try to create new DB...', 'SR.DB');
 
-                        // NOTE: right now this action is always successful, so it's like no auth exists
-                        //       might be a bug in MongoDB
-                        user_created = true;
+						// NOTE: right now this action is always successful, so it's like no auth exists
+						//	   might be a bug in MongoDB
+						user_created = true;
 
 						client.admin().authenticate(SR.Settings.DB_ADMIN.account, SR.Settings.DB_ADMIN.pass, function (err, replies) {
 							if (err) {
@@ -1507,50 +1471,51 @@ exports.initDB = function (dbSetting, collections, onDone) {
 						return;
 					}
 
-                    LOG.warn('DB authentication success', 'SR.DB');
+					LOG.warn('DB authentication success', 'SR.DB');
 
 					// store client for later access
 					l_DBconn[DB_name] = conn;
 					l_DBclient[DB_name] = client;
 					UTIL.safeCall(onOpenDone, true);
-                });
+				});
 			}
 
 			// perform first DB authentication
 			auth_user();
 		});
-	}
+	};
 
-    // open DB
+	// open DB
 	var openDBResult = true;
-    var stepOpenDB = function (onOpenDone) {
+	var stepOpenDB = function (onOpenDone) {
 
 		// open the DB specified
 		openDB(l_DBname, l_DBsetting.account, l_DBsetting.password,
-				// onOpenDone
-				function (result) {
-					LOG.sys('openDB result for [' + l_DBname + ']: ' + result, 'SR.DB');
+			// onOpenDone
+			function (result) {
+				LOG.sys('openDB result for [' + l_DBname + ']: ' + result, 'SR.DB');
 
-					// notify project & operation admin
-					if (result === false) {
+				// notify project & operation admin
+				if (result === false) {
 
-						// NOTE: system admin is notified of this error as well
-						UTIL.notifyAdmin(
-							'[DB error: init]',
-							UTIL.convertString(SR.Settings.SERVER_INFO),
-							SR.Settings.EMAIL_ADMIN
-						);
+					// NOTE: system admin is notified of this error as well
+					UTIL.notifyAdmin(
+						'[DB error: init]',
+						UTIL.convertString(SR.Settings.SERVER_INFO),
+						SR.Settings.EMAIL_ADMIN
+					);
 
-						openDBResult = false;
-						
-						// terminate process immediately
-						process.exit(0);
-					}
+					openDBResult = false;
 
-					// NOTE: following steps will not execute if result returns 'false'
-					UTIL.safeCall(onOpenDone, result);
-				});
-    }
+					// terminate process immediately
+					process.exit(0);
+				}
+
+				// NOTE: following steps will not execute if result returns 'false'
+				UTIL.safeCall(onOpenDone, result);
+			}
+		);
+	};
 
 	jobqueue.add(stepOpenDB, false, 'openDB');
 
@@ -1571,9 +1536,9 @@ exports.initDB = function (dbSetting, collections, onDone) {
 	}
 
 	// NOTE: loading of collections will not execute (2nd parameter) if previous init has failed
-    // create & store different steps to load a given collection
+	// create & store different steps to load a given collection
 	for (var i=0; i < l_names.length; i++) {
-        jobqueue.add(load_step(l_DBname, l_names[i]), false, l_names[i]);
+		jobqueue.add(load_step(l_DBname, l_names[i]), false, l_names[i]);
 
 		// incorrect usage
 		//jobqueue.add(function (onDone) {
@@ -1597,7 +1562,7 @@ exports.initDBAsync = function(dbSetting, collections) {
 	return new promise(function(resolve, reject) {
 		l_initDB(dbSetting, collections, reject);
 	});
-}
+};
 
 //-----------------------------------------
 // shutdown DB
@@ -1612,15 +1577,15 @@ exports.disposeDB = function (onDone) {
 
 	// TODO: release/shut DBclients?
 
-    // call callback when finish
-    UTIL.safeCall(onDone, true);
+	// call callback when finish
+	UTIL.safeCall(onDone, true);
 };
 
-exports.disposeDBAsync = function(){
+exports.disposeDBAsync = function() {
 	return new promise(function(resolve, reject) {
 		l_disposeDB(resolve);
 	});
-}
+};
 
 // standard init/dispose
 // config: {collections: <array>, shutdown_if_fail: <bool>}
@@ -1633,22 +1598,22 @@ exports.init = function (config, onDone) {
 	// we provide empty DB set as default
 	var collection_names = config.collections || [];
 
-    SR.DB.initDB(settings, collection_names,
-        function (result) {
+	SR.DB.initDB(settings, collection_names,
+		function (result) {
 			LOG.warn('init DB [' + settings.DB_name + '] result: ' + result, 'SR.DB');
 			UTIL.safeCall(onDone, result);
-        }
-    );
-}
+		}
+	);
+};
 
 exports.dispose = function (onDone) {
-    LOG.sys('dispose DB...', 'SR.DB');
+	LOG.sys('dispose DB...', 'SR.DB');
 
 	// wait a little, for callbacks to finish (if any), for example, DB write/read..
 	// TODO: can we detect if DB activities exist?
 	setTimeout(function () {
 
-    	// all events should be finished now, so this action should be fine
-    	SR.DB.disposeDB(onDone);
+		// all events should be finished now, so this action should be fine
+		SR.DB.disposeDB(onDone);
 	}, 1000);
-}
+};
