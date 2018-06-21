@@ -398,9 +398,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 					resolve(SR.State.get('_accountMap')[account]);
 				});
 			});
-		}
-
-		if (!!args.authMySQL) {
+		} else if (!!args.authMySQL) {
 
 			if (!!wpInfo && userExist) {
 				// update user data in local server
