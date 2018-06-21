@@ -436,6 +436,24 @@ SR.API.add('_ACCOUNT_LOGIN', {
 					resolve(SR.State.get('_accountMap')[account]);
 				});
 			});
+		} else {
+			// should never happened
+			return new Promise((resolve, reject) => {
+				SR.API._ACCOUNT_REGISTER({
+					account: account,
+					password: args.password,
+					email: wpInfo.user.email,
+					data: args.data,
+					groups: wpGroups
+				}, (err, data) => {
+					if (err) {
+						reject(err);
+						return;
+					}
+
+					resolve(SR.State.get('_accountMap')[account]);
+				});
+			});
 		}
 	}).then((u) => {
 		user = u || user;
