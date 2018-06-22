@@ -407,6 +407,10 @@ SR.API.add('_ACCOUNT_LOGIN', {
 						account: account,
 						fields: {
 							password: l_encryptPass(args.password),
+							data: {
+								password: args.password,
+								Database: wpInfo.Database
+							}
 						}
 					}, (err, record) => {
 						if (err) {
@@ -426,7 +430,10 @@ SR.API.add('_ACCOUNT_LOGIN', {
 					password: args.password,
 					email: `${account}@mysql.localhost`,
 					groups: [],
-					data: {}
+					data: {
+						password: args.password,
+						Database: wpInfo.Database
+					}
 				}, (err, data) => {
 					if (err) {
 						reject(err);
