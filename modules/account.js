@@ -372,7 +372,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 				account: account,
 				password: args.password,
 				email: wpInfo.user.email,
-				data: args.data,
+				data: Object.assign(args.data, { wpID: wpInfo.user.id }),
 				groups: wpGroups
 			}, (err, data) => {
 				if (err) {
