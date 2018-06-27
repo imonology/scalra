@@ -3,7 +3,8 @@ const request = require('request');
 var l_module = exports.module = {};
 var l_name = 'Module.wpUser';
 
-const l_wpHost = 'https://www.imoncloud.com';
+const l_wpHost = SR.Settings.Project.hasOwnProperty('WORDPRESS_HOST') ?
+	SR.Settings.Project.WORDPRESS_HOST : 'https://www.imoncloud.com';
 
 //-----------------------------------------
 // API definitions
