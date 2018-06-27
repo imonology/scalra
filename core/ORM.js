@@ -131,7 +131,11 @@ var l_obj = {};
 exports.init = function (args, onDone) {
 	
 	var DB_type = args.DB_type || 'mongodb';	
-	var conn_str = DB_type + '://' + args.username + ':' + args.password + '@'+ SR.Settings.DB_IP + '/' + (args.DB || args.username);
+	var conn_str = DB_type + '://' + encodeURIComponent(args.username)
+	    + ':' + encodeURIComponent(args.password)
+	    + '@'+ SR.Settings.DB_IP + '/'
+	    + encodeURIComponent((args.DB || args.username));
+
 	LOG.warn('connecting: ' + conn_str, l_name);
 	
 	orm.connect(conn_str, function (err, db) {
