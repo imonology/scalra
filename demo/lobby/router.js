@@ -100,5 +100,58 @@ module.exports = function (app) {
 		
 		var args = {login: login, language: l_lang};		
 		res.render('connect', args);
-	});		
+	});
+
+	app.get('/userList', (req, res) => {
+		const login = l_checkLogin(req);
+		if (!login.account) {
+			res.redirect('/');
+		}
+
+		res.render('flexform/v2/view', {
+			language: l_lang,
+			title: 'User list',
+			s_title: 'User list',
+			mode: 'show',
+			nav: [
+				{
+					name: 'Device list',
+					link: '/deviceList'
+				},
+				{
+					name: 'User list',
+					link: '/userList'
+				}
+			],
+			para: {
+				form_query: { name: 'Users' }
+			}
+		});
+	});
+
+	app.get('/deviceList', (req, res) => {
+		const login = l_checkLogin(req);
+		if (!login.account) {
+			res.redirect('/');
+		}
+
+		res.render('flexform/v2/list', {
+			language: l_lang,
+			title: 'Device list',
+			s_title: 'Device list',
+			nav: [
+				{
+					name: 'Device list',
+					link: '/deviceList'
+				},
+				{
+					name: 'User list',
+					link: '/userList'
+				}
+			],
+			para: {
+				form_query: { name: 'DeviceInfo' }
+			}
+		});
+	});
 }

@@ -172,6 +172,9 @@ var settings = exports.settings = {
 	// web server config (TODO: move elsewhere?)
 	//
 	DEFAULT_FILES: ['index.htm', 'index.html', 'default.htm', 'default.html'],
+
+	// Wordpress host for authentication
+	WORDPRESS_HOST: 'https://www.imoncloud.com'
 };
 
 
