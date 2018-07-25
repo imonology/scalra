@@ -141,6 +141,12 @@ var l_tailOutput = function (owner, project, name, subscriber) {
 							return;
 						}
 
+						if (!SR.Settings.PATH_USERBASE) {
+							LOG.error(`Cannot get settings of PATH_USERBASE`);
+							reject(`Cannot get settings of PATH_USERBASE`);
+							return;
+						}
+
 						const pmID = data[0].pm_id;
 						resolve(SR.path.resolve(
 							SR.Settings.PATH_USERBASE,
