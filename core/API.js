@@ -135,21 +135,13 @@ var l_add = exports.add = function (name, func, checker) {
 			return onExec();
 		}
 
-		var pres = l_beforeActions[name];
-		var promise = undefined;
-		for (var i=0; i < pres.length; i++) {
-			if (!promise) {
-				promise = pre_action(args, pres[i], extra);	
-			} else {
-				promise = promise.then(pre_action(args, pres[i]), onError);
-			}
-		}
-
-		// last action
-		promise.then(onExec).catch((err) => {
-			LOG.error(err);
-			onDone(err);
-		});
+		const pres = l_beforeActions[name].map((callback) => pre_action(args, callback, extra));
+		pres.reduce((p, callback) => p.then(() => callback), Promise.resolve())
+			.then(onExec)
+			.catch((err) => {
+				LOG.error(err);
+				onDone(err);
+			});
 	};
 	
 	// store a new wrapper function for calling the specified API
