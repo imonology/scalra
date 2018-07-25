@@ -56,12 +56,12 @@ var l_add = exports.add = function (name, func, checker) {
 			}, extra);
 		});
 	}
-	
+
 	// define pre-event action
-	var pre_action = function (args, func) {
+	var pre_action = function (args, func, extra) {
 		return new SR.promise(function (resolve, reject) {
 			try {
-				func(args);
+				func(args, extra);
 				resolve();
 			} catch (err) {
 				LOG.error(err, l_name);
