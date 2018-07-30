@@ -44,7 +44,7 @@ SR.API.add('_mysql_user_login', {
 				// LOG.warn(fields);
 				connection.end();
 				if (results.length > 0) {
-					for (let i = 0; i < result.length; i++) {
+					for (let i = 0; i < results.length; i++) {
 						if (results[i].Database !== undefined
 						    && results[i].Database !== 'information_schema'
 						    && results[i].Database !== 'performance_schema'
