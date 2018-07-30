@@ -44,8 +44,13 @@ SR.API.add('_mysql_user_login', {
 				// LOG.warn(fields);
 				connection.end();
 				if (results.length > 0) {
-					if (typeof(results[0].Database) !== 'undefined') {
-						return onDone(null, results[0]);
+					for (let i = 0; i < result.length; i++) {
+						if (results[i].Database !== undefined
+						    && results[i].Database !== 'information_schema'
+						    && results[i].Database !== 'performance_schema'
+						    && results[i].Database !== 'mysql') {
+							return onDone(null, results[i]);
+						}
 					}
 				}
 				return onDone('no database results');
