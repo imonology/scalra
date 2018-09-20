@@ -289,8 +289,15 @@ l_add('_addRemote', {
 	secured:	'+boolean',
 	use_socket:	'+boolean',
 	auto_reconnect: '+boolean',
+	retryInterval: '+number',
+	disconnectFrom: '+number',
 	onDisconnect: '+function'
 }, function (args, onDone) {
+	let disconnectTime = 0;
+	let showLOG = true;
+	let retryInterval = 5000;
+	if (typeof args.retryInterval === 'number')
+		retryInterval = args.retryInterval;
 	if (l_hosts.hasOwnProperty(args.name)) {
 		var errmsg = 'remote host [' + args.name + '] already registered';
 		LOG.warn(errmsg, l_name);
@@ -313,6 +320,13 @@ l_add('_addRemote', {
 		l_pending[args.name] = [];
 	}
 
+	if (typeof args.disconnectFrom === 'number') {
+		disconnectTime = Math.floor((Date.now() - args.disconnectFrom)/1000);
+		let retryIntervalSec = Math.round(retryInterval / 1000);
+		if (disconnectTime > 30 && (retryIntervalSec < 30 && Math.round(disconnectTime % 30) > retryIntervalSec))
+			showLOG = false;
+	}
+	
 	// add a remote host calling function
 	if (args.use_socket === true) {
 
@@ -324,11 +338,14 @@ l_add('_addRemote', {
 
 		var connectSocket = function (onConnected) {
 
-			LOG.warn('connecting to [' + args.name + '] by websocket (' + l_hosts[args.name].IP + ':' + l_hosts[args.name].port + ')', l_name);
+			if (showLOG)
+				LOG.warn('connecting to [' + args.name + '] by websocket (' + l_hosts[args.name].IP + ':' + l_hosts[args.name].port + ')', l_name);
 			sock = new SockJS(url);
 
 			// Open the connection
 			sock.onopen = function () {
+				
+				args.disconnectFrom = undefined;
 				// send cookie explicitly (my serverID)
 				var cookie = SR.Settings.SERVER_INFO.id;
 				LOG.warn('connected to server [' + args.name + '], sockjs sends cookie:', l_name);
@@ -352,19 +369,30 @@ l_add('_addRemote', {
 
 			// On connection close
 			sock.onclose = function (obj) {
-				LOG.warn('disconnected from server [' + args.name + ']', l_name);
-				// TODO: try to re-connect periodically?
-				setTimeout(function () {
-					SR.API.addRemote(args);
-				}, 5000);
+				if (showLOG) {
+					LOG.warn('disconnected from server [' + args.name + ']', l_name);
+					LOG.warn('disconnected for ' + disconnectTime + ' seconds', l_name);
+					LOG.warn('reconnecting every ' + retryInterval + ' milliseconds', l_name);
+				}
 
+				// auto reconnect and record timestamp
+				if (args.auto_reconnect === true) {
+					if (!args.disconnectFrom) {
+						args.disconnectFrom = Date.now();
+					}
+					
+					setTimeout(function () {
+						SR.API.addRemote(args);
+					}, retryInterval);
+				}
 				delete sock;
 				sock = undefined;
 
 				// if onDone still exists, it means we're just in the process of making a new connection
 				// so this attempt fails
 				if (typeof onDone === 'function') {
-					onDone('cannot establish websocket connection to [' + args.name + ']');
+					if (showLOG)
+						onDone('cannot establish websocket connection to [' + args.name + ']');
 					onDone = undefined;
 				}
 
@@ -373,7 +401,8 @@ l_add('_addRemote', {
 
 				// notify
 				var list = l_onDisconnect[args.name];
-				LOG.warn('notify onDisconnect callbacks: ' + list.length, l_name);
+				if (showLOG)
+					LOG.warn('notify onDisconnect callbacks: ' + list.length, l_name);
 				for (var i=0; i < list.length; i++)
 					UTIL.safeCall(list[i]);
 			}
