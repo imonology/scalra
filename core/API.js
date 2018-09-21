@@ -289,6 +289,7 @@ l_add('_addRemote', {
 	secured:	'+boolean',
 	use_socket:	'+boolean',
 	auto_reconnect: '+boolean',
+	offlineWarning: 'object',
 	retryInterval: '+number',
 	disconnectFrom: '+number',
 	onDisconnect: '+function'
@@ -323,8 +324,13 @@ l_add('_addRemote', {
 	if (typeof args.disconnectFrom === 'number') {
 		disconnectTime = Math.floor((Date.now() - args.disconnectFrom)/1000);
 		let retryIntervalSec = Math.round(retryInterval / 1000);
-		if (disconnectTime > 30 && (retryIntervalSec < 30 && Math.round(disconnectTime % 30) > retryIntervalSec))
+		if (disconnectTime > 30 && (retryIntervalSec < 30 && Math.round(disconnectTime % 30) >= retryIntervalSec))
 			showLOG = false;
+		if (args.offlineWarning && disconnectTime > 30 && Math.round(disconnectTime / 30)  === 1 && Math.round(disconnectTime % 30) <= retryIntervalSec) {
+			let notifyMail = args.offlineWarning.mail || UTIL.userSettings('adminMail');
+			UTIL.notifyAdmin('WARNING: ' + args.name + ' offline!' , args.name + 'has disconnected for ' + disconnectTime + ' seconds');
+			LOG.warn('notify admin to ' + UTIL.userSettings('adminMail'), l_name);
+		}
 	}
 	
 	// add a remote host calling function
