@@ -648,10 +648,26 @@ SR.API.add('_ACCOUNT_GETGROUP', {
 	if (l_validateAccount(account) === false) {
 		return onDone('INVALID_ACCOUNT', account);
 	}
-	
+
 	onDone(null, l_accounts[account].control.groups);
 });
 
+SR.API.add('_ACCOUNT_GETUID', {
+	_admin: true,
+	account: '+string',
+}, function (args, onDone) {
+	if (args.account !== undefined) {
+		if (l_accounts[args.account] === undefined) {
+			return onDone('Can not find this account.');
+		}
+		return onDone(null, l_accounts[args.account].uid);
+	}
+	var uid_list = {};
+	for (var account in l_accounts) {
+		uid_list[account] = l_accounts[account].uid;
+	}
+	return onDone(null, uid_list);
+});
 
 // set all groups for an account, by proving a group string
 SR.API.add('_ACCOUNT_SETGROUP', {
