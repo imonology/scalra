@@ -9,7 +9,6 @@
 		_ACCOUNT_SETPASS	// set new password by token
 		_ACCOUNT_SETDATA	// set user data by account name & type:value mapping
 		_ACCOUNT_GETDATA	// get user data by account name		
-		_ACCOUNT_GETUID		// get user uid by account name
 		_ACCOUNT_DELETE		// delete account by account name
 		
 	history:
@@ -732,22 +731,6 @@ SR.API.add('_ACCOUNT_GETGROUP', {
 	onDone(null, l_accounts[account].control.groups);
 });
 
-SR.API.add('_ACCOUNT_GETUID', {
-	_admin: true,
-	account: '+string',
-}, function (args, onDone) {
-	if (args.account !== undefined) {
-		if (l_accounts[args.account] === undefined) {
-			return onDone('Can not find this account.');
-		}
-		return onDone(null, l_accounts[args.account].uid);
-	}
-	var uid_list = {};
-	for (var account in l_accounts) {
-		uid_list[account] = l_accounts[account].uid;
-	}
-	return onDone(null, uid_list);
-});
 
 // set all groups for an account, by proving a group string
 SR.API.add('_ACCOUNT_SETGROUP', {
