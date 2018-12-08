@@ -150,8 +150,9 @@ exports.init = function (args, onDone) {
 				var criteria = def.validations[attr];
 				validate[attr] = orm.enforce.ranges.number(criteria.lower, criteria.upper, criteria.msg);
 			}
-			//LOG.warn('validations:');
-			//LOG.warn(validate);
+			// LOG.warn('validations:');
+            // LOG.warn(validate);
+            def.attributes.id = {type: 'text', key: true};
 			
 			l_obj[name] = db.define(table_name, def.attributes, {
 				methods: def.methods,
@@ -161,7 +162,7 @@ exports.init = function (args, onDone) {
 		
 		// add the table to the database
 		db.sync(onDone);	
-	});	
+	})
 }
 
 // store a given data record to a collection, create new record if not exist
