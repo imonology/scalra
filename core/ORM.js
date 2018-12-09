@@ -152,7 +152,9 @@ exports.init = function (args, onDone) {
 			}
 			// LOG.warn('validations:');
             // LOG.warn(validate);
-            def.attributes.id = {type: 'text', key: true};
+            if (def.attributes.hasOwnProperty('id')) {
+                def.attributes.id = {type: 'text', key: true};
+            }
 			
 			l_obj[name] = db.define(table_name, def.attributes, {
 				methods: def.methods,
