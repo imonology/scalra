@@ -17,3 +17,8 @@ SR.Settings.SAFE_CALL   = true;
 // cluster is enabled for monitors
 SR.Settings.ENABLE_CLUSTER_MODE = true;
 
+// XXX: please modify this before use
+SR.Settings.httpAuth = {
+	username: 'p@Q@3',
+	password: 'd0A0*'
+};

@@ -32,6 +32,7 @@ exports.start = function (type, route, port) {
 
 	// main place to receive HTTP-related requests
 	var handle_request = function (req, res) {
+		LOG.warn('handle_request');
 
 		// attach custom res methods (borrowed from express)
 		res = UTIL.mixin(res, response);
@@ -63,14 +64,13 @@ exports.start = function (type, route, port) {
 			try {
 				if (data !== '') {
 						
-					if (content_type.startsWith('application/x-www-form-urlencoded'))
+					if (content_type.startsWith('application/x-www-form-urlencoded')) {
 						JSONobj = qs.parse(data);
-					else if (content_type.startsWith('application/json'))
+					} else if (content_type.startsWith('application/json')) {
 						JSONobj = UTIL.convertJSON(decodeURIComponent(data));
-					else if (content_type.startsWith('application/sdp')) {
+					} else if (content_type.startsWith('application/sdp')) {
 						JSONobj = data;
-					}
-					else {
+					} else {
 						var msg = 'content type not known: ' + content_type;
 						LOG.warn(msg, 'SR.REST');
 						SR.REST.reply(res, msg);
@@ -79,15 +79,14 @@ exports.start = function (type, route, port) {
 						return;
 					}
 				}
-			}
-			catch (e) {
+			} catch (e) {
 				var msg = 'JSON parsing error for data: ' + data + '\n content_type: ' + content_type;
 				LOG.error(msg, 'SR.REST');
 				//res.writeHead(200, {'Content-Type': 'text/plain'});
 				//res.end(msg);
 				SR.REST.reply(res, msg);
 				return;
-			}			
+			}
 
 			route(req, res, JSONobj);
 		})
@@ -112,9 +111,9 @@ exports.start = function (type, route, port) {
 		}		
 				
 		server = HTTPSserver = https.createServer(options, handle_request);
-	}
-	else
+	} else {
 		server = HTTPserver = http.createServer(handle_request);
+	}
 
 	// TODO: check HTTP_URL is used?
 	LOG.warn('creating ' + type + ' server at port: ' + serverPort, 'SR.REST');

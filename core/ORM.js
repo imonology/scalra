@@ -123,74 +123,78 @@ var l_loadtype = 'SR.ORM.write';
 var l_obj = {};
 
 // initialize DB
-// syntax: 
+// syntax:
 //	driver://username:password@hostname
 // 	ex.	orm.connect("mongodb://funlot-BusSchedule:198053@127.0.0.1/funlot-BusSchedule", function (err, db) {
 //		});
 //
 exports.init = function (args, onDone) {
-	
-	var DB_type = args.DB_type || 'mongodb';	
-	var conn_str = DB_type + '://' + args.username + ':' + args.password + '@'+ SR.Settings.DB_IP + '/' + (args.DB || args.username);
+
+	var DB_type = args.DB_type || 'mongodb';
+	var conn_str = DB_type + '://' + encodeURIComponent(args.username)
+	    + ':' + encodeURIComponent(args.password)
+	    + '@'+ SR.Settings.DB_IP + '/'
+	    + encodeURIComponent((args.DB || args.username));
+
 	LOG.warn('connecting: ' + conn_str, l_name);
-	
+
 	orm.connect(conn_str, function (err, db) {
-		if (err) 
+		if (err)
 			return UTIL.safeCall(onDone, err);
-		
+
 		// if DB connects successfully, init objects
 		for (var name in args.names) {
-			
+
 			var table_name = SR.Settings.SERVER_INFO.name + ':' + name;
-			
+
 			var def = args.names[name];
 			var validate = {};
-			
+
 			for (var attr in def.validations) {
 				var criteria = def.validations[attr];
 				validate[attr] = orm.enforce.ranges.number(criteria.lower, criteria.upper, criteria.msg);
 			}
 			//LOG.warn('validations:');
 			//LOG.warn(validate);
-			
+
 			l_obj[name] = db.define(table_name, def.attributes, {
 				methods: def.methods,
 				validations: validate
 			});
 		}
-		
+
 		// add the table to the database
-		db.sync(onDone);	
-	});	
+		db.sync(onDone);
+	});
 }
 
 // store a given data record to a collection, create new record if not exist
 exports.create = function (args, onDone) {
 	if (l_obj.hasOwnProperty(args.name) === false) {
-		return UTIL.safeCall(onDone, 'object [' + args.name + '] not defined');	
+		return UTIL.safeCall(onDone, 'object [' + args.name + '] not defined');
 	}
-	
+
 	//if (SR.Load.check(l_loadtype, 1) === false) {
-	//	return UTIL.safeCall(onDone, 'DB creation overload');	
+	//	return UTIL.safeCall(onDone, 'DB creation overload');
 	//}
-	
+
 	var obj = l_obj[args.name];
 	LOG.warn('creating', l_name);
 	LOG.warn(args.data, l_name);
-	
+
 	obj.create(args.data, function (err, result) {
 		//SR.Load.check(l_loadtype, -1);
-		UTIL.safeCall(onDone, err, result);	
-	});	
+		UTIL.safeCall(onDone, err, result);
+	});
 }
 
 // get a record from a given collection
 exports.read = function (args, onDone) {
 	if (l_obj.hasOwnProperty(args.name) === false) {
-		return UTIL.safeCall(onDone, 'object [' + args.name + '] not defined');	
+		return UTIL.safeCall(onDone, 'object [' + args.name + '] not defined');
 	}
 	var obj = l_obj[args.name];
-	obj.find(args.query, onDone);	
+	obj.find(args.query, onDone);
 }
 
 var l_print = function (data) {
@@ -202,16 +206,16 @@ var l_print = function (data) {
 		else if (typeof data[key] !== 'function')
 			LOG.warn('[' + key + ']: ' + data[key]);
 		else
-			LOG.warn('[' + key + ']: is function'); 
+			LOG.warn('[' + key + ']: is function');
 	}
 }
 
 // update a given data record to a collection
 exports.update = function (args, onDone) {
 	if (l_obj.hasOwnProperty(args.name) === false) {
-		return UTIL.safeCall(onDone, 'object [' + args.name + '] not defined');	
+		return UTIL.safeCall(onDone, 'object [' + args.name + '] not defined');
 	}
-		
+
 	var obj = l_obj[args.name];
 	obj.find(args.query, function (err, result) {
 		if (err) {
@@ -221,10 +225,10 @@ exports.update = function (args, onDone) {
 		if (!result.length) {
 			return UTIL.safeCall(onDone, `Query ${args.query} not found`);
 		}
-				
+
 		LOG.warn('result found:', l_name);
 		l_print(result[0]);
-		
+
 		// we only update the first found result
 		// NOTE: functions are not updated
 		for (var key in args.data) {
@@ -234,15 +238,15 @@ exports.update = function (args, onDone) {
 
 		LOG.warn('result after update:', l_name);
 		l_print(result[0]);
-		
+
 		//if (SR.Load.check(l_loadtype, 1) === false) {
-		//	return UTIL.safeCall(onDone, 'DB update overload');	
+		//	return UTIL.safeCall(onDone, 'DB update overload');
 		//}
-				
+
 		// save result
 		result[0].save(function (err, result) {
 			//SR.Load.check(l_loadtype, -1);
-			UTIL.safeCall(onDone, err, result);	
+			UTIL.safeCall(onDone, err, result);
 		});
 	});
 }
@@ -254,33 +258,33 @@ exports.update = function (args, onDone) {
 //	}
 exports.delete = function (args, onDone) {
 	if (l_obj.hasOwnProperty(args.name) === false) {
-		return UTIL.safeCall(onDone, 'object [' + args.name + '] not defined');	
+		return UTIL.safeCall(onDone, 'object [' + args.name + '] not defined');
 	}
-	
+
 	//if (SR.Load.check(l_loadtype, 1) === false) {
-	//	return UTIL.safeCall(onDone, 'DB deletion overload');	
+	//	return UTIL.safeCall(onDone, 'DB deletion overload');
 	//}
-	
+
 	LOG.warn('ORM.delete args:', l_name);
 	LOG.warn(args, l_name);
-	
+
 	var obj = l_obj[args.name];
 
 	obj.find(args.query, function (err, result) {
 		if (err)
 			return UTIL.safeCall(onDone, err);
-		
+
 		LOG.warn('result found:', l_name);
 		LOG.warn(result, l_name);
-		
+
 		//if (SR.Load.check(l_loadtype, 1) === false) {
-		//	return UTIL.safeCall(onDone, 'DB deletion overload');	
+		//	return UTIL.safeCall(onDone, 'DB deletion overload');
 		//}
-		
+
 		// remove this item
 		result[0].remove(function (err, result) {
 			//SR.Load.check(l_loadtype, -1);
-			UTIL.safeCall(onDone, err, result);	
+			UTIL.safeCall(onDone, err, result);
 		});
 	});
 }
@@ -298,21 +302,21 @@ SR.Callback.onStart(function () {
 			// add a row to the person table
 			Person.create({ id: 1, name: "John", surname: "Doe", age: 27 }, function(err) {
 				if (err) throw err;
-	
+
 					// query the person table by surname
 					Person.find({ surname: "Doe" }, function (err, people) {
 						// SQL: "SELECT * FROM person WHERE surname = 'Doe'"
 						if (err) throw err;
-	
+
 						console.log("People found: %d", people.length);
 						console.log("First person: %s, age %d", people[0].fullName(), people[0].age);
-	
+
 						people[0].age = 16;
 						people[0].save(function (err) {
 							// err.msg = "under-age";
 					});
 				});
-	
+
 			});
 */
 
