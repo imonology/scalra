@@ -132,9 +132,9 @@ exports.init = function (args, onDone) {
 
 	var DB_type = args.DB_type || 'mongodb';
 	var conn_str = DB_type + '://' + encodeURIComponent(args.username)
-	    + ':' + encodeURIComponent(args.password)
-	    + '@'+ SR.Settings.DB_IP + '/'
-	    + encodeURIComponent((args.DB || args.username));
+		+ ':' + encodeURIComponent(args.password)
+		+ '@' + SR.Settings.DB_IP + '/'
+		+ encodeURIComponent((args.DB || args.username));
 
 	LOG.warn('connecting: ' + conn_str, l_name);
 
