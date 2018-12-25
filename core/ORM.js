@@ -156,6 +156,9 @@ exports.init = function (args, onDone) {
 			}
 			//LOG.warn('validations:');
 			//LOG.warn(validate);
+			if (DB_type === 'mysql') {
+				db.settings.set("properties.primary_key", "_id");
+			}
 
 			l_obj[name] = db.define(table_name, def.attributes, {
 				methods: def.methods,
