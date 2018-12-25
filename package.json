@@ -37,6 +37,7 @@
     "ejs": "2.4.2",
     "ejs-mate": "2.3.0",
     "emailjs": "^2.2.0",
+    "eslint": "^5.11.0",
     "expect": "1.20.1",
     "express": "^4.16.4",
     "formidable": "1.1.1",
