@@ -235,9 +235,9 @@ exports.update = function (args, onDone) {
 		// we only update the first found result
 		// NOTE: functions are not updated
 		for (var key in args.data) {
-			if (key !== '_id' && typeof args.data[key] !== 'function');
-			// XXX: shouldn't this be placed inside ?
-			result[0][key] = args.data[key];
+			if (key !== '_id' && typeof args.data[key] !== 'function') {
+				result[0][key] = args.data[key];
+			}
 		}
 
 		LOG.warn('result after update:', l_name);
