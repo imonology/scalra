@@ -220,9 +220,9 @@ SR.API.add('_ACCOUNT_REGISTER', {
 				onDone(err);
 				return;
 			}
-			// set email and nicename as account
+			// set email and username as account
 			args.email = data.user.email;
-			args.account = data.user.nicename;
+			args.account = data.user.username;
 			l_getUID(getUIDCallback);
 		});
 	} else {
@@ -329,7 +329,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 					reject(err);
 					return;
 				}
-				account = data.user.nicename;
+				account = data.user.username;
 				resolve(data);
 			});
 		} else if (!!args.authMySQL) {
