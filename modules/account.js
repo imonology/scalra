@@ -220,8 +220,9 @@ SR.API.add('_ACCOUNT_REGISTER', {
 				onDone(err);
 				return;
 			}
-			// set email
+			// set email and username as account
 			args.email = data.user.email;
+			args.account = data.user.username;
 			l_getUID(getUIDCallback);
 		});
 	} else {
@@ -328,7 +329,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 					reject(err);
 					return;
 				}
-
+				account = data.user.username;
 				resolve(data);
 			});
 		} else if (!!args.authMySQL) {
