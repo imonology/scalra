@@ -8,9 +8,10 @@
 		_ACCOUNT_RESETPASS	// reset password by email
 		_ACCOUNT_SETPASS	// set new password by token
 		_ACCOUNT_SETDATA	// set user data by account name & type:value mapping
-		_ACCOUNT_GETDATA	// get user data by account name		
+		_ACCOUNT_GETDATA	// get user data by account name
+		_ACCOUNT_GETUID		// get user uid by account name
 		_ACCOUNT_DELETE		// delete account by account name
-		
+
 	history:
 		2016-09-27		start
 		2018-04-30		add _ACCOUNT_DELETE
@@ -41,36 +42,36 @@ var l_states = SR.State.get(SR.Settings.DB_NAME_SYSTEM);
 var l_validateAccount = function (account) {
 	// check if DB is initialized
 	if (typeof l_accounts === 'undefined') {
-		LOG.error('DB module is not loaded, please enable DB module', l_name);	
+		LOG.error('DB module is not loaded, please enable DB module', l_name);
 		return false;
 	}
-			
+
 	if (l_accounts.hasOwnProperty(account) === false) {
 		LOG.error('[' + account + '] not found', l_name);
 		return false;
 	}
-		
+
 	return true;
 }
 
 var l_validateUID = function () {
-	
+
 	// check if data exists or will init it
 	if (l_states.hasOwnProperty('uid_count') === false) {
 		LOG.warn('no users found, user id (uid) counter init to 0', 'user.js');
 		l_states['uid_count'] = 0;
 	}
 	else
-		LOG.warn('accounts created so far: ' + l_states['uid_count'], 'user.js');	
+		LOG.warn('accounts created so far: ' + l_states['uid_count'], 'user.js');
 };
 
 // generate a next unique ID for user
 // TODO: use SR.DS for l_states instead
 var l_getUID = function (onDone) {
-		
+
 	l_validateUID();
 	var uid = ++l_states['uid_count'];
-	
+
 	l_states.sync(function (err) {
 		if (err) {
 			return onDone(err);
@@ -96,18 +97,18 @@ var l_validateEmail = function (email) {
 
 // // store & remove user data to cache
 // var l_addLogin = function (account, conn, onDone) {
-				
+
 	// if (l_accounts.hasOwnProperty(account) === false) {
-		// return onDone('INVALID_ACCOUNT', account);	
+		// return onDone('INVALID_ACCOUNT', account);
 	// }
-	
+
 	// var data = l_accounts[account];
 	// LOG.warn('[' + account + '] login success, total logins: ' + Object.keys(l_logins).length, l_name);
-	
-	// // record login session	
+
+	// // record login session
 	// data.login.IP = conn.host;
 	// data.login.time_in = new Date();
-	// data.login.time_out = null;	
+	// data.login.time_out = null;
 	// data.login.count++;
 
 	// // store to DB
@@ -122,10 +123,10 @@ var l_validateEmail = function (email) {
 		// // NOTE: we use session because login could come from an HTTP request
 		// // that does not have a persistent connection record in SR.Conn
 		// SR.Conn.setSessionName(conn, account);
-		
+
 		// // store connID for logout purpose
-		// l_logins[account] = conn.connID;			
-		
+		// l_logins[account] = conn.connID;
+
 		// return onDone(null);
 	// });
 // }
@@ -134,15 +135,15 @@ var l_validateEmail = function (email) {
 // returns the token or undefined if token store fail
 
 // var l_createToken = function (account, from, onDone) {
-	
+
 	// // generate a valid token to be returned
 	// var token = UTIL.createToken();
 	// var data = {tokens: {pass: {}}};
-	// data.tokens.pass[token] = from;	
-	// SR.API._ACCOUNT_SETDATA({account: account, data: data},	
+	// data.tokens.pass[token] = from;
+	// SR.API._ACCOUNT_SETDATA({account: account, data: data},
 							// function (err) {
 								// if (err) {
-									// return onDone(err);	
+									// return onDone(err);
 								// }
 								// onDone(null, {account: account, token: token});
 							// });
@@ -151,8 +152,8 @@ var l_validateEmail = function (email) {
 // var l_revokeToken = function (account, token, onDone) {
 	// var query = {uid: uid};
 	// var field = 'pass_tokens.' + token;
-	
-	// SR.DB.removeField(SR.Settings.DB_NAME_ACCOUNT, query, field, 
+
+	// SR.DB.removeField(SR.Settings.DB_NAME_ACCOUNT, query, field,
 						// function () {
 							// LOG.warn('pass_token [' + token + '] removed');
 							// UTIL.safeCall(onDone, null, token);
@@ -168,17 +169,17 @@ var l_validateEmail = function (email) {
 // // initialize session content based on registered or logined user data
 // var l_initSession = function (login_id, session, data) {
 
-	// // acknowledge as 'logined'	
+	// // acknowledge as 'logined'
 	// l_loginID[login_id] = data.account;
-	
+
 	// // init session
 	// session['_account'] = data.account;
-	
+
 	// // TODO: needs to fix this, should read "groups" from DB
 	// session['_groups'] = data.groups;
 	// session['_permissions'] = data.permissions;
 	// session['lastStatus'] = data.lastStatus;
-	
+
 	// // TODO: centralize handling of logined users?
 	// //SR.User.addGroup(user_data.account, ['user', 'admin']);
 // }
@@ -199,9 +200,9 @@ SR.API.add('_ACCOUNT_REGISTER', {
 }, function (args, onDone, extra) {
 	// check if DB is initialized
 	if (typeof l_accounts === 'undefined') {
-		return onDone('DB_NOT_LOADED');	
+		return onDone('DB_NOT_LOADED');
 	}
-		
+
 	// print basic info to confirm
 	LOG.warn('register new account: ' + args.account + ' pass: ' + args.password + ' e-mail: ' + args.email, l_name);
 
@@ -233,7 +234,7 @@ SR.API.add('_ACCOUNT_REGISTER', {
 
 		l_getUID(getUIDCallback);
 	}
-	
+
 	// generate unique user_id
 	function getUIDCallback (err, uid) {
 		if (err) {
@@ -242,27 +243,27 @@ SR.API.add('_ACCOUNT_REGISTER', {
 		var ip = (extra) ? extra.conn.host : "server";
 		// NOTE: by default a user is a normal user, user 'groups' can later be customized
 		var reg = {
-			uid: 		uid, 
-			account:	args.account, 
-			password:	l_encryptPass(args.password), 
+			uid: 		uid,
+			account:	args.account,
+			password:	l_encryptPass(args.password),
 			email:		args.email,
 			// verify:		{email_verify: false, phone_verify: false},
 			tokens: 	{reset: '', pass: {}},
 			enc_type:	l_enc_type,
-			control:	{groups: args.groups || [], permissions: []}, 
+			control:	{groups: args.groups || [], permissions: []},
 			data: 		args.data || {},
 			login: 		{IP: ip, count: 1}
 		};
-		
+
 		// special handling (by default 'admin' account is special and will be part of the 'admin' group by default
 		if (!args.authWP && reg.account === 'admin') {
 			reg.control.groups.push('admin');
 		}
-				
-		LOG.warn('creating new account [' + args.account + ']...', l_name);	
+
+		LOG.warn('creating new account [' + args.account + ']...', l_name);
 		l_accounts.add(reg, function (err) {
 			if (err) {
-				return onDone('DB_ERROR', err);	
+				return onDone('DB_ERROR', err);
 			}
 			// register success
 			LOG.warn('account register success', l_name);
@@ -296,10 +297,11 @@ SR.API.add('_ACCOUNT_LOGIN', {
 		return onDone('DB_NOT_LOADED');
 	}
 		
-	var account = args.account;	
+	let account = args.account;	
 	let password = args.password;
+  
 	LOG.warn('login: [' + account + '] pass: ' + args.password + (args.from ? ' from: ' + args.from : ''), l_name);
-	
+
 	let userExist = true;
 	// check if account exists
 	if (l_accounts.hasOwnProperty(account) === false) {
@@ -317,7 +319,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	if (l_logins.hasOwnProperty(account)) {
 		LOG.warn('account [' + account + '] already logined', l_name);
 	}
-	
+
 	var user = l_accounts[account];
 	let username;
 	let doubleAccount = false;
@@ -526,12 +528,12 @@ SR.API.add('_ACCOUNT_LOGIN', {
 			}
 
 			// record current login (also the conn object for logout purpose)
-			l_logins[account] = extra.conn;	
+			l_logins[account] = extra.conn;
 
 			// return login success
 			LOG.warn('[' + account + '] login success, total online accounts: ' + Object.keys(l_logins).length, l_name);
 			onDone(null, {account: account, token: token});
-		});	
+		});
 	}).catch((err) => {
 		onDone(err);
 	});
@@ -542,33 +544,33 @@ SR.API.add('_ACCOUNT_LOGOUT', {
 	_login:		true,
 	account:	'+string'
 }, function (args, onDone, extra) {
-	
+
 	var account = (extra && extra.session && extra.session._user ? extra.session._user.account : args.account);
 
 	if (l_validateAccount(account) === false) {
 		return onDone('INVALID_ACCOUNT', account);
 	}
-	
+
 	// record logout time
 	var user = l_accounts[account];
 	user.login.time_out = new Date();
 	user.sync(function (err) {
 		if (err) {
 			LOG.error(err, l_name);
-			return onDone('DB_ERROR', err);	
+			return onDone('DB_ERROR', err);
 		}
-		
-		// remove login name from connection (if any)	
+
+		// remove login name from connection (if any)
 		var conn = l_logins[account];
 		SR.Conn.unsetSessionName(conn);
 		delete l_logins[account];
-			
+
 		// clear session
 		// NOTE: extra might become invalid after sync is done
 		if (extra) {
 			delete extra.session['_user'];
 		}
-							
+
 		LOG.warn('[' + account + '] logout success, total logins: ' + Object.keys(l_logins).length, l_name);
 		onDone(null);
 	});
@@ -576,17 +578,17 @@ SR.API.add('_ACCOUNT_LOGOUT', {
 
 // auto-logout when disconnect
 SR.Callback.onDisconnect(function (conn) {
-	// NOTE: if we auto-logout when socket disconnects, when using websockets and page refreshes, 
-	// user will auto-logout as well (undesirable). 
-	
+	// NOTE: if we auto-logout when socket disconnects, when using websockets and page refreshes,
+	// user will auto-logout as well (undesirable).
+
 	//var account = SR.Conn.getSessionName(conn);
 	//if (!account) {
 	//	return;
 	//}
-	
+
 	//SR.API._ACCOUNT_LOGOUT({account: account}, function (err) {
 	//	if (err) {
-	//		LOG.error(err);	
+	//		LOG.error(err);
 	//	}
 	//	LOG.warn('[' + account + '] auto-logout', l_name);
 	//});
@@ -599,8 +601,8 @@ SR.API.add('_ACCOUNT_RESETPASS', {
 }, function (args, onDone) {
 
 	// send reset mail
-	
-	onDone(null);	
+
+	onDone(null);
 });
 
 // set new password by token
@@ -615,15 +617,15 @@ SR.API.add('_ACCOUNT_SETPASS', {
 	SR.API._ACCOUNT_GETDATA({account: account, type: 'password' }, function (err, result) {
 		// _ACCOUNT_SETDATA
 		LOG.warn('密碼修改');
-		
-		if (result.password !== l_encryptPass(args.original_password)) 
+
+		if (result.password !== l_encryptPass(args.original_password))
 			return onDone(null, {success:0, desc:'密碼不正確'});
 		var data = l_accounts[account];
 		data.password = l_encryptPass(args.password);
 		data.sync(function (err) {
 			if (err) {
 				LOG.error(err, l_name);
-				return onDone('DB_ERROR', err);	
+				return onDone('DB_ERROR', err);
 			}
 			return onDone(null, {success:1, desc:'修改密碼成功'});
 		});
@@ -646,7 +648,7 @@ SR.API.add('_ADMIN_ACCOUNT_SETPASS', {
 	data.sync(function (err) {
 		if (err) {
 			LOG.error(err, l_name);
-			return onDone('DB_ERROR', err);	
+			return onDone('DB_ERROR', err);
 		}
 		return onDone(null, {success:1, desc:'修改密碼成功'});
 	});
@@ -666,38 +668,38 @@ SR.API.add('_ACCOUNT_SETDATA', {
 	if (l_validateAccount(account) === false) {
 		return onDone('INVALID_ACCOUNT', account);
 	}
-	
+
 	// iterate each item and set value while recording errors
 	var errmsg = '';
 	var data = l_accounts[account];
-	
+
 	for (var key in args.data) {
 		if (data.hasOwnProperty(key) === false) {
 			errmsg += 'field [' + key + '] not found\n';
 			continue;
 		}
-		
+
 		if (l_protected_fields[key]) {
 			errmsg += 'field [' + key + '] is protected\n';
-			continue;	
+			continue;
 		}
-		
+
 		// simple replacement for string / numbers
 		var type = typeof args.data[key];
 		if (type === 'string' || type === 'number') {
 			data[key] = args.data[key];
-			continue;			
+			continue;
 		}
-		
+
 		// update/merge value for objects
 		data[key] = UTIL.merge.recursive(true, data[key], args.data[key]);
 	}
-	
+
 	// store back
 	data.sync(function (err) {
 		if (err) {
 			LOG.error(err, l_name);
-			return onDone('DB_ERROR', err);	
+			return onDone('DB_ERROR', err);
 		}
 		onDone(errmsg === '' ? null : errmsg);
 	});
@@ -710,14 +712,14 @@ SR.API.add('_ACCOUNT_GETDATA', {
 	type:			'+string',		// type: ['login', 'data', 'control', 'email', 'uid']
 	types:			'+array'		// same as type but in array form
 }, function (args, onDone, extra) {
-	
+
 	var account = (extra && extra.session && extra.session._user ? extra.session._user.account : args.account);
 	if (l_validateAccount(account) === false) {
 		return onDone('INVALID_ACCOUNT', account);
 	}
-		
+
 	var data = l_accounts[account];
-	
+
 	// convert needed types into array form
 	var types = args.types || [];
 	if (args.type) {
@@ -725,16 +727,16 @@ SR.API.add('_ACCOUNT_GETDATA', {
 	}
 
 	// prepare return value, including 'account'
-	var value = {account: account};	
+	var value = {account: account};
 	var errmsg = '';
 	for (var i=0; i < types.length; i++) {
 		if (data.hasOwnProperty(types[i]) === false) {
-			errmsg += ('field [' + types[i] + '] invalid\n'); 
+			errmsg += ('field [' + types[i] + '] invalid\n');
 		} else {
-			value[types[i]] = data[types[i]];	
+			value[types[i]] = data[types[i]];
 		}
 	}
-	
+
 	if (errmsg !== '') {
 		onDone('INVALID_DATA', errmsg);
 	} else {
@@ -752,10 +754,26 @@ SR.API.add('_ACCOUNT_GETGROUP', {
 	if (l_validateAccount(account) === false) {
 		return onDone('INVALID_ACCOUNT', account);
 	}
-	
+
 	onDone(null, l_accounts[account].control.groups);
 });
 
+SR.API.add('_ACCOUNT_GETUID', {
+	_admin: true,
+	account: '+string',
+}, function (args, onDone) {
+	if (args.account !== undefined) {
+		if (l_accounts[args.account] === undefined) {
+			return onDone('Can not find this account.');
+		}
+		return onDone(null, l_accounts[args.account].uid);
+	}
+	var uid_list = {};
+	for (var account in l_accounts) {
+		uid_list[account] = l_accounts[account].uid;
+	}
+	return onDone(null, uid_list);
+});
 
 // set all groups for an account, by proving a group string
 SR.API.add('_ACCOUNT_SETGROUP', {
@@ -768,13 +786,13 @@ SR.API.add('_ACCOUNT_SETGROUP', {
 	if (l_validateAccount(account) === false) {
 		return onDone('INVALID_ACCOUNT', account);
 	}
-	
+
 	// split input into array
 	var arr = args.groups.split(/[\s\b\n\t,;]+/);
 
 	var user = l_accounts[account];
 	user.control.groups = arr;
-	user.sync(onDone);	
+	user.sync(onDone);
 });
 
 // add an account to a given group membership
@@ -788,14 +806,14 @@ SR.API.add('_ACCOUNT_ADDGROUP', {
 	if (l_validateAccount(account) === false) {
 		return onDone('INVALID_ACCOUNT', args.account);
 	}
-	
+
 	var user = l_accounts[account];
 	for (var i=0; i < user.control.groups.length; i++) {
 		if (user.control.groups[i] === args.group) {
 			return onDone('GROUP_EXISTS', args.group);
 		}
 	}
-	
+
 	// add the group
 	user.control.groups.push(args.group);
 	user.sync(onDone);
@@ -812,12 +830,12 @@ SR.API.add('_ACCOUNT_REMOVEGROUP', {
 	if (l_validateAccount(account) === false) {
 		return onDone('INVALID_ACCOUNT', account);
 	}
-	
+
 	var user = l_accounts[account];
 	for (var i=0; i < user.control.groups.length; i++) {
 		if (user.control.groups[i] === args.group) {
 			user.control.groups.splice(i, 1);
-			user.sync(onDone);	
+			user.sync(onDone);
 			return;
 		}
 	}

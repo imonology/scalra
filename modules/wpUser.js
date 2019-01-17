@@ -33,13 +33,17 @@ SR.API.add('_wpGenerateAuthCookie', {
 				return;
 			}
 
-			const result = JSON.parse(body);
-			if (result.status === 'ok') {
-				onDone(null, result);
-			}
+			try {
+				const result = JSON.parse(body);
+				if (result.status === 'ok') {
+					onDone(null, result);
+				}
 
-			if (result.status === 'error') {
-				onDone(result.error);
+				if (result.status === 'error') {
+					onDone(result.error);
+				}
+			} catch(e) {
+				return onDone('failed to parse response body: ' + e);
 			}
 		})
 	})
@@ -54,8 +58,12 @@ SR.API.add('_wpGetNonce', {}, (args, onDone, extra) => {
 			return;
 		}
 
-		const nonce = JSON.parse(body).nonce;
-		onDone(null, nonce);
+		try {
+			const nonce = JSON.parse(body).nonce;
+			return onDone(null, nonce);
+		} catch(e) {
+			return onDone('failed to parse response body: ' + e);
+		}
 	});
 });
 
@@ -72,8 +80,12 @@ SR.API.add('_wpValidateAuthCookie', {
 			return;
 		}
 
-		const valid = JSON.parse(body).valid;
-		onDone(null, valid);
+		try {
+			const valid = JSON.parse(body).valid;
+			return onDone(null, valid);
+		} catch(e) {
+			return onDone('failed to parse response body: ' + e);
+		}
 	});
 });
 
@@ -88,8 +100,12 @@ SR.API.add('_wpGetCurrentuserinfo', {
 			return;
 		}
 
-		const user = JSON.parse(body).user;
-		onDone(null, user);
+		try {
+			const user = JSON.parse(body).user;
+			return onDone(null, user);
+		} catch(e) {
+			return onDone('failed to parse response body: ' + e);
+		}
 	});
 });
 
