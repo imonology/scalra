@@ -35,7 +35,7 @@ var l_types = {
 	'object':	Object,
 	'buffer':	Buffer,		// used for binary data such as photos
 	'array':	Object
-}
+};
 
 var l_rebuildObjects = function (obj) {
 
@@ -101,7 +101,7 @@ var l_rebuildObjects = function (obj) {
 	return obj;	
 	*/
 	
-}
+};
 
 // create new array for all elements of array type
 // TODO: find more efficient approach?
@@ -125,7 +125,7 @@ var l_remakeArray = function (obj) {
 			}
 		}
 	}
-}
+};
 
 // build a query with only string elements (possibly will contain the key of the object)
 // TODO: more precise approach based on knowledge of object's key?
@@ -137,7 +137,7 @@ var l_buildQuery = function (obj) {
 		}
 	}
 	return query;
-}
+};
 
 // check if a given datastore needs to build key-based mapping
 var l_checkMapper = function (name, data, onDone) {
@@ -156,7 +156,7 @@ var l_checkMapper = function (name, data, onDone) {
 		}
 	}
 	return true;	
-}
+};
 
 // build key-record mapping, if key index exists for a given datastore
 // optionally can remove a previous key "old_key"
@@ -183,7 +183,7 @@ var l_buildMapper = function (name, record, remove_old) {
 		mapping[record[key]] = record;
 	}
 	return true;	
-}
+};
 
 // modify field content from object to array if the type is 'array'
 var l_convertArray = function (obj, array_names) {
@@ -209,7 +209,7 @@ var l_convertArray = function (obj, array_names) {
 		LOG.warn(temp_arr, l_name);
 		obj[key] = temp_arr;
 	}
-}
+};
 
 var l_createSync = function (name, src, array_fields) {
 	
@@ -314,8 +314,8 @@ var l_createSync = function (name, src, array_fields) {
 			obj.save(onSyncDone);
 		});
 		*/
-	}
-}
+	};
+};
 
 
 // load DB data to memory cache in array form
@@ -416,7 +416,7 @@ var l_load = function (arr, name, model, cache, onDone) {
 			// returns the size of the data items stored
 			arr.size = function () {
 				return arr.length;
-			}
+			};
 			
 			arr.add = function (data, onAddDone) {
 			
@@ -451,7 +451,7 @@ var l_load = function (arr, name, model, cache, onDone) {
 										
 					UTIL.safeCall(onAddDone, null, record);
 				});
-			}
+			};
 
 			arr.update = function (account, data, onDone) {
 				const record = arr.find((r) => r.account === account);
@@ -464,7 +464,7 @@ var l_load = function (arr, name, model, cache, onDone) {
 					data,
 					query: { account }
 				}, onDone);
-			}
+			};
 		
 			// external dependency: name, arr, l_mappers
 			// remove a given element based on query (from both memory & DB)
@@ -526,7 +526,7 @@ var l_load = function (arr, name, model, cache, onDone) {
 					LOG.warn('[' + name + '] now has ' + arr.length + ' records', l_name);
 					UTIL.safeCall(onRemoveDone, errmsg);
 				});
-			}
+			};
 			
 			//LOG.warn('[' + name + '] checking cache info...', l_name);
 			//LOG.warn(cache, l_name);
@@ -553,7 +553,7 @@ var l_load = function (arr, name, model, cache, onDone) {
 			}
 		});
 	});
-}
+};
 
 /*
 	args: {
@@ -668,7 +668,7 @@ var l_init = exports.init = function (args, onDone) {
 			}
 		});	
 	}
-}
+};
 
 /*
 	args: {
@@ -775,7 +775,7 @@ var l_get = exports.get = function (args, onDone) {
 	} else {
 		UTIL.safeCall(onDone, null, result);	
 	}
-}
+};
 
 // locally created mappers
 var l_mappers = {};
@@ -836,16 +836,16 @@ var l_map = exports.map = function (args, onDone) {
 	
 	UTIL.safeCall(onDone, null, map);
 	return map;
-}
+};
 
 // fill in the value for a key with multiple element into an object
 var l_fill = exports.fill = function (obj, key, value) {
 	try {
-		var expression = "obj['" + key.replace('.' ,'\'][\'') + '\'] = value;';
+		var expression = 'obj[\'' + key.replace('.' ,'\'][\'') + '\'] = value;';
 		eval(expression);		
 		return true;
 	} catch (e) {
 		LOG.error(e);
 		return false;
 	}
-}
+};

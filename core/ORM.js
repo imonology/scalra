@@ -114,7 +114,7 @@ dispose(onDone)
 //-----------------------------------------
 
 var l_name = 'SR.ORM';
-var orm = require("orm");
+var orm = require('orm');
 
 // tag for monitoring loading
 var l_loadtype = 'SR.ORM.write';
@@ -166,7 +166,7 @@ exports.init = function (args, onDone) {
 		// add the table to the database
 		db.sync(onDone);
 	});
-}
+};
 
 // store a given data record to a collection, create new record if not exist
 exports.create = function (args, onDone) {
@@ -186,7 +186,7 @@ exports.create = function (args, onDone) {
 		//SR.Load.check(l_loadtype, -1);
 		UTIL.safeCall(onDone, err, result);
 	});
-}
+};
 
 // get a record from a given collection
 exports.read = function (args, onDone) {
@@ -195,20 +195,19 @@ exports.read = function (args, onDone) {
 	}
 	var obj = l_obj[args.name];
 	obj.find(args.query, onDone);
-}
+};
 
 var l_print = function (data) {
 	for (var key in data) {
 		if (typeof data[key] === 'object') {
 			LOG.warn('[' + key + ']');
 			l_print(data[key]);
-		}
-		else if (typeof data[key] !== 'function')
+		} else if (typeof data[key] !== 'function')
 			LOG.warn('[' + key + ']: ' + data[key]);
 		else
 			LOG.warn('[' + key + ']: is function');
 	}
-}
+};
 
 // update a given data record to a collection
 exports.update = function (args, onDone) {
@@ -233,7 +232,7 @@ exports.update = function (args, onDone) {
 		// NOTE: functions are not updated
 		for (var key in args.data) {
 			if (key !== '_id' && typeof args.data[key] !== 'function');
-				result[0][key] = args.data[key];
+			result[0][key] = args.data[key];
 		}
 
 		LOG.warn('result after update:', l_name);
@@ -249,7 +248,7 @@ exports.update = function (args, onDone) {
 			UTIL.safeCall(onDone, err, result);
 		});
 	});
-}
+};
 
 // delete a given data record to a collection
 //	args: {
@@ -287,7 +286,7 @@ exports.delete = function (args, onDone) {
 			UTIL.safeCall(onDone, err, result);
 		});
 	});
-}
+};
 
 // setup load checker
 SR.Callback.onStart(function () {

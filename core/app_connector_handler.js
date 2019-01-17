@@ -28,10 +28,10 @@ var l_checkers = exports.checkers = {};
 // App Manager notifes explicitly to shutdown this app server
 // TODO: test if it's real AppManager sending the request, might check session info
 //
-l_checkers.APP_SHUTDOWN = {}
+l_checkers.APP_SHUTDOWN = {};
 
 l_handlers.APP_SHUTDOWN = function (event) {
 	event.done();
-    SR.AppConnector.dispose();
+	SR.AppConnector.dispose();
 	SR.Settings.FRONTIER.dispose();
-}
+};

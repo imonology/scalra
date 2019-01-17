@@ -25,34 +25,33 @@ var l_loaded = exports;
 // script loader, will check periodically if modified script queue is non-empty
 var l_loadScript = function (fullpath, publname) {
 
-    var curr_time = new Date();
+	var curr_time = new Date();
 
-    // store script if modified for first time
-    if (fullpath !== undefined && publname !== undefined) {
+	// store script if modified for first time
+	if (fullpath !== undefined && publname !== undefined) {
 
-        if (l_modified_scripts.hasOwnProperty(fullpath) === false) {
+		if (l_modified_scripts.hasOwnProperty(fullpath) === false) {
                             
-            LOG.warn('script modified: ' + fullpath, l_name);
-            l_modified_scripts[fullpath] = {
-                time: new Date(curr_time.getTime() + l_reloadTime * 1000),
-                name: publname
-            };
-        }
-        // if already stored, ignore this request
-        else
-            return;
-    }
-    else {
+			LOG.warn('script modified: ' + fullpath, l_name);
+			l_modified_scripts[fullpath] = {
+				time: new Date(curr_time.getTime() + l_reloadTime * 1000),
+				name: publname
+			};
+		}
+		// if already stored, ignore this request
+		else
+			return;
+	} else {
 
-        // check queue for scripts that can be safely reloaded
-        for (var path in l_modified_scripts) {
+		// check queue for scripts that can be safely reloaded
+		for (var path in l_modified_scripts) {
         
-            // check if wait time has expired
-            if (curr_time - l_modified_scripts[path].time > 0) {
+			// check if wait time has expired
+			if (curr_time - l_modified_scripts[path].time > 0) {
 
-                // get public name
-                var name = l_modified_scripts[path].name;
-                var notify_msg = 'reloading [' + name + '] from: ' + path;
+				// get public name
+				var name = l_modified_scripts[path].name;
+				var notify_msg = 'reloading [' + name + '] from: ' + path;
 				LOG.warn(notify_msg, l_name);
 				
 				// send e-mail notify to project admin (only if specified)
@@ -62,26 +61,24 @@ var l_loadScript = function (fullpath, publname) {
 				// save current script in cache as backup
 				var backup_script = require.cache[path];
 
-                // NOTE: if 'path' is incorrect, may not delete successfully, and new script won't load
-                delete require.cache[path];
+				// NOTE: if 'path' is incorrect, may not delete successfully, and new script won't load
+				delete require.cache[path];
 				
 				// NOTE: this will show false
 				//LOG.warn('after delete, has path: ' + require.cache.hasOwnProperty(path), l_name);
 				
-                // NOTE: something can go wrong if the script is corrupt
-                try {
-                    // re-require
+				// NOTE: something can go wrong if the script is corrupt
+				try {
+					// re-require
 					if (l_args.hasOwnProperty(path)) {
 						LOG.warn('args exist..', l_name);
 						require(path)(l_args[path]);
 						l_loaded[name] = require.cache[path];
-					}
-					else {
+					} else {
                     	l_loaded[name] = require(path);
 						SR.Handler.add(l_loaded[name]);						
 					}						
-				}
-                catch (e) {
+				} catch (e) {
 					LOG.error('reload error: ', l_name);
 					LOG.error(UTIL.dumpError(e), l_name);
 					
@@ -91,21 +88,21 @@ var l_loadScript = function (fullpath, publname) {
 					
 					// this will show 'true'
 					//LOG.warn('after restore, has path: ' + require.cache.hasOwnProperty(path), l_name);         
-                }
+				}
 
-                // remove file record
-                delete l_modified_scripts[path];
-            }
-        }
-    }
+				// remove file record
+				delete l_modified_scripts[path];
+			}
+		}
+	}
 
-    // reload myself to check later if there are scripts to be loaded
-    if (Object.keys(l_modified_scripts).length > 0) {
-        var timeout = l_reloadTime * 1.5 * 1000;
-        LOG.sys('automatic reloading after: ' + timeout + ' ms', l_name);
-        setTimeout(l_loadScript, timeout);
-    }        
-}
+	// reload myself to check later if there are scripts to be loaded
+	if (Object.keys(l_modified_scripts).length > 0) {
+		var timeout = l_reloadTime * 1.5 * 1000;
+		LOG.sys('automatic reloading after: ' + timeout + ' ms', l_name);
+		setTimeout(l_loadScript, timeout);
+	}        
+};
 
 // see if a script file is modified, and re-load if so
 // returns loaded module's script or undefined for failure
@@ -130,8 +127,7 @@ exports.monitor = function (name, fullpath, args) {
 			
 			// store arguments (for later reloading)
 			l_args[fullpath] = args;
-		}
-		else {
+		} else {
 			l_loaded[name] = require(fullpath);
 		}
 	} catch (e) {
@@ -148,17 +144,17 @@ exports.monitor = function (name, fullpath, args) {
 		return undefined;
 	}
 				     
-    SR.fs.watchFile(fullpath, function (curr, prev) {
+	SR.fs.watchFile(fullpath, function (curr, prev) {
 
-        // check if file has updated    
-        if (curr.mtime !== prev.mtime) {
+		// check if file has updated    
+		if (curr.mtime !== prev.mtime) {
 
 			// record to modified file & trigger periodic check
-            l_loadScript(fullpath, name);
-        }
-    });
+			l_loadScript(fullpath, name);
+		}
+	});
 	
 	LOG.sys('type of loaded script: ' + typeof l_loaded[name], l_name);
 	
 	return l_loaded[name];
-}
+};

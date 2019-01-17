@@ -25,7 +25,7 @@ var l_add = exports.add = function (handlers, name) {
 	name = name || 'default';
 	
 	return l_get(name).load(handlers);
-}
+};
 
 // add some handlers by filename and owner
 // handler_info example:
@@ -62,8 +62,7 @@ var l_addByFile = exports.addByFile = function (handler_info, path) {
 		if (owner) {
 			if (owner === 'SR' || owner === 'scalra') {
 				fullpath = SR.path.join(__dirname, '..', 'handlers', filename);
-			}
-			else if (SR.Settings.PATH_LIB) {
+			} else if (SR.Settings.PATH_LIB) {
 				fullpath = SR.path.join(SR.Settings.PATH_LIB, owner, filename);				
 			}
 		}
@@ -85,7 +84,7 @@ var l_addByFile = exports.addByFile = function (handler_info, path) {
 	l_add(handlers);
 	
 	return true;
-}
+};
 
 
 // get a particular event handler set by name
@@ -101,7 +100,7 @@ var l_get = exports.get = function (name) {
 	}	
 	
 	return l_handlerSets[name];
-}
+};
 
 // dispatch an event to be processed by a specific set of handlers
 exports.dispatch = function (event, name) {
@@ -116,7 +115,7 @@ exports.dispatch = function (event, name) {
 	}	
 	
 	return l_handlerSets[name].dispatcher(event);
-}
+};
 
 // set permission to use a particular event handler
 exports.setGroup = function (arg/*event_name, group, type, name*/) {
@@ -125,11 +124,11 @@ exports.setGroup = function (arg/*event_name, group, type, name*/) {
 	arg.name = arg.name || 'default';
 	
 	return l_get(name).setGroup(arg);
-}
+};
 
 //todo: 
 exports.getGroup = function (arg) {
-}
+};
 
 // 
 // a EventHandler object, for handling incoming packets, 
@@ -152,22 +151,22 @@ var EventHandler = function () {
 	var l_handlers = {}; 
 
 	// register response callback (event responder) for server notifications
-	var l_responders = {}
+	var l_responders = {};
 	
 	// get checkers for external verification / doc generation
 	this.getCheckers = function () {
 		return l_checkers;	
-	}
+	};
 
 	// return the number of handlers
 	this.getHandlerSize = function () {
 		return Object.keys(l_handlers).length;
-	}
+	};
 
 	// return all current handlers
 	this.getHandlers = function () {
 		return l_handlers;
-	}
+	};
 
 	// add custom handlers to this EventHandler
 	this.load = function (handler_app) {
@@ -211,7 +210,7 @@ var EventHandler = function () {
 		LOG.sys(list, l_name);
 		
 		return num_stored;
-	}
+	};
 	
 	// TODO: suitable to put here?
 	// add custom handlers to this EventHandler
@@ -263,13 +262,11 @@ var EventHandler = function () {
 			if (type === true) {
 				LOG.warn('adding new group [' + group + '] to event [' + event_name + ']', l_name);
 				groups.push(group);
-			}
-			else {
+			} else {
 				LOG.warn('no group setting', l_name);
 				return groups;
 			}
-		}
-		else
+		} else
 			groups.splice(i, 1);
 
 		// re-assign
@@ -281,7 +278,7 @@ var EventHandler = function () {
 		LOG.warn('new groups: ', l_name);
 		LOG.warn(groups, l_name);
 		return groups;
-	}	
+	};	
 	
 	// check if an event should be forwarded to another app server for execution
 	var l_checkForward = function (msgtype, event) {
@@ -316,7 +313,7 @@ var EventHandler = function () {
 		
 		// no need to forward, local execution
 		return false;
-	}
+	};
 
 	//
 	// Dispatcher for sending a particular command to its handler
@@ -449,8 +446,7 @@ var EventHandler = function () {
 				if (UTIL.safeCall(checker, event.data, event.session) === false) {
 					err_str.push('checker function fail');	
 				}
-			}
-			else {
+			} else {
 				
 				// it's a js object, check each parameter one by one
 				for (var para in checker) {
@@ -573,7 +569,7 @@ var EventHandler = function () {
 				LOG.error('event still not checkout after: ' + SR.Settings.TIMEOUT_EVENTHANDLE + ' ms', l_name);
 				SR.EventManager.dropEvent(event);
 			}
-		}
+		};
 
 		// set timeout to check if event has been checked out
 		var timeout_trigger = setTimeout(check_eventdone, SR.Settings.TIMEOUT_EVENTHANDLE);		
@@ -602,7 +598,7 @@ var EventHandler = function () {
 
 		// return unique key to be attached to msg to identify this communication
 		return cid;
-	}
+	};
 
 	//
 	// private methods
@@ -620,13 +616,13 @@ var EventHandler = function () {
 		for (var i=0; i < set1.length; i++) {
 			for (var j=0; j < set2.length; j++) {
 				if (set1[i] === set2[j]) {
-                    //console.log("matched group/permission: " + set1[i]);
+					//console.log("matched group/permission: " + set1[i]);
 					return true;
-                }
-            }
-        }
+				}
+			}
+		}
 		return false;
-	}
+	};
 
 	// notify that a response to a particular event is received
 	var l_handleEventResponse = function (response_type, event) {
@@ -649,5 +645,5 @@ var EventHandler = function () {
 				i--;
 			}
 		}
-	}
-}
+	};
+};

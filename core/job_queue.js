@@ -33,15 +33,15 @@ var l_pool = {};
 
 // create a new queue
 exports.create = function () {
-    var uid = UTIL.createUUID();
-    l_pool[uid] = {
-        table: [],				// a list of functions (jobs) to be executed in sequence
-        counter: 0,				// index to the currently executing job
+	var uid = UTIL.createUUID();
+	l_pool[uid] = {
+		table: [],				// a list of functions (jobs) to be executed in sequence
+		counter: 0,				// index to the currently executing job
 		failed: false,			// whether a given job has failed
-        //retries: 0			// NOTE: not used, but can be used to re-try function execution?
-    };
-    return uid;
-}
+		//retries: 0			// NOTE: not used, but can be used to re-try function execution?
+	};
+	return uid;
+};
 
 // destory an existing queue
 var l_destroy = function (id, onDone) {
@@ -54,29 +54,29 @@ var l_destroy = function (id, onDone) {
 // previous jobs have failed
 exports.add = function (id, func, always_execute) {
 	// if queue does not exist then don't add
-    if (l_pool.hasOwnProperty(id) === false)
-        return;
+	if (l_pool.hasOwnProperty(id) === false)
+		return;
 	   
-    l_pool[id].table.push(
-        {
+	l_pool[id].table.push(
+		{
 			// NOTE: should we record which is successful and which is not?
-            func: func,
+			func: func,
 			always: (always_execute !== false),
-        }
-    );
+		}
+	);
 };
    
 // execute next job for a given queue
 var l_run = exports.run = function (id) {
-    if (l_pool.hasOwnProperty(id) === false) {
+	if (l_pool.hasOwnProperty(id) === false) {
 		console.log('[SR.JobQueue]::run::'+SR.Tags.ERR+' id: ' + id + ' not found.' + SR.Tags.ERREND);
-        return;
-    }
+		return;
+	}
 	
 	// error checking, should not happen as counter is advanced internally
 	if (l_pool[id].counter >= l_pool[id].table.length) {
 		console.log('[SR.JobQueue]::run:: ' +SR.Tags.ERR + 'size not enough: ' + l_pool[id].table.length + ' accessing: ' + l_pool[id].counter + SR.Tags.ERREND);
-        return;
+		return;
 	}
 	
 	// TODO: func may be replaced when function is called 2nd time? thus callback result will be incorrect?
@@ -105,16 +105,16 @@ var l_run = exports.run = function (id) {
 };
 
 var l_done = exports.done = function (id, func) {
-    if (l_pool.hasOwnProperty(id) === false)
-        return;
+	if (l_pool.hasOwnProperty(id) === false)
+		return;
 
-    // trigger next function
-    l_pool[id].counter++;
+	// trigger next function
+	l_pool[id].counter++;
 
-    // if no more job, delete the queue (all done)
-    if (l_pool[id].counter === l_pool[id].table.length) {
+	// if no more job, delete the queue (all done)
+	if (l_pool[id].counter === l_pool[id].table.length) {
 		l_destroy(id);
-    }
+	}
 	// execute the next job
 	else {
 		l_run(id);	
@@ -147,14 +147,14 @@ JobQueue.prototype.add = function (step, keep_execute, name) {
 		LOG.error('job is not a function', l_name);
 	else
 		this.queue.push({job: step, keep: keep_execute, name: name, done: false});
-}
+};
 
 // execute all jobs in the queue sequentially
 JobQueue.prototype.run = function (onDone) {
 	LOG.sys('start executing a job... onDone provided: ' + (typeof onDone === 'function'), l_name);
 	this.onDone = onDone;
 	this.next();
-}
+};
 
 // execute next job in queue 
 JobQueue.prototype.next = function () {
@@ -189,7 +189,7 @@ JobQueue.prototype.next = function () {
 		}
 		that.curr++;
 		that.next();
-	}
+	};
 	
 	// if the job does not finish in time
 	var onTimeout = function () {
@@ -199,7 +199,7 @@ JobQueue.prototype.next = function () {
 			// force this job be done
 			onJobDone(false);
 		}
-	}
+	};
 	
 	// NOTE: it's possible that this job won't return and call the onDone callback
 	// if a timeout value exists then we should force stop this job with a result of 'false'
@@ -209,15 +209,15 @@ JobQueue.prototype.next = function () {
 	if (this.timeout > 0) {
 		timeout_trigger = setTimeout(onTimeout, this.timeout);
 	}
-}
+};
 
 // all jobs are done, return back
 JobQueue.prototype.done = function () {
 	LOG.sys('all jobs done, calling onDone type: ' + typeof this.onDone + ' passed: ' + this.all_passed, l_name);
 	UTIL.safeCall(this.onDone, this.all_passed);
-}
+};
 
 exports.createQueue = function (para) {
 	return new JobQueue(para);
-}
+};
     

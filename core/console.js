@@ -14,44 +14,44 @@ var l_handlers = SR.State.get('SR.Console');
 // usage please follow the style in: http://en.wikipedia.org/wiki/Usage_message
 var l_add = exports.add = function (command, desc_text, handler, usage_text) {
     
-    if (typeof handler !== 'function') {
-        LOG.warn('handler must be a function for command [' + command + ']', 'SR.Console');
-        return false;   
-    }
+	if (typeof handler !== 'function') {
+		LOG.warn('handler must be a function for command [' + command + ']', 'SR.Console');
+		return false;   
+	}
     
-    // warn if already exists
-    if (l_handlers.hasOwnProperty(command)) {
-        LOG.warn('console command [' + command + '] already registered, replace existing...', 'SR.Console');
-    }
+	// warn if already exists
+	if (l_handlers.hasOwnProperty(command)) {
+		LOG.warn('console command [' + command + '] already registered, replace existing...', 'SR.Console');
+	}
     
-    // add handler
-    l_handlers[command] = {
-        desc: desc_text,
-        usage: usage_text,
-        handler: handler
-    }
+	// add handler
+	l_handlers[command] = {
+		desc: desc_text,
+		usage: usage_text,
+		handler: handler
+	};
     
-    return true;
-}
+	return true;
+};
 
 l_add('quit', 'quit current server instance', function (para) {
 	SR.Settings.FRONTIER.dispose();
-    return true;
+	return true;
 });
 
 l_add('list', 'show live app servers', function (para) {
 	console.log('list current apps');
     
-    var appList = SR.AppConn.queryAppServers();
+	var appList = SR.AppConn.queryAppServers();
 
-    var count = 1;
-    for (var appID in appList) {
+	var count = 1;
+	for (var appID in appList) {
         
 		console.log(count + ': ' + appList[appID].IP + ':' +appList[appID].port + 
                   ' [' + appList[appID].name + '] users: ' + appList[appID].usercount);
 	    count++;
-    }	
-    return true;
+	}	
+	return true;
 });
 
 l_add('start', 'start app server of a type', function (para) {
@@ -84,7 +84,7 @@ l_add('start', 'start app server of a type', function (para) {
 				LOG.sys(list[i], 'SR.Console');
 		}
 	});
-    return true;
+	return true;
 },
 'type [size] [owner] [project]');
 
@@ -93,7 +93,7 @@ l_add('stop', 'stop an app server of a given appID', function (para) {
 	SR.Execute.stop(appID, function (result) {
 		LOG.warn(result, 'SR.Console');				
 	});
-    return true;
+	return true;
 },
 'appID');
 
@@ -122,8 +122,7 @@ l_add('log', 'set different display levels', function (para) {
 	var level = parseInt(para[0]);
 	if (isNaN(level)) {
 		console.log('current level: ' + LOG.getLevel() + ' (4: system, 3: debug, 2: warning, 1: error)');	
-	} 
-	else if (level > 4 || level <= 0)
+	} else if (level > 4 || level <= 0)
 		return false;
 	else {
 		console.log('set error level to: ' + level);
@@ -136,41 +135,41 @@ l_add('log', 'set different display levels', function (para) {
 l_add('info', 'display current server info [channel, cpu, server, disks, settings]', function (para) {
 
 	switch (para[0]) {
-		case 'channel':
-			console.log('total subscribers: ' + SR.Comm.count());
-			// get a list of channels & get their count
-			var list = SR.Comm.list();
-			for (var i=0; i < list.length; i++) 
-				console.log(list[i] + ': ' + SR.Comm.count(list[i]));
-			break;
+	case 'channel':
+		console.log('total subscribers: ' + SR.Comm.count());
+		// get a list of channels & get their count
+		var list = SR.Comm.list();
+		for (var i=0; i < list.length; i++) 
+			console.log(list[i] + ': ' + SR.Comm.count(list[i]));
+		break;
 			
-		case 'cpu':
-			var info = UTIL.getSystemInfo();	
-			console.log(info.cpu_load);
-			console.log(info.cpus);
-			break;
+	case 'cpu':
+		var info = UTIL.getSystemInfo();	
+		console.log(info.cpu_load);
+		console.log(info.cpus);
+		break;
 			
-		case 'server':
-			var info = SR.Settings.SERVER_INFO;
-			console.log(info);
-			break;
+	case 'server':
+		var info = SR.Settings.SERVER_INFO;
+		console.log(info);
+		break;
 
-		case 'disks':
-			var info = UTIL.getSystemInfo();
-			console.log(info.additional.disks);
-			break;
+	case 'disks':
+		var info = UTIL.getSystemInfo();
+		console.log(info.additional.disks);
+		break;
 			
-		case 'settings':
-			console.log(SR.Settings);
-			break;
+	case 'settings':
+		console.log(SR.Settings);
+		break;
 						
-		default:
-			var info = UTIL.getSystemInfo();	
-			console.log(info);	
-			break;
+	default:
+		var info = UTIL.getSystemInfo();	
+		console.log(info);	
+		break;
 	}
 
-    return true;
+	return true;
 });
 
 // list all current channels
@@ -182,7 +181,7 @@ l_add('ch', 'show all currently subscribed channels', function (para) {
 	
 	if (output !== '')
 		console.log(output);
-    else
+	else
 		console.log('no channels subscribed');
 	return true;
 });
@@ -190,13 +189,13 @@ l_add('ch', 'show all currently subscribed channels', function (para) {
 // show current server's config
 l_add('config', 'show current server\'s config', function (para) {
 	switch (para[0]) {
-		case 'project':
-			console.log(SR.Settings.Project);
-			break;
+	case 'project':
+		console.log(SR.Settings.Project);
+		break;
 			
-		default:
-			console.log(SR.Settings);
-			break;
+	default:
+		console.log(SR.Settings);
+		break;
 	}
 	return true;
 });
@@ -220,8 +219,7 @@ l_add('eval', 'evaluate an expression at the current server', function (para, ra
 
 	try {
 		eval(raw);
-	}
-	catch (e) {
+	} catch (e) {
 		console.error(e);
 	}
 	console.log('\n');
@@ -244,44 +242,43 @@ l_add('stat', 'display current system stat', function () {
 */
 
 l_add('help', 'help message', function () {
-    // show all help texts and their respective handler names
-    for (var name in l_handlers) {
-        console.log('  ' + name + '\t\t' + l_handlers[name].desc);
-    }
-    return true;
+	// show all help texts and their respective handler names
+	for (var name in l_handlers) {
+		console.log('  ' + name + '\t\t' + l_handlers[name].desc);
+	}
+	return true;
 });
 
 //-----------------------------------------
 // handles keyboard event (including Ctrl-C)
 var stdinHandler = function (data) {
-    //console.log(data);
+	//console.log(data);
 	data = data.toString();
 	
-    var para = data.replace('\n', ' ').split(' ');
-    var command = para[0];
+	var para = data.replace('\n', ' ').split(' ');
+	var command = para[0];
 	var raw_para = data.replace(command, '');
 	
 	// remove first element as command
 	para.splice(0, 1);
 	
-    // check if the command is registered
-    if (l_handlers.hasOwnProperty(command)) {
-        // prevent crashing from executing command
-        if (UTIL.safeCall(l_handlers[command].handler, para, raw_para) === false) {
-            console.log('  usage: ' + command + ' ' + l_handlers[command].usage);
-            return;
-        }
-    }
-	else
-		console.log("type 'help' for a list of commands");
-}
+	// check if the command is registered
+	if (l_handlers.hasOwnProperty(command)) {
+		// prevent crashing from executing command
+		if (UTIL.safeCall(l_handlers[command].handler, para, raw_para) === false) {
+			console.log('  usage: ' + command + ' ' + l_handlers[command].usage);
+			return;
+		}
+	} else
+		console.log('type \'help\' for a list of commands');
+};
 
 // handle console messages
 exports.init = function () {
 
 	LOG.warn('console input handler installed, total commands: ' + Object.keys(l_handlers).length, 'SR.Console');
     
-    // nodejs. 0.8.0+
-    process.stdin.resume();
-    process.stdin.on('data', stdinHandler);
-}
+	// nodejs. 0.8.0+
+	process.stdin.resume();
+	process.stdin.on('data', stdinHandler);
+};

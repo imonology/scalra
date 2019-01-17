@@ -101,7 +101,7 @@ exports.createUUID = function () {
 	//console.log('uuid generated: ' + uuid + ' type: ' + typeof uuid);
 	// TODO: use SR._uuid to generate?
 	return Math.uuidFast();
-}
+};
 
 
 // ref: http://stackoverflow.com/questions/8532406/create-a-random-token-in-javascript-based-on-user-details
@@ -112,7 +112,7 @@ var rand = function () {
 // generate random token
 exports.createToken = function () {
 	return rand() + rand(); // to make it longer
-}
+};
 
 // generate a random number between a 'floor' and 'top' limits
 // (copied from _basekit originally)
@@ -120,44 +120,44 @@ var l_rand = function () {
 	var f = (arguments[1]) ? arguments[0] : 0;
 	var t = (arguments[1]) ? arguments[1] : arguments[0];
 	return Math.floor((Math.random() * (t - f)) + f);
-}
+};
 
 // create a numerical ID number between 0 and 10,000
 exports.createID = function (limit) {
 	return l_rand(0, ((typeof limit === 'number' && limit > 0) ? limit : 10000));
-}
+};
 
 exports.getTrimedByteStringByLength = function (pString, trimedByteSz) {
-		if (pString.length === 0)
-			return 0;
+	if (pString.length === 0)
+		return 0;
 
-		if ((pString.length * 2) < trimedByteSz)
-			return pString;
+	if ((pString.length * 2) < trimedByteSz)
+		return pString;
 
-		var tmpCt = 1;
-		var tmpByteSz = 0;
-		var tmpBL = Buffer.byteLength(pString[tmpCt - 1], 'utf8');
+	var tmpCt = 1;
+	var tmpByteSz = 0;
+	var tmpBL = Buffer.byteLength(pString[tmpCt - 1], 'utf8');
+	if (tmpBL === 3)
+		tmpBL = 2;
+
+	tmpByteSz += tmpBL;
+
+	while (tmpByteSz <= trimedByteSz) {
+		tmpCt++;
+		if ((tmpCt - 1) === pString.length)
+			break;
+
+		//require('util').puts('length of '+pString[tmpCt-1]+' ='+Buffer.byteLength(pString[tmpCt-1], 'utf8'));
+		tmpBL = Buffer.byteLength(pString[tmpCt - 1], 'utf8');
 		if (tmpBL === 3)
 			tmpBL = 2;
 
 		tmpByteSz += tmpBL;
 
-		while (tmpByteSz <= trimedByteSz) {
-			tmpCt++;
-			if ((tmpCt - 1) === pString.length)
-				break;
-
-			//require('util').puts('length of '+pString[tmpCt-1]+' ='+Buffer.byteLength(pString[tmpCt-1], 'utf8'));
-			tmpBL = Buffer.byteLength(pString[tmpCt - 1], 'utf8');
-			if (tmpBL === 3)
-				tmpBL = 2;
-
-			tmpByteSz += tmpBL;
-
-		}
-
-		return pString.slice(0, tmpCt - 1);
 	}
+
+	return pString.slice(0, tmpCt - 1);
+};
 
 //-----------------------------------------
 // public method
@@ -175,7 +175,7 @@ exports.getTrimedByteStringByLength = function (pString, trimedByteSz) {
 var clone = exports.clone = function (src) {
 	let cloned = Object.assign({}, src);
 	return cloned;
-}
+};
 
 //-----------------------------------------
 // NOTE: after node 0.9.x recursive process.nextTick will cause problems
@@ -187,7 +187,7 @@ exports.asyncCall = function (callback) {
 	if (typeof callback === 'function')
 	//process.nextTick(callback);
 		setImmediate(callback);
-}
+};
 
 // safe callback (with exception catching)
 // 
@@ -208,8 +208,7 @@ l_safeCall = exports.safeCall = function (callback) {
 	try {
 		var args = Array.prototype.slice.call(arguments);
 		return_value = callback.apply(this, args.slice(1));
-	}
-	catch (e) {
+	} catch (e) {
 
 		//console.log('safecall entering error...');
 		var err_str = 'callback exception, function:\n' + callback;
@@ -234,7 +233,7 @@ l_safeCall = exports.safeCall = function (callback) {
 	}
 
 	return return_value;
-}
+};
 
 /*
 else {
@@ -267,7 +266,7 @@ exports.timeoutCall = function (callback, timeout, msg) {
 
 		// call original callback
 		UTIL.safeCall(callback);
-	}
+	};
 
 	// force calling timeout after some time (in ms)
 	var timeout_trigger = setTimeout(function () {
@@ -277,7 +276,7 @@ exports.timeoutCall = function (callback, timeout, msg) {
 	}, timeout);
 
 	return done_func;
-}
+};
 
 
 // get & store local IP
@@ -309,8 +308,7 @@ exports.getLocalIP = function (onDone) {
 		if (error) {
 			LOG.error('cannot determine local IP', l_name);
 			l_safeCall(onDone, '127.0.0.1');
-		}
-		else {
+		} else {
 			// store for later use
 			_localIP = ip;
 			l_safeCall(onDone, _localIP);
@@ -337,12 +335,12 @@ exports.getLocalIP = function (onDone) {
         onDone(_localIP);
     })
 	*/
-}
+};
 
 // obtain server domain if available or lookup
 exports.getLocalDomain = function () {
 	return UTIL.userSettings('domain');
-}
+};
 
 //
 // support for HTTP requests (GET/POST) 
@@ -462,8 +460,7 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 						res_obj = JSON.parse(data);
 					}
 				}
-			}
-			catch (e) {
+			} catch (e) {
 				LOG.error('JSON parsing error for data: ' + data, l_name);
 				return l_safeCall(onDone, e);
 			}
@@ -488,16 +485,16 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 	// post the data
 	req.write(data);
 	req.end();
-}
+};
 
 // helper to send a HTTP get request to an URL and get response
 var l_HTTPget = exports.HTTPget = function (url, onDone) {
 	get_function(http, url, onDone);
-}
+};
 
 var l_HTTPSget = exports.HTTPSget = function (url, onDone) {
 	get_function(https, url, onDone);
-}
+};
 
 function get_function(obj, url, onDone){
 	// send request to app server to get stat
@@ -522,19 +519,18 @@ function get_function(obj, url, onDone){
 					else
 						res_obj = JSON.parse(data);
 				}
-			}
-			catch (e) {
+			} catch (e) {
 				LOG.error('JSON parsing error for data: ' + data, l_name);
 				res_obj = null;
 			}
 
 			// return parsed JSON object
 			l_safeCall(onDone, res_obj);
-		})
+		});
 
 	}).on('error', function (e) {
 
-		LOG.error("HTTP get error: " + e.message, l_name);
+		LOG.error('HTTP get error: ' + e.message, l_name);
 		l_safeCall(onDone, null);
 	});
 }
@@ -546,18 +542,17 @@ exports.convertJSON = function (data) {
 	try {
 		if (typeof data === 'string' && data !== '')
 			JSONobj = JSON.parse(data);
-	}
-	catch (e) {
+	} catch (e) {
 		LOG.error('JSON parsing error for data: ' + data, l_name);
 		LOG.error('check if names are enclosed in double quotation such as {"name": "john"}', l_name);
 	}
 	return JSONobj;
-}
+};
 
 // convert possibly an object to string format
 var l_convertString = exports.convertString = function (obj) {
 	return (typeof obj === 'object' ? JSON.stringify(obj, null, 4) : obj);
-}
+};
 
 // convert an object to string with error catching
 exports.stringify = function (obj) {
@@ -566,12 +561,12 @@ exports.stringify = function (obj) {
 	} catch (e) {
 		LOG.error(e);
 	}
-}
+};
 
 // extracting all legitimate emails from a string to an array
 var l_extractEmails = function (text) {
 	return text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi);
-}
+};
 
 
 var email = require('emailjs/email');
@@ -621,7 +616,7 @@ exports.emailText = function (msg, onSuccess, onFail) {
 		msg.attachment = [{
 			data: msg.text,
 			alternative: true
-		}, ]
+		}, ];
 	}
 
 	// connect to mail server			
@@ -644,13 +639,12 @@ exports.emailText = function (msg, onSuccess, onFail) {
 			LOG.error(err, l_name);
 			LOG.error(message, l_name);
 			l_safeCall(onFail, message);
-		}
-		else {
+		} else {
 			LOG.warn('send e-mail success to: [' + msg.to + '] subject: ' + msg.subject, l_name);
 			l_safeCall(onSuccess, true);
 		}
 	});
-}
+};
 
 
 // return a given user-defined settings, or undefined if not found
@@ -661,7 +655,7 @@ exports.userSettings = function (section, name) {
 		return SR.Settings.Project[section];
 	}
 	return undefined;
-}
+};
 
 // obtain the project-specific port for a given purpose
 var l_getProjctPort = exports.getProjectPort = function (type) {
@@ -670,7 +664,7 @@ var l_getProjctPort = exports.getProjectPort = function (type) {
 		return undefined;
 	}
 	return UTIL.userSettings('lobbyPort') + SR.Settings[type];
-}
+};
 
 // get a full server host+port combination
 exports.getServerDomain = function (secured, type) {
@@ -678,11 +672,11 @@ exports.getServerDomain = function (secured, type) {
 	type = type || 'PORT_INC_HTTP';
 	var port = l_getProjctPort(type);
 	return (secured === true? 'https' : 'http') + '://' + SR.Settings.SERVER_INFO.IP + (port ? (':' + port) : '') + '/';
-}
+};
 
 var ISODateString = function (d) {
 	function pad(n) {
-		return n < 10 ? '0' + n : n
+		return n < 10 ? '0' + n : n;
 	}
 
 	function pad1000(n) {
@@ -697,7 +691,7 @@ var ISODateString = function (d) {
 		pad(d.getMinutes()) +
 		pad(d.getSeconds()) +
 		pad1000(d.getMilliseconds());
-}
+};
 
 // return a unique date time string
 exports.getDateTimeString = function () {
@@ -705,7 +699,7 @@ exports.getDateTimeString = function () {
 
 	var d = new Date();
 	return ISODateString(d);
-}
+};
 
 // check if a directory exists or create if not
 exports.validatePath = function (path, create_if_invalid) {
@@ -730,7 +724,7 @@ exports.validatePath = function (path, create_if_invalid) {
 		LOG.error('validatePath failed: ' + path, l_name);
 		return false;
 	}
-}
+};
 
 // check if a directory exists or create if not (async version)
 exports.validatePathAsync = function (path, onDone) {
@@ -744,7 +738,7 @@ exports.validatePathAsync = function (path, onDone) {
 			l_safeCall(onDone, false);
 		});
 	});
-}
+};
 
 // get a list of directories under a given path
 exports.getDirectoriesSync = function (srcpath) {
@@ -756,7 +750,7 @@ exports.getDirectoriesSync = function (srcpath) {
 		LOG.warn('cannot list dir: ' + srcpath, l_name);
 		return [];
 	}
-}
+};
 
 
 // check if a file exists on file system or not (file size > 0)
@@ -774,7 +768,7 @@ var l_validateFile = exports.validateFile = function (path, onDone) {
 		
 		UTIL.safeCall(onDone, stats.size > 0);
 	});
-}
+};
 
 // check if a file exists and is accessible (sync version)
 exports.validateFileSync = function (path) {
@@ -784,7 +778,7 @@ exports.validateFileSync = function (path) {
 	} catch (e) {
 		return false;
 	}
-}
+};
 
 // search several directories to find a valid file
 exports.findValidFile = function (list, path, onDone) {
@@ -800,8 +794,8 @@ exports.findValidFile = function (list, path, onDone) {
 					onTaskDone(null);
 				}
 			});			
-		}
-	}
+		};
+	};
 	
 	var tasks = [];
 	for (var i in list) {
@@ -814,7 +808,7 @@ exports.findValidFile = function (list, path, onDone) {
 		}
 		UTIL.safeCall(onDone, 'no files found');
 	});
-}
+};
 
 // see: http://stackoverflow.com/questions/5802840/javascript-node-js-getting-line-number-in-try-catch
 // print out content of an error
@@ -830,13 +824,12 @@ exports.dumpError = function (err) {
 				'====================\n' +
 				err.stack;
 		}
-	}
-	else {
+	} else {
 		msg = 'dumpError :: argument is not an object';
 	}
 
 	return msg;
-}
+};
 
 // send custom message to project admin, if "adminMail" is specified in project settings
 var l_notifyAdmin = exports.notifyAdmin = function (title, msg, email) {
@@ -870,20 +863,20 @@ var l_notifyAdmin = exports.notifyAdmin = function (title, msg, email) {
 	UTIL.emailText(content);
 
 	return true;
-}
+};
 
 // check whether a given port is still open: true means open, false means occupied
 var l_isPortOpen = exports.isPortOpen = function (port, onResponse) {
 
 	// client approach
 	var client = SR.net.connect({
-			port: port
-		},
-		function (result) { //'connect' listener
-			if (typeof onResponse === 'function')
-				onResponse(false);
-			client.end();
-		});
+		port: port
+	},
+	function (result) { //'connect' listener
+		if (typeof onResponse === 'function')
+			onResponse(false);
+		client.end();
+	});
 	
 	client.on('error', function () {
 		LOG.sys('port [' + port + '] cannot be connected... port is open...', l_name);
@@ -911,12 +904,12 @@ var l_isPortOpen = exports.isPortOpen = function (port, onResponse) {
 	
 	tester.listen(port);
 	*/
-}
+};
 
 ///////////////////////////////////////////////////////////////
 // for getSystemInfo
 ///////////////////////////////////////////////////////////////
-var fs = require('fs')
+var fs = require('fs');
 realtimeInfo = {
 	previousRX: 0,
 	previousTX: 0,
@@ -935,20 +928,20 @@ exports.daemon = function (arg) {
 	}
 	
 	switch (arg.action) {
-		case 'startSetInterval':
-			setInterval(l_njds, 5000);
-			setInterval(l_cpu_realtime_info, 2000);
-			break;
-		default:
-			break;
+	case 'startSetInterval':
+		setInterval(l_njds, 5000);
+		setInterval(l_cpu_realtime_info, 2000);
+		break;
+	default:
+		break;
 	}
-}
+};
 
 
 var l_cpu_realtime_info = function (arg) {
 		
-	cpu.cpuUsage( function (input) { realtimeInfo.cpu.cpuUsage = input } );
-	cpu.cpuFree( function (input) { realtimeInfo.cpu.cpuFree = input } );
+	cpu.cpuUsage( function (input) { realtimeInfo.cpu.cpuUsage = input; } );
+	cpu.cpuFree( function (input) { realtimeInfo.cpu.cpuFree = input; } );
 	realtimeInfo.cpu.platform = cpu.platform();
 	realtimeInfo.cpu.cpuCount = cpu.cpuCount();
 	realtimeInfo.cpu.freemem = cpu.freemem();
@@ -956,11 +949,11 @@ var l_cpu_realtime_info = function (arg) {
 	realtimeInfo.cpu.freememPercentage = cpu.freememPercentage();
 	realtimeInfo.cpu.processUptime = cpu.processUptime();
 	realtimeInfo.cpu.loadavg = {
-		"1": cpu.loadavg(1),
-		"5": cpu.loadavg(5),
-		"15": cpu.loadavg(15),
+		'1': cpu.loadavg(1),
+		'5': cpu.loadavg(5),
+		'15': cpu.loadavg(15),
 	};
-}
+};
 
 //var njds = require('nodejs-disks');
 var node_df = require('node-df');
@@ -990,45 +983,44 @@ var l_njds = function (arg) {
 			}
 			realtimeInfo.disks = result;
 		});
-	}
-	else if (os.platform() === "win32") {
+	} else if (os.platform() === 'win32') {
 		var parse_size = function (size) {
 			var ntera = (size / Math.pow(2, 40)).toFixed(2);
 			if (ntera > 1) {
-				return ntera + " TB";
+				return ntera + ' TB';
 			}
 
 			var ngiga = (size / Math.pow(2, 30)).toFixed(2);
 			if (ngiga > 1) {
-				return ngiga + " GB";
+				return ngiga + ' GB';
 			}
 
 			var nmega = (size / Math.pow(2, 20)).toFixed(2);
 			if (nmega > 1) {
-				return nmega + " MB";
+				return nmega + ' MB';
 			}
 
 			var nkilo = (size / Math.pow(2, 10)).toFixed(2);
 			if (nkilo > 1) {
-				return nkilo + " KB";
+				return nkilo + ' KB';
 			}
 
-			return size + " B";
+			return size + ' B';
 		};
 
-		var property_list = ["deviceid", "freespace", "size"];
-		var wmic = spawn("wmic", ["logicaldisk", "get", property_list.join()]);
-		var disk_info = "";
-		wmic.stdout.on("data", function (data) {
+		var property_list = ['deviceid', 'freespace', 'size'];
+		var wmic = spawn('wmic', ['logicaldisk', 'get', property_list.join()]);
+		var disk_info = '';
+		wmic.stdout.on('data', function (data) {
 			for (var i = 0; i < data.length; i++) {
 				disk_info += String.fromCharCode(data[i]);
 			}
 		});
-		wmic.on("exit", function (code, signal) {
+		wmic.on('exit', function (code, signal) {
 			realtimeInfo.disks = [];
-			var disks = disk_info.split("\r\r\n");
+			var disks = disk_info.split('\r\r\n');
 			for (var i = 1; i < disks.length - 2; i++) {
-				var disk = disks[i].replace(/\s+/g, " ").split(" ");
+				var disk = disks[i].replace(/\s+/g, ' ').split(' ');
 				var drive = disk[0];
 
 				var available = 0;
@@ -1054,19 +1046,19 @@ var l_njds = function (arg) {
 			}
 		});
 
-		var netstat = spawn("netstat", ["-e"]);
-		var traffinfo = "";
-		netstat.stdout.on("data", function (data) {
+		var netstat = spawn('netstat', ['-e']);
+		var traffinfo = '';
+		netstat.stdout.on('data', function (data) {
 			for (var i = 0; i < data.length; i++) {
 				traffinfo += String.fromCharCode(data[i]);
 			}
 		});
-		netstat.on("exit", function (code, signal) {
-			var traffin = traffinfo.split("\r\n")[4].replace(/\s+/g, " ").split(" ")[1];
+		netstat.on('exit', function (code, signal) {
+			var traffin = traffinfo.split('\r\n')[4].replace(/\s+/g, ' ').split(' ')[1];
 			realtimeInfo.currentRXBPS = Math.round((traffin - realtimeInfo.previousRX) / 2);
 			realtimeInfo.previousRX = traffin;
 
-			var traffout = traffinfo.split("\r\n")[4].replace(/\s+/g, " ").split(" ")[2];
+			var traffout = traffinfo.split('\r\n')[4].replace(/\s+/g, ' ').split(' ')[2];
 			realtimeInfo.currentTXBPS = Math.round((traffout - realtimeInfo.previousTX) / 2);
 			realtimeInfo.previousTX = traffout;
 		});
@@ -1099,39 +1091,39 @@ var l_njds = function (arg) {
 var l_getSystemInfo = exports.getSystemInfo = function () {
 
 
-		if (process.platform === 'linux') {
-
-		}
-
-		return {
-			//title:  process.title,
-			gid: process.getgid ? process.getgid() : 'unknown',
-			uid: process.getuid ? process.getuid() : 'unknown',
-			arch: process.arch,
-			osarch: os.arch(),
-			platform: process.platform,
-			osplatform: os.platform(),
-			ostype: os.type(),
-			osrelease: os.release(),
-			node_ver: process.version,
-			start_time: SR.Stat.startTime,
-			uptime: process.uptime(),
-			hostname: os.hostname(),
-			mem_total: os.totalmem(),
-			mem_free: os.freemem(),
-			mem_proc: SR.sys.inspect(process.memoryUsage()),
-			net_in: SR.Stat.get('net_in'),
-			net_out: SR.Stat.get('net_out'),
-			conn_count: SR.Conn.getConnCount(),
-			cpu_load: os.loadavg(),
-			cpus: os.cpus(),
-			channels: SR.Comm.list().length,
-			subscribers: SR.Comm.count(),
-			additional: realtimeInfo,
-		};
+	if (process.platform === 'linux') {
 
 	}
-	////////////////////////////////////////////////////
+
+	return {
+		//title:  process.title,
+		gid: process.getgid ? process.getgid() : 'unknown',
+		uid: process.getuid ? process.getuid() : 'unknown',
+		arch: process.arch,
+		osarch: os.arch(),
+		platform: process.platform,
+		osplatform: os.platform(),
+		ostype: os.type(),
+		osrelease: os.release(),
+		node_ver: process.version,
+		start_time: SR.Stat.startTime,
+		uptime: process.uptime(),
+		hostname: os.hostname(),
+		mem_total: os.totalmem(),
+		mem_free: os.freemem(),
+		mem_proc: SR.sys.inspect(process.memoryUsage()),
+		net_in: SR.Stat.get('net_in'),
+		net_out: SR.Stat.get('net_out'),
+		conn_count: SR.Conn.getConnCount(),
+		cpu_load: os.loadavg(),
+		cpus: os.cpus(),
+		channels: SR.Comm.list().length,
+		subscribers: SR.Comm.count(),
+		additional: realtimeInfo,
+	};
+
+};
+////////////////////////////////////////////////////
 
 // generate a hash from data, given encryption type
 var l_hash = exports.hash = function (data, type) {
@@ -1140,18 +1132,18 @@ var l_hash = exports.hash = function (data, type) {
 	dohash.update(new Buffer(data, 'binary'));
 	data = dohash.digest('hex');
 	return data;
-}
+};
 
 // generate a random integer between 0 and (limit-1)
 var l_randInteger = exports.randInteger = function (limit) {
 	return Math.floor(Math.random() * limit);	
-}
+};
 
 // ref: http://stackoverflow.com/questions/2573521/how-do-i-output-an-iso-8601-formatted-string-in-javascript
 // convert a date to local ISO string
 var l_localISOString = exports.localISOString = function (date, includeSeconds) {
 	function pad(n) {
-		return n < 10 ? '0' + n : n
+		return n < 10 ? '0' + n : n;
 	}
 	var localIsoString = date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
 	if (date.getTimezoneOffset() == 0) localIsoString += 'Z';
@@ -1162,7 +1154,7 @@ var l_localISOString = exports.localISOString = function (date, includeSeconds) 
 // test if a string is binary (non-printable characters)
 var l_isBinary = exports.isBinary = function (data) {
 	return /[\x00-\x1F]/.test(data);
-}
+};
 
 // obtain a local port (from monitor for a local server)
 // size specifies how many ports to obtain (default: 1)
@@ -1258,12 +1250,12 @@ var l_getLocalPort = exports.getLocalPort = function (onDone, size) {
 		// try again
 		else
 			setTimeout(get_port, 0);
-	}
+	};
 	
 	// make the first attempt
 	get_port();
 	
-}
+};
 
 
 // TODO: detect more correctly instead of specifying in settings?
@@ -1271,7 +1263,7 @@ var l_getLocalPort = exports.getLocalPort = function (onDone, size) {
 exports.getEntryServer = function (secured) {
 	return (secured ? 'https' : 'http') + '://' + SR.Settings.DOMAIN_LOBBY + ':' +
 		(secured ? SR.Settings.PORT_ENTRY + 1 : SR.Settings.PORT_ENTRY) + '/';
-}
+};
 
 // mix two objects into same object
 exports.mixin = exports.merge = require('merge');
@@ -1279,15 +1271,15 @@ exports.mixin = exports.merge = require('merge');
 // compare if two arrays are the same
 // ref: https://stackoverflow.com/questions/4025893/how-to-check-identical-array-in-most-efficient-way
 var l_arraysEqual = exports.arraysEqual = function (arr1, arr2) {
-    if (arr1.length !== arr2.length)
-        return false;
-    for (var i = arr1.length; i--;) {
-        if (arr1[i] !== arr2[i])
-            return false;
-    }
+	if (arr1.length !== arr2.length)
+		return false;
+	for (var i = arr1.length; i--;) {
+		if (arr1[i] !== arr2[i])
+			return false;
+	}
 
-    return true;
-}
+	return true;
+};
 
 // read a JSON file as js object
 exports.readJSON = function (path, onDone) {
@@ -1308,8 +1300,7 @@ exports.readJSON = function (path, onDone) {
 
 		try {
 			data = JSON.parse(data);
-		}
-		catch (e) {
+		} catch (e) {
 			LOG.error(e, l_name);
 			//throw e;
 			UTIL.safeCall(onDone, e);			
@@ -1319,13 +1310,13 @@ exports.readJSON = function (path, onDone) {
 
 		UTIL.safeCall(onDone, null, data);		
 	});
-}
+};
 
 var parsepath = require('parse-filepath');
 // convert a path into an object for easier handling
 exports.parsePath = function (path) {
 	return parsepath(path);
-}
+};
 
 // read scalra files (relative to scalra core directory)
 var l_readFile = exports.readFile = function (path, onDone) {
@@ -1336,13 +1327,12 @@ var l_readFile = exports.readFile = function (path, onDone) {
 		if (err) {
 			LOG.error(err, l_name);
 			UTIL.safeCall(onDone);
-		}
-		else {
+		} else {
 			LOG.sys('read file success: ' + path, l_name);
 			UTIL.safeCall(onDone, data);
 		}
 	});
-}
+};
 
 // write scalra files (relative to scalra core directoy)
 var l_writeFile = exports.writeFile = function (path, file, onDone) {
@@ -1353,23 +1343,22 @@ var l_writeFile = exports.writeFile = function (path, file, onDone) {
 		if (err) {
 			LOG.error(err, l_name);
 			UTIL.safeCall(onDone, false);
-		}
-		else {
+		} else {
 			LOG.sys('file write success: ' + path, l_name);
 			UTIL.safeCall(onDone, true);
 		}
 	});
-}
+};
 
 // read scalra config
 exports.readSystemConfig = function (onDone) {
 	l_readFile(SR.path.join('..', '..', 'config.js'), onDone);
-}
+};
 
 // write scalra config
 exports.writeSystemConfig = function (file, onDone) {
 	l_writeFile(SR.path.join('..', '..', 'config.js'), file, onDone);
-}
+};
 
 ///////////////////////////////////
 // input: {}
@@ -1381,54 +1370,54 @@ var l_getDateTimeJson = exports.getDateTimeJson = function (d) {
 	if (d) var date = new Date(d);
 	else var date = new Date();
 	var hour = date.getHours();
-	hour = (hour < 10 ? "0" : "") + hour;
+	hour = (hour < 10 ? '0' : '') + hour;
 	var min = date.getMinutes();
-	min = (min < 10 ? "0" : "") + min;
+	min = (min < 10 ? '0' : '') + min;
 	var sec = date.getSeconds();
-	sec = (sec < 10 ? "0" : "") + sec;
+	sec = (sec < 10 ? '0' : '') + sec;
 	var year = date.getFullYear();
 	var month = date.getMonth() + 1;
-	month = (month < 10 ? "0" : "") + month;
+	month = (month < 10 ? '0' : '') + month;
 	var day = date.getDate();
-	day = (day < 10 ? "0" : "") + day;
+	day = (day < 10 ? '0' : '') + day;
 	var timeObj = {
-		"year": parseInt(year),
-		"month": parseInt(month),
-		"monthday": parseInt(day),
-		"weekday": date.getDay(),
-		"hour": parseInt(hour),
-		"minute": parseInt(min),
-		"second": parseInt(sec)
+		'year': parseInt(year),
+		'month': parseInt(month),
+		'monthday': parseInt(day),
+		'weekday': date.getDay(),
+		'hour': parseInt(hour),
+		'minute': parseInt(min),
+		'second': parseInt(sec)
 	};
 	//console.log("date.getDay: " + date.getDay());
 	switch (date.getDay()) {
-		case 0:
-			timeObj.weekDay = 'sunday';
-			break;
-		case 1:
-			timeObj.weekDay = 'monday';
-			break;
-		case 2:
-			timeObj.weekDay = 'tuesday';
-			break;
-		case 3:
-			timeObj.weekDay = 'wednesday';
-			break;
-		case 4:
-			timeObj.weekDay = 'thursday';
-			break;
-		case 5:
-			timeObj.weekDay = 'friday';
-			break;
-		case 6:
-			timeObj.weekDay = 'saturday';
-			break;
-		default:
-			console.log("error code: xxxxxxxx");
-			break;
+	case 0:
+		timeObj.weekDay = 'sunday';
+		break;
+	case 1:
+		timeObj.weekDay = 'monday';
+		break;
+	case 2:
+		timeObj.weekDay = 'tuesday';
+		break;
+	case 3:
+		timeObj.weekDay = 'wednesday';
+		break;
+	case 4:
+		timeObj.weekDay = 'thursday';
+		break;
+	case 5:
+		timeObj.weekDay = 'friday';
+		break;
+	case 6:
+		timeObj.weekDay = 'saturday';
+		break;
+	default:
+		console.log('error code: xxxxxxxx');
+		break;
 	}
 	return timeObj;
-}
+};
 
 exports.getDateTimeTS = function (arg) {
 	var x = l_getDateTimeJson(arg);
@@ -1447,7 +1436,7 @@ exports.getDateTimeTS = function (arg) {
 	if (result.s.length === 1) result.s = '0' + result.s;
 	//console.log("result " + result);
 	return result.Y + result.M + result.D + '-' + result.h + result.m + result.s;
-}
+};
 
 
 ///////////////////////////// stable
@@ -1457,12 +1446,12 @@ exports.getDateTimeTS = function (arg) {
 // clean 'null' elements for an array
 var cleanArray = exports.cleanArray = function (actual) {
 	if (!actual) {
-		console.log("no input array");
+		console.log('no input array');
 		return false;
 	}
 
 	if (typeof(actual) !== 'object') {
-		console.log("input is not ");
+		console.log('input is not ');
 		return false;
 	}
 
@@ -1473,7 +1462,7 @@ var cleanArray = exports.cleanArray = function (actual) {
 		}
 	}
 	return newArray;
-}
+};
 
 
 
@@ -1511,8 +1500,7 @@ var walk = function (dir, done) {
 							done(null, results);
 						}
 					});
-				}
-				else {
+				} else {
 					results.push({
 						file: file,
 						stat: stat
@@ -1528,33 +1516,33 @@ var walk = function (dir, done) {
 
 // multi-purpose find (-- walk a file hierarchy) cross-platform(pure nodejs version) 
 exports.findFiles = function (arg) {
-	LOG.debug("in findFiles", l_name);
+	LOG.debug('in findFiles', l_name);
 	LOG.debug(arg, l_name);
 	if (!arg) {
-		console.log("error: no arg");
+		console.log('error: no arg');
 		return;
 	}
 
 	if (!arg.path) {
-		console.log("error: no arg.path");
+		console.log('error: no arg.path');
 		return;
 	}
 
 	if (!arg.onDone) {
-		console.log("error: no arg.onDone");
+		console.log('error: no arg.onDone');
 		return;
 	}
 
 	if (typeof arg.onDone !== 'function') {
-		console.log("error: arg.onDone is not a function");
+		console.log('error: arg.onDone is not a function');
 		return;
 	}
 
 	walk(arg.path, function (err, results) {
 		if (err) {
 			//throw err;
-			console.log("error: path exists?");
-			arg.onDone(["error: path exists?"]);
+			console.log('error: path exists?');
+			arg.onDone(['error: path exists?']);
 			return;
 		}
 		//console.log(results);
@@ -1566,49 +1554,47 @@ exports.findFiles = function (arg) {
 				if (!a) return 0;
 				if (!b) return 0;
 				switch (arg.sortOption) {
-					case 'filenameLocale':
-						return a.file.localeCompare(b.file);
-						break;
-					case 'filename':
-						return a.file - b.file; // length of filename
-						break;
-					case 'lengthOfFilename':
-						return a.file.length - b.file.length; // length of filename
-						break;
-					case 'atime':
-						return a.stat.atime - b.stat.atime; // access time of file
-						break;
-					case 'mtime':
-						if (!a.stat) return 0;
-						if (!b.stat) return 0;
-						if (!a.stat.mtime) return 0;
-						if (!b.stat.mtime) return 0;
-						return a.stat.mtime - b.stat.mtime; // modification time of file
-						break;
-						// http://www.linux-faqs.info/general/difference-between-mtime-ctime-and-atime
-						// ctime: ctime is the inode or file change time. The ctime gets updated when the file attributes are changed, like changing the owner, changing the permission or moving the file to an other filesystem but will also be updated when you modify a file.
-						// mtime: mtime is the file modify time. The mtime gets updated when you modify a file. Whenever you update content of a file or save a file the mtime gets updated.
-						// atime: atime is the file access time. The atime gets updated when you open a file but also when a file is used for other operations like grep, sort, cat, head, tail and so on.
-					case 'ctime':
-						return a.stat.ctime - b.stat.ctime; // creation time of file
-						break;
-					case 'filesize':
-						return a.stat.size - b.stat.size; // size of file
-						break;
-					default:
-						break;
+				case 'filenameLocale':
+					return a.file.localeCompare(b.file);
+					break;
+				case 'filename':
+					return a.file - b.file; // length of filename
+					break;
+				case 'lengthOfFilename':
+					return a.file.length - b.file.length; // length of filename
+					break;
+				case 'atime':
+					return a.stat.atime - b.stat.atime; // access time of file
+					break;
+				case 'mtime':
+					if (!a.stat) return 0;
+					if (!b.stat) return 0;
+					if (!a.stat.mtime) return 0;
+					if (!b.stat.mtime) return 0;
+					return a.stat.mtime - b.stat.mtime; // modification time of file
+					break;
+					// http://www.linux-faqs.info/general/difference-between-mtime-ctime-and-atime
+					// ctime: ctime is the inode or file change time. The ctime gets updated when the file attributes are changed, like changing the owner, changing the permission or moving the file to an other filesystem but will also be updated when you modify a file.
+					// mtime: mtime is the file modify time. The mtime gets updated when you modify a file. Whenever you update content of a file or save a file the mtime gets updated.
+					// atime: atime is the file access time. The atime gets updated when you open a file but also when a file is used for other operations like grep, sort, cat, head, tail and so on.
+				case 'ctime':
+					return a.stat.ctime - b.stat.ctime; // creation time of file
+					break;
+				case 'filesize':
+					return a.stat.size - b.stat.size; // size of file
+					break;
+				default:
+					break;
 				}
 			});
-		}
-		else {
-			console.log("no sortOption");
+		} else {
+			console.log('no sortOption');
 		}
 		//console.log(r);
 
 		for (var i in r) {
 			if (arg.rexmatch) {
-				if (r[i].file.match(arg.rexmatch)) {}
-				else {
+				if (r[i].file.match(arg.rexmatch)) {} else {
 					//console.log("delete: ");
 					//console.log(r[i]);
 					delete r[i];
@@ -1616,8 +1602,7 @@ exports.findFiles = function (arg) {
 			}
 
 			if (r[i] && r[i].stat && arg.ctime && arg.ctime.start && arg.ctime.end) {
-				if (r[i].stat.ctime.getTime() >= arg.ctime.start.getTime() && r[i].stat.ctime.getTime() <= arg.ctime.end.getTime()) {}
-				else {
+				if (r[i].stat.ctime.getTime() >= arg.ctime.start.getTime() && r[i].stat.ctime.getTime() <= arg.ctime.end.getTime()) {} else {
 					//console.log("delete: ");
 					//console.log(r[i]);
 					delete r[i];
@@ -1625,8 +1610,7 @@ exports.findFiles = function (arg) {
 			}
 
 			if (r[i] && r[i].stat && arg.mtime && arg.mtime.start && arg.mtime.end) {
-				if (r[i].stat.mtime.getTime() >= arg.mtime.start.getTime() && r[i].stat.mtime.getTime() <= arg.mtime.end.getTime()) {}
-				else {
+				if (r[i].stat.mtime.getTime() >= arg.mtime.start.getTime() && r[i].stat.mtime.getTime() <= arg.mtime.end.getTime()) {} else {
 					//console.log("delete: ");
 					//console.log(r[i]);
 					delete r[i];
@@ -1680,7 +1664,7 @@ exports.findFiles = function (arg) {
 
 exports.mkdirParent = function (dirPath, mode, callback) {
 	if (!dirPath) {
-		console.log("no input path");
+		console.log('no input path');
 		return false;
 	}
 	fs.mkdirParent = function (dirPath, mode, callback) {
@@ -1697,7 +1681,7 @@ exports.mkdirParent = function (dirPath, mode, callback) {
 			callback && callback(error);
 		});
 	};
-}
+};
 
 ////////////////////////////////////////
 // 
@@ -1707,43 +1691,42 @@ exports.mkdirParent = function (dirPath, mode, callback) {
 exports.whichPartition = function (arg) {
 
 	if (!arg) {
-		console.log("no input, utility.js 1274");
+		console.log('no input, utility.js 1274');
 		return false;
 	}
 
 
 	if (typeof(arg) !== 'object') {
-		console.log("incorrect arg, utility.js 1279");
+		console.log('incorrect arg, utility.js 1279');
 		return false;
 	}
 
 	if (!arg.onDone) {
-		console.log("in whichPartition: no onDone");
+		console.log('in whichPartition: no onDone');
 		return false;
 	}
 
 	if (arg.onDone !== 'function') {
-		console.log("in whichPartition: onDone is not a function");
+		console.log('in whichPartition: onDone is not a function');
 		return false;
 	}
 
-	var paths = " ";
+	var paths = ' ';
 	for (var i in arg) {
-		if (typeof(arg[i]) === "string")
-			paths = paths + arg[i] + " ";
+		if (typeof(arg[i]) === 'string')
+			paths = paths + arg[i] + ' ';
 	}
 	//console.log("paths");
 	//console.log(paths);
 
 	if (process.platform === 'linux') {
-		exec("df -TP " + paths, function (err, stdout, stderr) {
+		exec('df -TP ' + paths, function (err, stdout, stderr) {
 			if (err) {
-				console.log("utility.js error 12541292");
+				console.log('utility.js error 12541292');
 				console.log(err);
-			}
-			else {
+			} else {
 				var partitions = [];
-				var partitionTemp1 = stdout.split(" ");
+				var partitionTemp1 = stdout.split(' ');
 				var partitionTemp2 = [];
 				for (var i in partitionTemp1) {
 					partitionTemp2[i] = partitionTemp1[i].split('\n');
@@ -1751,8 +1734,7 @@ exports.whichPartition = function (arg) {
 				//console.log("partitionTemp");
 				for (var i in partitionTemp2) {
 					for (var j in partitionTemp2[i]) {
-						if (partitionTemp2[i][j].match(/\//) > -1) {}
-						else {
+						if (partitionTemp2[i][j].match(/\//) > -1) {} else {
 							if (partitions.indexOf(partitionTemp2[i][j]) === -1) {
 								partitions.push(partitionTemp2[i][j]);
 							}
@@ -1765,7 +1747,7 @@ exports.whichPartition = function (arg) {
 			}
 		});
 	}
-}
+};
 
 // contact monitor server to get certain info
 exports.contactMonitor = function (type, para, onDone, is_broadcast) {
@@ -1777,13 +1759,11 @@ exports.contactMonitor = function (type, para, onDone, is_broadcast) {
 		if (is_broadcast) {
 			for (var i=0; i < SR.Settings.IP_MONITOR.length; i++)
 				monitors.push(SR.Settings.IP_MONITOR[i]);
-		}
-		else {
+		} else {
 			var index = UTIL.randInteger(SR.Settings.IP_MONITOR.length);
 			monitors.push(SR.Settings.IP_MONITOR[index]);
 		}
-	}
-	else {
+	} else {
 		monitors.push(SR.Settings.IP_MONITOR);
 	}
 	
@@ -1818,7 +1798,7 @@ exports.contactMonitor = function (type, para, onDone, is_broadcast) {
 			}
 		);
 	}
-}
+};
 
 // build objects as part of UTIL
 var files = SR.fs.readdirSync(__dirname + '/UTIL');

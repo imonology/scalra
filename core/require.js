@@ -14,9 +14,9 @@ exports.lib = function (user, file) {
 	
 	var fullpath = SR.path.join(SR.Settings.PATH_LIB, user, file);
 	return require(fullpath);
-}
+};
 
 // include system extensions
 exports.ext = function (file) {
 	return require(SR.path.join('..', 'extension', file));
-}
+};

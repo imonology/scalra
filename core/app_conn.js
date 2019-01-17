@@ -70,7 +70,7 @@ exports.isApp = function (app_id) {
 			LOG.warn('appID: ' + id, 'SR.AppConn.isApp');
 	}
 	return l_apps.hasOwnProperty(app_id);
-}
+};
 
 var l_getAppID = exports.getAppID = function (connID) {
 	if (l_conn2app.hasOwnProperty(connID) === false) {
@@ -78,7 +78,7 @@ var l_getAppID = exports.getAppID = function (connID) {
 		return undefined;
 	}
 	return l_conn2app[connID];
-}
+};
 
 // get basic info about a app server
 var l_getAppInfo = exports.getAppInfo = function (app_id) {
@@ -89,12 +89,12 @@ var l_getAppInfo = exports.getAppInfo = function (app_id) {
 			LOG.warn('appID: ' + id, 'SR.AppConn.getAppInfo');
 	}
 	return l_apps[app_id];
-}
+};
 
 // custom handling for new connection
 exports.onConnect = function (conn) {
 	LOG.warn('incoming connection to AppManager, connID: ' + conn.connID, 'onConnect');
-}
+};
 
 //-----------------------------------------
 // custom handling for removing a connection
@@ -123,111 +123,111 @@ exports.onDisconnect = function (conn) {
 // register a new app
 exports.createApp = function (connID, info) {
 
-    // if connection doesn't exist
-    if (SR.Conn.isConnected(connID) === false) {
-        LOG.error('connID: '+ connID +' not found.', 'createApp');
-        return;
-    }
+	// if connection doesn't exist
+	if (SR.Conn.isConnected(connID) === false) {
+		LOG.error('connID: '+ connID +' not found.', 'createApp');
+		return;
+	}
 	
-    // check if app already exists
-    if (l_apps.hasOwnProperty(info.id) === true) {
-        LOG.error('appID: ' + info.id + ' already exists', 'createApp');
-        return;
-    }
+	// check if app already exists
+	if (l_apps.hasOwnProperty(info.id) === true) {
+		LOG.error('appID: ' + info.id + ' already exists', 'createApp');
+		return;
+	}
 
 	LOG.warn('connID: ' + connID + ' info:', 'createApp');
 	LOG.warn(info);
 
-    var appInfo = {
+	var appInfo = {
 		
-        id:             info.id,		// unique app ID
+		id:             info.id,		// unique app ID
 		owner:			info.owner,
 		project:		info.project,
-        name:           info.name,		// name of the app
+		name:           info.name,		// name of the app
 		type:			info.type,
-        local_name:     info.local_name,
+		local_name:     info.local_name,
 
-        // public IP/port of this app
-        IP:             info.IP,
-        port:           info.port,
+		// public IP/port of this app
+		IP:             info.IP,
+		port:           info.port,
 		connID:			connID,
 
-        // location ID of the app (assigned by this app)
-        locationID:     SR.Location.getLocationID(info.name, info.local_name),
+		// location ID of the app (assigned by this app)
+		locationID:     SR.Location.getLocationID(info.name, info.local_name),
 
-        // number of users at this app
-        usercount:      0,
+		// number of users at this app
+		usercount:      0,
 
-        // app-related stat (should be customizable)
-        stat:           undefined
-    }
+		// app-related stat (should be customizable)
+		stat:           undefined
+	};
 
-    LOG.sys('App info for ' + appInfo.local_name + ' (' + appInfo.name + '): ', 'createApp');
-    LOG.sys('locationID: ' + appInfo.locationID + ' @ ' + appInfo.IP + ':' + appInfo.port, 'createApp');
+	LOG.sys('App info for ' + appInfo.local_name + ' (' + appInfo.name + '): ', 'createApp');
+	LOG.sys('locationID: ' + appInfo.locationID + ' @ ' + appInfo.IP + ':' + appInfo.port, 'createApp');
         
-    // store new app
-    l_apps[info.id] = appInfo;
+	// store new app
+	l_apps[info.id] = appInfo;
 
 	// store connID to serverID mapping
 	l_conn2app[connID] = info.id;
 		
-    return info.id;
-}
+	return info.id;
+};
 
 // remove a registered app
 var l_deleteApp = exports.deleteApp = function (appID, onSuccess, onFail) {
 
-    LOG.sys('del appID = ' + appID, 'l_deleteApp');
+	LOG.sys('del appID = ' + appID, 'l_deleteApp');
 
-    // check if the app is registered
-    if (l_apps.hasOwnProperty(appID) === false) {
-        LOG.error('appID=' + appID + ' not found.', 'deleteApp');
-        UTIL.safeCall(onFail, appID);
-    }
+	// check if the app is registered
+	if (l_apps.hasOwnProperty(appID) === false) {
+		LOG.error('appID=' + appID + ' not found.', 'deleteApp');
+		UTIL.safeCall(onFail, appID);
+	}
 
-    // delete transfer requests to lobby
-    // delete respective users so requests are not processed
+	// delete transfer requests to lobby
+	// delete respective users so requests are not processed
 
-    // get all users at this app
-    var accounts = SR.Location.getAppUsers(appID);
-    var requests = 0;
+	// get all users at this app
+	var accounts = SR.Location.getAppUsers(appID);
+	var requests = 0;
 
-    for (var i=0; i < accounts.length; ++i) {
-        // remove all transfer request to lobby
-        if (l_transferLobbyRequests.hasOwnProperty(accounts[i]) === true) {
-            requests++;        
-            delete l_transferLobbyRequests[accounts[i]];
-        }
-    }
+	for (var i=0; i < accounts.length; ++i) {
+		// remove all transfer request to lobby
+		if (l_transferLobbyRequests.hasOwnProperty(accounts[i]) === true) {
+			requests++;        
+			delete l_transferLobbyRequests[accounts[i]];
+		}
+	}
 
-    LOG.warn('delete ' + requests + ' transfer to lobby requests', 'l_deleteApp');
+	LOG.warn('delete ' + requests + ' transfer to lobby requests', 'l_deleteApp');
         
-    // remove app from location records
-    SR.Location.delApp(appID);
+	// remove app from location records
+	SR.Location.delApp(appID);
 
-    //
-    // remove app info / record
-    //
+	//
+	// remove app info / record
+	//
        
-    // delete app
-    delete l_apps[appID];
+	// delete app
+	delete l_apps[appID];
 
 	//SR.Execute.onStopped(appID);
 	
-    UTIL.safeCall(onSuccess, appID);
-}
+	UTIL.safeCall(onSuccess, appID);
+};
 
 // increase/decrease user count at a given app
 exports.updateUserCount = function (appID, modifier) {
     
-    if (l_apps.hasOwnProperty(appID) === false) {
-        LOG.error('app not found for id: ' + appID, 'updateUserCount');
-        return false;    
-    }
+	if (l_apps.hasOwnProperty(appID) === false) {
+		LOG.error('app not found for id: ' + appID, 'updateUserCount');
+		return false;    
+	}
 
-    l_apps[appID].usercount += modifier;
-    return true;
-}
+	l_apps[appID].usercount += modifier;
+	return true;
+};
 
 // check if a user count matches the level for a particular server setting
 // type can be 'overload' or 'underload'
@@ -243,66 +243,65 @@ exports.checkUserThreshold = function (appID, type) {
 		var threshold = UTIL.userSettings('servers', 'overload') | 0;
 		if (threshold !== 0 && l_apps[appID].usercount >= threshold)
 			return true;
-	}
-	else if (type === 'underload') {
+	} else if (type === 'underload') {
 		var threshold = UTIL.userSettings('servers', 'underload');
 		if (threshold !== undefined && l_apps[appID].usercount <= threshold)
 			return true;
 	}
 	return false;
-}
+};
 
 //-----------------------------------------
 // obtain the info for an available app for a given server
 // NOTE: this is an important function, and may need to provide load balancing
 var l_getAvailableApp = exports.getAvailableApp = function (server_name) {
 
-    // TODO: find a better way?
-    var info = {};
-    var lowest = 100000000;          // app with lowest load (online users)
-    var lowest_appID = undefined;    // appID 
+	// TODO: find a better way?
+	var info = {};
+	var lowest = 100000000;          // app with lowest load (online users)
+	var lowest_appID = undefined;    // appID 
 
 	// get maxmium user limit per server
 	var max_count = UTIL.userSettings('servers', 'overload') | 0;
 	
 	LOG.sys('checking available app server for [' + server_name + '] max_per_server: ' + max_count, 'getAvailableApp');
 		
-    for (var appID in l_apps) {
+	for (var appID in l_apps) {
 
-        var app = l_apps[appID];
+		var app = l_apps[appID];
 
-        // check if the app is connected and locationID matches
-        if (SR.Conn.isConnected(app.connID) === false ||
+		// check if the app is connected and locationID matches
+		if (SR.Conn.isConnected(app.connID) === false ||
 			app.name !== server_name) {
 			//LOG.warn('serverID: ' + appID + ' (connID: ' + app.connID + ') is not connected or name does not match location name', 'getAvailableApp');
-            continue;
+			continue;
 		}
 
-        //LOG.sys('ID: ' + app.id + ' IP: ' + app.IP + ' port: ' + app.port, 'getAvailableApp');
+		//LOG.sys('ID: ' + app.id + ' IP: ' + app.IP + ' port: ' + app.port, 'getAvailableApp');
 
-        // check if this app has the least number of people for this location, 
+		// check if this app has the least number of people for this location, 
 		// but also its user count cannot exceed maximum
-        if ((max_count === 0 || app.usercount < max_count) && 
+		if ((max_count === 0 || app.usercount < max_count) && 
 			app.usercount < lowest) {
-            lowest = app.usercount;
-            lowest_appID = appID;
-        }
-    }
+			lowest = app.usercount;
+			lowest_appID = appID;
+		}
+	}
 
-    // store info for the app with lowest number of people
-    if (lowest_appID !== undefined) {
-        info = {
-            appID:    lowest_appID,
+	// store info for the app with lowest number of people
+	if (lowest_appID !== undefined) {
+		info = {
+			appID:    lowest_appID,
 			owner:    l_apps[lowest_appID].owner,
 			project:  l_apps[lowest_appID].project,
-            name:     server_name,
-            IP:       l_apps[lowest_appID].IP,
-            port:     l_apps[lowest_appID].port
-        }
-    }
+			name:     server_name,
+			IP:       l_apps[lowest_appID].IP,
+			port:     l_apps[lowest_appID].port
+		};
+	}
 
-    return info;
-}
+	return info;
+};
 
 // get how many servers left can be started
 var l_getServerCapacity = exports.getServerCapacity = function (loc) {
@@ -317,46 +316,46 @@ var l_getServerCapacity = exports.getServerCapacity = function (loc) {
 		return 0;
 	
 	return (list_len >= max_server ? 0 : max_server - list_len);
-}
+};
 
 //-----------------------------------------
 // get locationID based on appID
 exports.getAppLocationID = function (appID) {
-    return (l_apps.hasOwnProperty(appID) ? l_apps[appID].locationID : undefined);
-}
+	return (l_apps.hasOwnProperty(appID) ? l_apps[appID].locationID : undefined);
+};
 
 //-----------------------------------------
 var l_getSingleAppStat = exports.getSingleAppStat = function (appID) {
-    return (l_apps.hasOwnProperty(appID) ? l_apps[appID].stat : undefined);
-}
+	return (l_apps.hasOwnProperty(appID) ? l_apps[appID].stat : undefined);
+};
 
 // set stat for a single app
 exports.setSingleAppStat = function (appID, stat) {
-    if (l_apps.hasOwnProperty(appID) === false)
-        LOG.error('app not found for: ' + appID, 'setSingleAppStat');
-    else
-        l_apps[appID].stat = stat;
-}
+	if (l_apps.hasOwnProperty(appID) === false)
+		LOG.error('app not found for: ' + appID, 'setSingleAppStat');
+	else
+		l_apps[appID].stat = stat;
+};
 
 // get a list of appIDs of all connected apps
 var l_queryAppServers = exports.queryAppServers = function (name, onDone) {
 
-    var list = {};
+	var list = {};
 
-    for (var appID in l_apps) {
+	for (var appID in l_apps) {
 
 		// check if we only return app servers of a particular name
 		if (name !== undefined && l_apps[appID].name !== name)
 			continue;
 		
-        list[appID] = l_apps[appID];
-    }
+		list[appID] = l_apps[appID];
+	}
 
 	// return list via callback if provided
 	UTIL.safeCall(onDone, list);
 	
-    return list;
-}
+	return list;
+};
 
 
 /*
@@ -430,48 +429,47 @@ var l_sendApp = exports.sendApp = function (appID, packet_type, para) {
 	
 	var connID = l_apps[appID].connID;
 		
-    // check if connection exists
-    if (SR.Conn.isConnected(connID) === false)
+	// check if connection exists
+	if (SR.Conn.isConnected(connID) === false)
 		return LOG.error('connID: ' + connID + ' not connected', 'SR.AppConn.sendApp');
     
-    //...
+	//...
 	LOG.sys('send msg to appID: ' + appID, 'sendApp');
-    SR.EventManager.send(packet_type, para, [SR.Conn.getConnObject(connID)]);
-}
+	SR.EventManager.send(packet_type, para, [SR.Conn.getConnObject(connID)]);
+};
 
 //-----------------------------------------
 var l_certPool = {};
 
 // create temp certificates (i.e., token) for a client to authenticate itself to a app
 exports.createCert = function (pAccount) {
-        var tmpCert =
+	var tmpCert =
             {
-                tok:        UTIL.createUUID(),
-                expTime:    ''
+            	tok:        UTIL.createUUID(),
+            	expTime:    ''
             };
 
-        l_certPool[pAccount] = tmpCert;
+	l_certPool[pAccount] = tmpCert;
 
-        return tmpCert.tok;
-    }
+	return tmpCert.tok;
+};
 
 //-----------------------------------------
 // check cert was the one issued
 exports.checkCert = function (pAccount, pToken) {
-        if (l_certPool.hasOwnProperty(pAccount) && l_certPool[pAccount].tok === pToken)
-        {
-            // TODO: check expire time
-            return true;
-        }
-        return false;
-    }
+	if (l_certPool.hasOwnProperty(pAccount) && l_certPool[pAccount].tok === pToken) {
+		// TODO: check expire time
+		return true;
+	}
+	return false;
+};
 
 //--------------------------------------
 // remove an existing cert
 exports.removeCert = function (pAccStr) {
 
-    if (l_certPool.hasOwnProperty(pAccStr) === true)
-        delete l_certPool[pAccStr];
-    else
-        LOG.error('cert not found', 'removeCert');    
-}
+	if (l_certPool.hasOwnProperty(pAccStr) === true)
+		delete l_certPool[pAccStr];
+	else
+		LOG.error('cert not found', 'removeCert');    
+};

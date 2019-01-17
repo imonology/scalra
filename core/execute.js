@@ -154,7 +154,7 @@ SR.API.add('_START_SERVER', {
 			name: args.name,
 			size: args.size
 		}, 1);
-	}
+	};
 	
 	// keep starting servers until 'size' is reached
 	var count = 0;
@@ -193,7 +193,7 @@ SR.API.add('_START_SERVER', {
 			});
 			
 			start_server();
-		}
+		};
 		
 		var file_path = SR.path.join(exec_path, args.name, 'frontier.js');
 		LOG.warn('validate file_path: ' + file_path, l_name);
@@ -217,7 +217,7 @@ SR.API.add('_START_SERVER', {
 			}
 			onFound();
 		});
-	}
+	};
 		
 	// try relative path first
 	validate_path(base_path, function (err) {
@@ -225,7 +225,7 @@ SR.API.add('_START_SERVER', {
 			return onDone('cannot find entry file to start server');
 		}		
 	});
-})
+});
 
 function l_deleteStartedServer(data) {
 	for (let serverID in SR.startedServers) {
@@ -252,10 +252,10 @@ function l_getServerInfo(data, times) {
 					l_getServerInfo(data, +times + 1);
 				}, 500);
 			} else {
-				l_logStartedServers(Object.assign({}, data, {id: result[0].id}))
+				l_logStartedServers(Object.assign({}, data, {id: result[0].id}));
 			}
 		}
-	})
+	});
 }
 
 function l_logStartedServers(serverData) {
@@ -287,7 +287,7 @@ function l_logStartedServers(serverData) {
 		if (err) {
 			return console.log(err);
 		}
-		LOG.warn("Started server logged.", l_name);
+		LOG.warn('Started server logged.', l_name);
 	}); 
 }
 
@@ -336,8 +336,8 @@ var l_start = exports.start = function (server_info, size, onDone, onOutput) {
 		// NOTE: this usage returns an array of servers started if success, returns an error string if failed
 		// an obsolete usage, should be removed in future versions
 		UTIL.safeCall(onDone, result);
-	})
-}
+	});
+};
 
 // shutdown a given or a number of servers
 SR.API.add('_STOP_SERVER', {
@@ -421,7 +421,7 @@ SR.API.add('_STOP_SERVER', {
 /// SR-API                     
 /// l_name.stop     
 /// stop the execution of some servers given server IDs 
- /// Input                   
+/// Input                   
 ///   list    
 ///     ['684D846B-FE39-4506-A19A-F50D0FEFA088', '22C163AE-2E35-4219-AAD1-EA961077B2E2']       
 ///     array for server's unique ID list 
@@ -469,9 +469,9 @@ var l_stop = exports.stop = function (list, project, onDone) {
 	LOG.warn('attempt to stop ' + list.length + ' servers in total', l_name);
 	LOG.warn(list);
 	
-    // send shutdown signal
+	// send shutdown signal
 	var shut_count = 0;
-    for (var i = 0; i < list.length; i++) {
+	for (var i = 0; i < list.length; i++) {
 		var id = list[i];
 		LOG.warn('id: ' + id, l_name);
 		
@@ -488,7 +488,7 @@ var l_stop = exports.stop = function (list, project, onDone) {
 			}
 		});	
 	}
-}
+};
 
 // get a list of currently started/recorded servers
 // server_info include:
@@ -528,7 +528,7 @@ SR.API.add('_QUERY_SERVERS', {
 		SR.Call('reporting.getStat', args, function (list) {
 			UTIL.safeCall(onDone, null, list);
 		});		
-	}
+	};
 	
 	// if owner & project are not provided, do not attempt to resolve symlinks 
 	if (!args.owner || args.owner === '' || !args.project || args.project === '') {
@@ -552,7 +552,7 @@ SR.API.add('_QUERY_SERVERS', {
 		LOG.warn(args, l_name);		
 		
 		onResolved();
-	})
+	});
 });
 
 var l_query = exports.query = function (server_info, onDone) {
@@ -565,7 +565,7 @@ var l_query = exports.query = function (server_info, onDone) {
 			onDone(result);
 		}
 	});	
-}
+};
 
 // 以下可自動關閉/啟動全部正在執行的 project servers: 
 // 可手動 stopall 關閉, startall 啟動 (包含 lobby, apps 及自行手動 ./run lobby 的)
@@ -578,32 +578,32 @@ var l_query = exports.query = function (server_info, onDone) {
 // restart all servers previously running
 var l_startAll = exports.startAll = function () {
 	
-    // restart stopped server
+	// restart stopped server
 	SR.DB.getData(SR.Settings.DB_NAME_SYSTEM, {},
 		function (re) {
 			
 			var servers = re.allservers;
 			
-            LOG.warn(servers, l_name);
-            for (var c in servers) {
+			LOG.warn(servers, l_name);
+			for (var c in servers) {
 				if (servers[c].server.type === 'entry')
 					continue;
 				
-                var obj = { owner: servers[c].server.owner, 
-                            project: servers[c].server.project,
-                            name: servers[c].server.name
-                        };
+				var obj = { owner: servers[c].server.owner, 
+					project: servers[c].server.project,
+					name: servers[c].server.name
+				};
 				
-                l_start(obj, 1, function (re){
-                        //LOG.warn('The project server is started.', l_name);
-                        //LOG.warn(obj, l_name);
-                    }, function (re){
-                        //LOG.warn('The project server is not started.', l_name);
-                        //LOG.warn(obj, l_name);
-                    });
-            }
-        }, 
-        function (re) {
+				l_start(obj, 1, function (re){
+					//LOG.warn('The project server is started.', l_name);
+					//LOG.warn(obj, l_name);
+				}, function (re){
+					//LOG.warn('The project server is not started.', l_name);
+					//LOG.warn(obj, l_name);
+				});
+			}
+		}, 
+		function (re) {
 			LOG.warn('DB read error', l_name);
 		});
 };
@@ -611,7 +611,7 @@ var l_startAll = exports.startAll = function () {
 // stop all servers and record to DB currently executing servers
 var l_stopAll = exports.stopAll = function () {
 	
-    // save and stop all running servers
+	// save and stop all running servers
 	l_query({}, function (allServers) {
 		
 		for (var c in allServers) {
@@ -619,13 +619,13 @@ var l_stopAll = exports.stopAll = function () {
 				delete allServers[c];
 		}
 				
-        SR.DB.setData(SR.Settings.DB_NAME_SYSTEM, {'allservers': allServers});
-        LOG.warn('shutting down all servers.', l_name);
+		SR.DB.setData(SR.Settings.DB_NAME_SYSTEM, {'allservers': allServers});
+		LOG.warn('shutting down all servers.', l_name);
 	    for (var c in allServers) {
 	        LOG.warn(allServers[c].server.id, l_name);
 	        l_stop(allServers[c].server.id);
     	}
-    });
+	});
 };
 
 
@@ -660,8 +660,7 @@ SR.Callback.onAppServerStart(function (info) {
 			id_list.splice(0, 1);
 			return;
 		}
-	}
-	else {
+	} else {
 		LOG.warn('server [' + server_type + '] was started manually, cannot terminate it with process id', l_name);
 	}
 	
@@ -764,7 +763,7 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 						onDone(e);
 					}
 				});
-			})
+			});
 		} else {
 			var new_proc = spawn(cmd, para, {cwd: exec_path});
 
@@ -825,11 +824,11 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 				var msg = {
 					id: id,
 					data: textChunk
-				}
-                UTIL.safeCall(onOutput, msg);
+				};
+				UTIL.safeCall(onOutput, msg);
 			}
 		}
-	}
+	};
 	
 	// filename, onSuccess, onFail, to_cache
 	// NOTE: why log_file is important here is because we want to capture ALL stdout output during starting a server
@@ -838,7 +837,7 @@ var l_run = exports.run = function (id, info, onDone, onOutput) {
 	//log_file.open(id + '.log',
 	log_file.open('output.log',
 				  	onLogOpened, 
-					false,
-					log_path);
-}
+		false,
+		log_path);
+};
 

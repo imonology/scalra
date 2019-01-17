@@ -41,8 +41,8 @@
 
 */
 
-var server   = require("./server");
-var router   = require("./router");
+var server   = require('./server');
+var router   = require('./router');
 
 var l_name = 'SR.REST';
 
@@ -63,8 +63,8 @@ exports.init = function (type, port, keys) {
 		exports.server[type] = instance;	
 	}
 	
-    return instance;
-}
+	return instance;
+};
 
 exports.addHandler = function (handler) {
 	
@@ -95,19 +95,17 @@ exports.addHandler = function (handler) {
 			LOG.sys('loading REST handler [' + filename + ']', 'SR.REST');
 			//SR.REST.addHandler(require(fullpath).REST_handles);
 			require(fullpath);
-		}
-		else
+		} else
 			LOG.error('REST handler cannot be found on local or system path: ' + filename, 'SR.REST');
-	}
-	else {
+	} else {
 		router.addHandler(handler);	
 	}
-}
+};
 
 // stop server
 exports.dispose = function (type) {
-    server.stop(type);
-}
+	server.stop(type);
+};
 
 /*
 options fields:
@@ -126,7 +124,7 @@ exports.reply = function (res, res_obj, options, headers) {
 		res.writeHead(200, headers);
 		if (res_obj) {			
 			if (typeof res_obj === 'object');
-				res_obj = JSON.stringify(res_obj);
+			res_obj = JSON.stringify(res_obj);
 			
 			var is_binary = UTIL.isBinary(res_obj);
 			LOG.warn('is_binary: ' + is_binary, 'SR.REST');
@@ -163,7 +161,7 @@ exports.reply = function (res, res_obj, options, headers) {
 	
 	// to prevent CORS issues (but will open security vulunarability)
 	// either origin is specified or we 'allow all' (security concern?)
-	header['access-control-allow-origin'] = options.origin || "*";
+	header['access-control-allow-origin'] = options.origin || '*';
 	header['access-control-allow-credentials'] = true;
 	
 	// set cookie if available
@@ -189,21 +187,18 @@ exports.reply = function (res, res_obj, options, headers) {
 		if (options.origin) {
 			LOG.sys('replying a JSON to Ajax call: ' + res_obj, 'SR.REST');
 			header['content-type'] = 'application/json';
-		}
-		else {
+		} else {
 			// for simple text response (just a sample)
 			if (UTIL.isBinary(res_obj)) {
 				LOG.sys('replying a binary string', 'SR.REST');
 				is_binary = true;
-			}
-			else
+			} else
 				LOG.sys('replying a text string: ' + res_obj.substring(0, 200), 'SR.REST');
 			
 			// set content-type, default to 'text/plain' if not specified
 			header['content-type'] = options['content_type'] || 'text/plain';
 		}
-	}
-	else if (typeof res_obj === 'object') {
+	} else if (typeof res_obj === 'object') {
 
 		// simple JSON response
 		res_obj = JSON.stringify(res_obj);
@@ -224,15 +219,14 @@ exports.reply = function (res, res_obj, options, headers) {
 	// NOTE: it's possible res_obj is undefined when using event.done()
 	if (res_obj) {
 		res.writeHead(200, header);
-		res.end(res_obj, is_binary ? "binary" : undefined);
-	}
-	else {
+		res.end(res_obj, is_binary ? 'binary' : undefined);
+	} else {
 		//res.status(404);
 		res.writeHead(404, header);
 		res.end('404 Not Found');
 	}
 	LOG.sys('(after) header sent: ' + res.headersSent, 'SR.REST');
-}
+};
 
 // get cookies from current request
 // NOTE: we assume cookies exist at req.headers.cookie
@@ -260,7 +254,7 @@ var l_getCookies = exports.getCookies = function (cookie_str) {
 	//LOG.warn(cookies, 'SR.REST');
 
 	return cookies;
-}
+};
 
 // get scalra specific cookie
 // assuming req.headers.cookie exists
@@ -272,4 +266,4 @@ exports.getCookie = function (cookie_str) {
 	
 	var cookie = cookies[l_cookieName] || UTIL.createUUID();	
 	return cookie;
-}
+};
