@@ -53,6 +53,10 @@ SR.path = 					require('path');
 SR.http = 					require('http');
 SR.https = 					require('https');
 SR.mongo =                  require('mongodb'); // node_modules old version
+// notes: authenticate method will no longer be available in the next major release 3.x
+// Please authenticate using MongoClient.connect with auth credentials.
+// SR.MongoClient =			require('mongodb').MongoClient;
+// SR.MongoServer =			require('mongodb').MongoServer;
 SR.async =					require('async');
 SR.promise =				require('bluebird');
 
