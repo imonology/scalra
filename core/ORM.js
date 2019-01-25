@@ -132,9 +132,9 @@ exports.init = function (args, onDone) {
 
 	var DB_type = args.DB_type || 'mongodb';
 	var conn_str = DB_type + '://' + encodeURIComponent(args.username)
-	    + ':' + encodeURIComponent(args.password)
-	    + '@'+ SR.Settings.DB_IP + '/'
-	    + encodeURIComponent((args.DB || args.username));
+		+ ':' + encodeURIComponent(args.password)
+		+ '@' + SR.Settings.DB_IP + '/'
+		+ encodeURIComponent((args.DB || args.username));
 
 	LOG.warn('connecting: ' + conn_str, l_name);
 
@@ -156,6 +156,9 @@ exports.init = function (args, onDone) {
 			}
 			//LOG.warn('validations:');
 			//LOG.warn(validate);
+			if (DB_type === 'mysql') {
+				db.settings.set("properties.primary_key", "_id");
+			}
 
 			l_obj[name] = db.define(table_name, def.attributes, {
 				methods: def.methods,
@@ -232,8 +235,9 @@ exports.update = function (args, onDone) {
 		// we only update the first found result
 		// NOTE: functions are not updated
 		for (var key in args.data) {
-			if (key !== '_id' && typeof args.data[key] !== 'function');
+			if (key !== '_id' && typeof args.data[key] !== 'function') {
 				result[0][key] = args.data[key];
+			}
 		}
 
 		LOG.warn('result after update:', l_name);
