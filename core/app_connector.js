@@ -27,13 +27,13 @@ var l_appinfo = undefined;
 
 var l_connHandler = {
 
-    // custom handling for new connections
-    onConnect: function (conn) {
-        LOG.warn('AppManager connected', 'SR.AppConnector');
-    },
+	// custom handling for new connections
+	onConnect: function (conn) {
+		LOG.warn('AppManager connected', 'SR.AppConnector');
+	},
 
-    // custom handling for removing a connection
-    onDisconnect: function (conn) {
+	// custom handling for removing a connection
+	onDisconnect: function (conn) {
         
 		LOG.error('AppManager disconnected', 'SR.AppConnector');
 		
@@ -42,15 +42,14 @@ var l_connHandler = {
 			// shutdown this frontier
 			l_dispose();
 			SR.Settings.FRONTIER.dispose();
-		}
-		else {
+		} else {
 			LOG.warn('auto-shutdown is false, attempt to re-connect AppManager in ' + l_timeoutReconnect + ' ms...');
 
 			// keep app server alive and try to re-connect if lobby shuts down
 			setTimeout(l_connect, l_timeoutReconnect);
 		}
-    }
-}
+	}
+};
 
 //-----------------------------------------
 // external functions
@@ -66,7 +65,7 @@ var l_notifyLobby = exports.notifyLobby = function (packet_type, para, res_type,
 	LOG.error('AppConnector not yet init, this function can only be called from App servers to communicate with lobby', 'notifyLobby');
 	LOG.stack();
 	return UTIL.safeCall(onDone);
-}
+};
 
 // app connector object
 var l_appConnector = undefined;
@@ -104,23 +103,23 @@ var l_register = function () {
 	LOG.warn('appinfo sent to lobby:');
 	LOG.warn(l_appinfo);
 	
-    // notify AppManager we're ready
-    l_notifyLobby('SR_APP_READY', l_appinfo, 'SR_APP_READY_RES',
-        function (event) {
+	// notify AppManager we're ready
+	l_notifyLobby('SR_APP_READY', l_appinfo, 'SR_APP_READY_RES',
+		function (event) {
 
-            if (event.data.op === true)
-                LOG.sys('SR_APP_READY returns ok', 'l_HandlerPool');
-            else
-                LOG.error('SR_APP_READY returns fail', 'l_HandlerPool');
+			if (event.data.op === true)
+				LOG.sys('SR_APP_READY returns ok', 'l_HandlerPool');
+			else
+				LOG.error('SR_APP_READY returns fail', 'l_HandlerPool');
 
 			// call onDone if exists (but just once)
-            if (l_onDone) {
+			if (l_onDone) {
 				UTIL.safeCall(l_onDone);
 				l_onDone = undefined;
 			}			
-        }
-    );
-}
+		}
+	);
+};
 
 // attempt to connect to manager
 var l_connect = function (ip_port, onDone) {
@@ -152,7 +151,7 @@ var l_connect = function (ip_port, onDone) {
 			l_register();
 		}
 	});
-}
+};
 
 // initialize with the lobby server's IP & port, and the app server's info to be sent
 exports.init = function (ip_port, app_info, onDone) {
@@ -162,8 +161,8 @@ exports.init = function (ip_port, app_info, onDone) {
 	if (typeof app_info.local_name !== 'string')
 		app_info.local_name = app_info.name;
 	
-    // NOTE: only handlers are passed, but no user app is passed in to handle incoming connections
-    l_appinfo = app_info;
+	// NOTE: only handlers are passed, but no user app is passed in to handle incoming connections
+	l_appinfo = app_info;
 
 	// NOTE: name parameter will determine which handler set to get,
 	// in this case we want to use the same as the main app server's
@@ -171,26 +170,26 @@ exports.init = function (ip_port, app_info, onDone) {
 	// TODO: better way for this?
 	l_appConnector = new SR.Connector(l_connHandler);
 
-    // add default handler for app functions
-    l_appConnector.addHandler(l_appConnectorHandler);
+	// add default handler for app functions
+	l_appConnector.addHandler(l_appConnectorHandler);
 
 	// setup notify to AppManager when users connect/disconnect
-    SR.Callback.onConnect(function (conn) {
+	SR.Callback.onConnect(function (conn) {
 
-        // notify AppManager of user connection
-        l_notifyLobby('USER_CONNECTED', {});
-    });
+		// notify AppManager of user connection
+		l_notifyLobby('USER_CONNECTED', {});
+	});
 
-    SR.Callback.onDisconnect(function (conn) {
+	SR.Callback.onDisconnect(function (conn) {
     
-        // notify AppManager of user disconnection
-        l_notifyLobby('USER_DISCONNECTED', {});
-    });
+		// notify AppManager of user disconnection
+		l_notifyLobby('USER_DISCONNECTED', {});
+	});
 		
 	// establish connection
-    LOG.warn('connecting to AppManager: ' + ip_port.IP + ':' + ip_port.port, 'SR.AppConnector');	
+	LOG.warn('connecting to AppManager: ' + ip_port.IP + ':' + ip_port.port, 'SR.AppConnector');	
 	l_connect(ip_port, onDone);
-}
+};
 
 // function to shutdown the connector externally
 // NOTE: all the stop steps will be executed when dispose() is called
@@ -202,40 +201,40 @@ var l_dispose = exports.dispose = function (onDone) {
 		l_appConnector = undefined;	
 		UTIL.safeCall(onDone);
 	});
-}
+};
 
 // verify if client login token is correct (check with app manager)
 exports.verifyClient = function (account, token, onDone) {
 
-    // notify lobby of the login of this user (transfer to this app at lobby)
+	// notify lobby of the login of this user (transfer to this app at lobby)
  
-    // NOTE: user data is sent as response in USER_LOGIN_R    
-    l_notifyLobby('USER_LOGIN', {acc: account, tok: token}, 
-                'USER_LOGIN_R',
-                function (event) {
-					UTIL.safeCall(onDone, event.data.op, event.data.user);
-                }
-    );
-}
+	// NOTE: user data is sent as response in USER_LOGIN_R    
+	l_notifyLobby('USER_LOGIN', {acc: account, tok: token}, 
+		'USER_LOGIN_R',
+		function (event) {
+			UTIL.safeCall(onDone, event.data.op, event.data.user);
+		}
+	);
+};
 
 // notify app manager of a client disconnection
 exports.disposeClient = function (account, onDone) {
 
-    // notify lobby of the login of this user (transfer to this app at lobby)    
-    // NOTE: user data is sent as response in USER_LOGIN_R
-    l_notifyLobby('USER_LOGOUT', {acc: account}, 'USER_LOGOUT_R',
-                function (event) {
-					UTIL.safeCall(onDone, event.data.op);
-                }
-    );
-}
+	// notify lobby of the login of this user (transfer to this app at lobby)    
+	// NOTE: user data is sent as response in USER_LOGIN_R
+	l_notifyLobby('USER_LOGOUT', {acc: account}, 'USER_LOGOUT_R',
+		function (event) {
+			UTIL.safeCall(onDone, event.data.op);
+		}
+	);
+};
 
 // store app stat to app manager
 exports.updateStat = function (statObj) {
     
-    // NOTE: we do not expect a response for setting stat
-    l_notifyLobby('APP_SET_STAT', statObj);
-}
+	// NOTE: we do not expect a response for setting stat
+	l_notifyLobby('APP_SET_STAT', statObj);
+};
 
 // perform same functions, except remotely
 // TODO: replace this with calls to SR.RPC directly
@@ -248,4 +247,4 @@ var l_remoteAction = exports.remoteAction = function (svc_name, func_name, param
 
 	LOG.warn('local service not available, call RPC for: ' + func_name);	
 	return SR.RPC.call(svc_name, func_name, parameters, l_appConnector);	
-}
+};

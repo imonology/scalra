@@ -71,7 +71,7 @@ var extend = require('util')._extend;
 var clone = exports.clone = function(src) {
 	var obj2 = extend({}, src);
 	return obj2;
-}
+};
 
 // queue
 function FoldArrayRev(chunkSize) {
@@ -122,7 +122,7 @@ FoldArrayRev.prototype = {
 	dump: function() {
 		console.log(this._chunkSize);
 	}
-}
+};
 
 var AQueue = exports.AQueue = function() {
 	return new FoldArrayRev(arguments[0]);
@@ -145,24 +145,24 @@ Date.prototype.diff = function(tar, type) {
 	if (isNaN(tmEnd))
 		return undefined;
 	switch (type) {
-		case "ms":
-			return parseInt(tmEnd - this);
-		case "s":
-			return parseInt((tmEnd - this) / 1000);
-		case "n":
-			return parseInt((tmEnd - this) / 60000);
-		case "h":
-			return parseInt((tmEnd - this) / 3600000);
-		case "d":
-			return parseInt((tmEnd - this) / 86400000);
-		case "w":
-			return parseInt((tmEnd - this) / (86400000 * 7));
-		case "m":
-			return (tmEnd.getMonth() + 1) + ((tmEnd.getFullYear() - this.getFullYear()) * 12) - (this.getMonth() + 1);
-		case "y":
-			return tmEnd.getFullYear() - this.getFullYear();
+	case 'ms':
+		return parseInt(tmEnd - this);
+	case 's':
+		return parseInt((tmEnd - this) / 1000);
+	case 'n':
+		return parseInt((tmEnd - this) / 60000);
+	case 'h':
+		return parseInt((tmEnd - this) / 3600000);
+	case 'd':
+		return parseInt((tmEnd - this) / 86400000);
+	case 'w':
+		return parseInt((tmEnd - this) / (86400000 * 7));
+	case 'm':
+		return (tmEnd.getMonth() + 1) + ((tmEnd.getFullYear() - this.getFullYear()) * 12) - (this.getMonth() + 1);
+	case 'y':
+		return tmEnd.getFullYear() - this.getFullYear();
 	}
-}
+};
 
 // arguments:
 // 0: file
@@ -184,7 +184,7 @@ var Say = exports.Say = function() {
 	// TODO: not clean
 	var l_logManager = require('./log_manager');
 
-	// write to log    
+	// write to log
 	l_logManager.log(undefined, str.toString());
 };
 
@@ -299,7 +299,7 @@ var State = exports.State = function() {
 			_tmlast = new Date();
 		}
 	};
-}
+};
 
 var EventedObject = exports.EventedObject = function() {
 	var _u = {};
@@ -336,7 +336,7 @@ var eventuality = exports.eventuality = function(that) {
 				if (typeof func === 'string')
 					func = this[func];
 
-				func.apply(this, handler.param || [event])
+				func.apply(this, handler.param || [event]);
 			}
 		}
 		return this;
@@ -382,8 +382,7 @@ var recv2 = exports.recv2 = function(data) {
 		if (idx === -1) {
 			_buf += data;
 			break;
-		}
-		else {
+		} else {
 			out = out + _buf + data.slice(0, idx);
 			data = data.substr(idx + 1); // +1 means '\n'
 			_buf = '';
@@ -407,8 +406,7 @@ var getRecv = exports.getRecv = function(cb) {
 			if (idx === -1) {
 				_buf += data;
 				break;
-			}
-			else {
+			} else {
 				_cb(JSON.parse(_buf + data.slice(0, idx))); // return a msg
 				data = data.substr(idx + 1); // +1 means '\n'
 				_buf = '';
@@ -419,10 +417,10 @@ var getRecv = exports.getRecv = function(cb) {
 
 var quicklog = exports.quicklog = function(s, logpath) {
 	if (logpath === undefined)
-		logpath = "./quick.log";
+		logpath = './quick.log';
 	var fs = require('fs');
 	s = s.toString().replace(/\r\n|\r/g, '\n'); // hack
-	var fd = fs.openSync(logpath, 'a+', 0666);
+	var fd = fs.openSync(logpath, 'a+', '0666');
 	fs.writeSync(fd, s + '\n');
 	fs.closeSync(fd);
 };
@@ -441,13 +439,12 @@ var connector = exports.connector = function(port, ip, hndEX, hndOCM, hndSRM, hn
 			if (cmd.ocm) hndOCM(cmd);
 			if (cmd.icm) hndSRM(cmd);
 			if (cmd.mj) hndMJ(cmd);
-		}
-		catch (ex) {
+		} catch (ex) {
 			See(ex);
 		}
 	});
 
-	conn.setEncoding("UTF8");
+	conn.setEncoding('UTF8');
 	conn.setTimeout(1200 * 1000);
 	conn.send = _send;
 	conn.recv = _recv;
@@ -457,9 +454,9 @@ var connector = exports.connector = function(port, ip, hndEX, hndOCM, hndSRM, hn
 		_recv(data);
 	});
 
-	conn.on("end", function() {});
-	conn.on("close", function() {}); //conn.connect(port, ip);
-	conn.on("error", function(ex) {
+	conn.on('end', function() {});
+	conn.on('close', function() {}); //conn.connect(port, ip);
+	conn.on('error', function(ex) {
 		Say(ex.errno + ' ' + ex.message, 'FRONTIER');
 	});
 	return conn;
@@ -468,9 +465,9 @@ var connector = exports.connector = function(port, ip, hndEX, hndOCM, hndSRM, hn
 // quick function to get current UTC epoch 
 exports.getEpoch = function() {
 	return Math.floor((new Date()).getTime() / 1000.0);
-}
+};
 
 // quick function to convert a UTC epoch to date object
 exports.getDateByEpoch = function(epoch) {
 	return new Date(epoch * 1000);
-}
+};

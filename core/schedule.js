@@ -15,7 +15,7 @@ exports.setTask = function (arg) {
 		arg.id = UTIL.createUUID();
 	}
 
-	LOG.warn("setTask", l_cat);
+	LOG.warn('setTask', l_cat);
 	//todo: check input
 
 	if (arg.callback) {
@@ -23,16 +23,14 @@ exports.setTask = function (arg) {
 		if (typeof arg.callback === 'function') {
 			//~ console.log("arg.callback is a function");
 			l_callbackPool[arg.id] = arg.callback;
-			LOG.warn("new l_callbackPool: ", l_cat);
+			LOG.warn('new l_callbackPool: ', l_cat);
 			LOG.warn(l_callbackPool, l_cat);
-		}
-		else {
-			LOG.warn("callback is not a function, but a ", l_cat);
+		} else {
+			LOG.warn('callback is not a function, but a ', l_cat);
 			LOG.warn(typeof arg.callback, l_cat);
 		}
-	}
-	else {
-		LOG.warn("arg.callback Not exist", l_cat);
+	} else {
+		LOG.warn('arg.callback Not exist', l_cat);
 	}
 
 	if (typeof arg.monthday === 'string') arg.monthday = parseInt(arg.monthday);
@@ -62,31 +60,31 @@ exports.setTask = function (arg) {
 
 
 	SR.DB.updateData(dbName_schedule, {
-			id: arg.id
-		}, l_schedulePool[arg.id],
-		function (msg) {
-			arg.onDone({
-				scheduleId: arg.id,
-				message: "success"
-			});
-			//LOG.warn('SR.Schedule', "success: ");
-			//LOG.warn('SR.Schedule', msg);
-		},
-		function (msg) {
-			arg.onDone({
-				scheduleId: arg.id,
-				message: "db failure"
-			});
-			LOG.warn("failure: ", l_cat);
-			LOG.warn(msg, l_cat);
+		id: arg.id
+	}, l_schedulePool[arg.id],
+	function (msg) {
+		arg.onDone({
+			scheduleId: arg.id,
+			message: 'success'
 		});
-}
+		//LOG.warn('SR.Schedule', "success: ");
+		//LOG.warn('SR.Schedule', msg);
+	},
+	function (msg) {
+		arg.onDone({
+			scheduleId: arg.id,
+			message: 'db failure'
+		});
+		LOG.warn('failure: ', l_cat);
+		LOG.warn(msg, l_cat);
+	});
+};
 
 // TODO: delete a task by id
 exports.deleteTask = function (arg) {
 	if (!arg.id) {
 		arg.onDone({
-			message: "no given id"
+			message: 'no given id'
 		});
 		//LOG.warn('SR.Schedule', "no given id");
 		return;
@@ -94,7 +92,7 @@ exports.deleteTask = function (arg) {
 
 	if (!l_schedulePool[arg.id]) {
 		arg.onDone({
-			message: "assigned id is invalid"
+			message: 'assigned id is invalid'
 		});
 		//LOG.warn('SR.Schedule', "assigned id does not exist");
 		return;
@@ -106,7 +104,7 @@ exports.deleteTask = function (arg) {
 			delete l_callbackPool[arg.id];
 			arg.onDone({
 				id: arg.id,
-				message: "The given schedule task is begin deleted."
+				message: 'The given schedule task is begin deleted.'
 			});
 			//LOG.warn('SR.Schedule', "The given task is deleted.");
 		},
@@ -115,110 +113,109 @@ exports.deleteTask = function (arg) {
 				$in: arg.id
 			}
 		});
-}
+};
 
 
 // TODO: to temporarily pause a task without delete it
 exports.suspendTask = function (arg) {
 	if (!arg.id) {
 		arg.onDone({
-			message: "no given id"
+			message: 'no given id'
 		});
-		LOG.warn("no given id", l_cat);
+		LOG.warn('no given id', l_cat);
 		return;
 	}
 
 	if (!l_schedulePool[arg.id]) {
 		arg.onDone({
-			message: "assigned id is invalid"
+			message: 'assigned id is invalid'
 		});
-		LOG.warn("assigned id does not exist", l_cat);
+		LOG.warn('assigned id does not exist', l_cat);
 		return;
 	}
 
 	l_schedulePool[arg.id].suspend = true;
 	SR.DB.updateData(dbName_schedule, {
-			id: arg.id
-		}, l_schedulePool[arg.id],
-		function (msg) {
-			//LOG.warn('SR.Schedule', "success: ");
-			//LOG.warn('SR.Schedule', msg);
-			arg.onDone({
-				id: arg.id,
-				message: "The given task is suspended."
-			});
-		},
-		function (msg) {
-			LOG.warn("failure: db failure ", l_cat);
-			LOG.warn(msg, l_cat);
+		id: arg.id
+	}, l_schedulePool[arg.id],
+	function (msg) {
+		//LOG.warn('SR.Schedule', "success: ");
+		//LOG.warn('SR.Schedule', msg);
+		arg.onDone({
+			id: arg.id,
+			message: 'The given task is suspended.'
 		});
-}
+	},
+	function (msg) {
+		LOG.warn('failure: db failure ', l_cat);
+		LOG.warn(msg, l_cat);
+	});
+};
 
 
 exports.resumeTask = function (arg) {
 	if (!arg.id) {
 		arg.onDone({
-			message: "no given id"
+			message: 'no given id'
 		});
-		LOG.warn("no given id", l_cat);
+		LOG.warn('no given id', l_cat);
 		return;
 	}
 
 	if (!l_schedulePool[arg.id]) {
 		arg.onDone({
-			message: "assigned id is invalid"
+			message: 'assigned id is invalid'
 		});
-		LOG.warn("assigned id does not exist", l_cat);
+		LOG.warn('assigned id does not exist', l_cat);
 		return;
 	}
 
 	l_schedulePool[arg.id].suspend = false;
 	SR.DB.updateData(dbName_schedule, {
-			id: arg.id
-		}, l_schedulePool[arg.id],
-		function (msg) {
-			arg.onDone({
-				id: arg.id,
-				message: "The given task is resumed."
-			});
-			//LOG.warn('SR.Schedule', "success: ");
-			//LOG.warn('SR.Schedule', msg);
-		},
-		function (msg) {
-			LOG.warn("failure: ", l_cat);
-			LOG.warn(msg, l_cat);
+		id: arg.id
+	}, l_schedulePool[arg.id],
+	function (msg) {
+		arg.onDone({
+			id: arg.id,
+			message: 'The given task is resumed.'
 		});
-}
+		//LOG.warn('SR.Schedule', "success: ");
+		//LOG.warn('SR.Schedule', msg);
+	},
+	function (msg) {
+		LOG.warn('failure: ', l_cat);
+		LOG.warn(msg, l_cat);
+	});
+};
 
 // TODO: 由於 function 不會被取到資料庫，若此筆資料從 db 讀出後，要再補上 authentic function
 exports.patchCallback = function (arg) {
-	LOG.warn("to patch callback: ", l_cat);
+	LOG.warn('to patch callback: ', l_cat);
 	LOG.warn(arg, l_cat);
 
 	if (!arg.callback) {
-		LOG.warn("no assigned callback function", l_cat);
+		LOG.warn('no assigned callback function', l_cat);
 		return;
 	}
 
-	if (!typeof arg.callback === "function") {
-		LOG.warn("assigned is not a callback function", l_cat);
+	if (!typeof arg.callback === 'function') {
+		LOG.warn('assigned is not a callback function', l_cat);
 		return;
 	}
 
 	if (arg.id && l_schedulePool[arg.id]) {
 		l_callbackPool[arg.id] = arg.callback;
-		LOG.warn("The given callback function was patched:" + arg.id, l_cat);
-	}
-	else if (arg.action) {
+		LOG.warn('The given callback function was patched:' + arg.id, l_cat);
+	} else if (arg.action) {
 		l_callbackPool[arg.action] = arg.callback;
 		for (var i in l_schedulePool) {
 			if (l_schedulePool[i].action === arg.action) {
 				l_callbackPool[i] = arg.callback;
-				LOG.warn("The given callback function was patched:" + l_schedulePool[i].id, l_cat);
+				LOG.warn('The given callback function was patched:' + l_schedulePool[i].id, l_cat);
 			}
 		}
 	}
-}
+};
 
 
 // TODO: to get a task status
@@ -226,18 +223,18 @@ exports.getStatus = function (arg) {
 	LOG.warn(l_schedulePool, l_cat);
 	LOG.warn(l_callbackPool, l_cat);
 	return l_schedulePool; //todo: return callbackPool to REST
-}
+};
 
 exports.enable = function (arg) {
 	status.enabled = true;
 	setTimeout(function () {
 		readDB({});
 	}, 2000);
-}
+};
 
 exports.disable = function (arg) {
 	status.enabled = false;
-}
+};
 
 
 var readDB = exports.readDB = function (arg) {
@@ -248,70 +245,70 @@ var readDB = exports.readDB = function (arg) {
 		for (var index in msg) {
 			l_schedulePool[msg[index].id] = msg[index];
 		} // 之所以這裡要逐筆做，是為了能用 l_schedulePool[id] 存取
-		LOG.warn("SR.Schedule is enabled.", l_cat);
+		LOG.warn('SR.Schedule is enabled.', l_cat);
 	}, function (msg) {
-		LOG.warn("failure: db failure (schedule.js )", l_cat);
+		LOG.warn('failure: db failure (schedule.js )', l_cat);
 		LOG.warn(msg, l_cat);
 	});
 
-}
+};
 
 
 exports.daemon = function (arg) {
 	switch (arg.action) {
-		case 'startSetInterval':
-			setInterval(l_schedule, 5000);
-			break;
-		default:
-			break;
+	case 'startSetInterval':
+		setInterval(l_schedule, 5000);
+		break;
+	default:
+		break;
 	}
-}
+};
 
 var toNumberWeekday = function (arg) {
 	switch (arg.toLowerCase()) {
-		case 'sunday':
-			return 0;
-			break;
-		case 'monday':
-			return 1;
-			break;
-		case 'tuesday':
-			return 2;
-			break;
-		case 'wednesday':
-			return 3;
-			break;
-		case 'thursday':
-			return 4;
-			break;
-		case 'friday':
-			return 5;
-			break;
-		case 'saturday':
-			return 6;
-			break;
-		default:
-			return false;
-			break;
+	case 'sunday':
+		return 0;
+		break;
+	case 'monday':
+		return 1;
+		break;
+	case 'tuesday':
+		return 2;
+		break;
+	case 'wednesday':
+		return 3;
+		break;
+	case 'thursday':
+		return 4;
+		break;
+	case 'friday':
+		return 5;
+		break;
+	case 'saturday':
+		return 6;
+		break;
+	default:
+		return false;
+		break;
 	}
-}
+};
 
 var isNumberRange = function (arg) {
 	LOG.warn(arg, l_cat);
 	if (!arg) {
-		LOG.warn("no arg", l_cat);
+		LOG.warn('no arg', l_cat);
 		return;
 	}
 	if (!arg.start) {
-		LOG.warn("no arg.start", l_cat);
+		LOG.warn('no arg.start', l_cat);
 		return;
 	}
 	if (!arg.end) {
-		LOG.warn("no arg.end", l_cat);
+		LOG.warn('no arg.end', l_cat);
 		return;
 	}
 	if (!arg.current) {
-		LOG.warn("no arg.current", l_cat);
+		LOG.warn('no arg.current', l_cat);
 		return;
 	}
 	var c = arg.current;
@@ -323,92 +320,92 @@ var isNumberRange = function (arg) {
 	else if (e <= s && s <= c) return true;
 	else return false;
 	return false;
-}
+};
 
 exports.checkRange = function (arg) {
 	if (!arg) {
-		LOG.warn("no arg", l_cat);
+		LOG.warn('no arg', l_cat);
 		return;
 	}
 	if (!arg.start) {
-		LOG.warn("no arg.start", l_cat);
+		LOG.warn('no arg.start', l_cat);
 		return;
 	}
 	if (!arg.end) {
-		LOG.warn("no arg.end", l_cat);
+		LOG.warn('no arg.end', l_cat);
 		return;
 	}
-	LOG.warn("in checkRange", l_cat);
+	LOG.warn('in checkRange', l_cat);
 	if (arg.start.weekday) arg.start.weekday_num = toNumberWeekday(arg.start.weekday);
 	if (arg.end.weekday) arg.end.weekday_num = toNumberWeekday(arg.end.weekday);
 	LOG.warn(arg, l_cat);
 
 	if (arg.start.cycle && typeof(arg.start.cycle) === 'string') {
 		switch (arg.start.cycle.toLowerCase()) {
-			case 'daily':
-				LOG.warn('============= in daily', l_cat);
-				var d = new Date();
+		case 'daily':
+			LOG.warn('============= in daily', l_cat);
+			var d = new Date();
+			if (isNumberRange({
+				start: arg.start.hour,
+				end: arg.end.hour,
+				current: d.getHours()
+			}))
 				if (isNumberRange({
-						start: arg.start.hour,
-						end: arg.end.hour,
-						current: d.getHours()
-					}))
+					start: arg.start.minute,
+					end: arg.end.minute,
+					current: d.getMinutes()
+				}))
+					return true;
+			return false;
+			break;
+		case 'weekly':
+			LOG.warn('============= in weekly', l_cat);
+			var d = new Date();
+			if (isNumberRange({
+				start: arg.start.weekday_num,
+				end: arg.end.weekday_num,
+				current: d.getDay()
+			}))
+				if (isNumberRange({
+					start: arg.start.hour,
+					end: arg.end.hour,
+					current: d.getHours()
+				}))
 					if (isNumberRange({
-							start: arg.start.minute,
-							end: arg.end.minute,
-							current: d.getMinutes()
-						}))
+						start: arg.start.minute,
+						end: arg.end.minute,
+						current: d.getMinutes()
+					}))
 						return true;
-				return false;
-				break;
-			case 'weekly':
-				LOG.warn('============= in weekly', l_cat);
-				var d = new Date();
+			return false;
+			break;
+		case 'monthly':
+			LOG.warn('============= in monthly', l_cat);
+			var d = new Date();
+			if (isNumberRange({
+				start: arg.start.monthday,
+				end: arg.end.monthday,
+				current: d.getDate()
+			}))
 				if (isNumberRange({
-						start: arg.start.weekday_num,
-						end: arg.end.weekday_num,
-						current: d.getDay()
-					}))
+					start: arg.start.hour,
+					end: arg.end.hour,
+					current: d.getHours()
+				}))
 					if (isNumberRange({
-							start: arg.start.hour,
-							end: arg.end.hour,
-							current: d.getHours()
-						}))
-						if (isNumberRange({
-								start: arg.start.minute,
-								end: arg.end.minute,
-								current: d.getMinutes()
-							}))
-							return true;
-				return false;
-				break;
-			case 'monthly':
-				LOG.warn('============= in monthly', l_cat);
-				var d = new Date();
-				if (isNumberRange({
-						start: arg.start.monthday,
-						end: arg.end.monthday,
-						current: d.getDate()
+						start: arg.start.minute,
+						end: arg.end.minute,
+						current: d.getMinutes()
 					}))
-					if (isNumberRange({
-							start: arg.start.hour,
-							end: arg.end.hour,
-							current: d.getHours()
-						}))
-						if (isNumberRange({
-								start: arg.start.minute,
-								end: arg.end.minute,
-								current: d.getMinutes()
-							}))
-							return true;
-				return false;
-				break;
-			default:
-				return false;
-				break;
+						return true;
+			return false;
+			break;
+		default:
+			return false;
+			break;
 		}
 	}
-}
+};
 
 exports.triggerTask = function (arg) {
 	if (typeof(arg) != 'string') 
@@ -416,52 +413,48 @@ exports.triggerTask = function (arg) {
 	
 	var i = arg;
 	if (!l_schedulePool[i]) {
-		LOG.warn("The assigned id does not exist." + i, l_cat);
+		LOG.warn('The assigned id does not exist.' + i, l_cat);
 		return;
 	}
 
-	LOG.warn("schedule: task is triggered: " + l_schedulePool[i].id + " " + l_schedulePool[i].action, l_cat);
+	LOG.warn('schedule: task is triggered: ' + l_schedulePool[i].id + ' ' + l_schedulePool[i].action, l_cat);
 
 	var key, param;
 
 	if (l_schedulePool[i].action && typeof l_callbackPool[l_schedulePool[i].action] === 'function') {
 		key = l_schedulePool[i].action.toString();
-	}
-	else if (l_schedulePool[i].id && typeof l_callbackPool[l_schedulePool[i].id] === 'function') {
+	} else if (l_schedulePool[i].id && typeof l_callbackPool[l_schedulePool[i].id] === 'function') {
 		key = l_schedulePool[i].id;
-	}
-	else {
-		LOG.warn("Scheduled But No Callback Provided!\nYou must set either action=startRecord|stopRecord or a callback", l_cat);
+	} else {
+		LOG.warn('Scheduled But No Callback Provided!\nYou must set either action=startRecord|stopRecord or a callback', l_cat);
 	}
 
 	if (l_schedulePool[i].do) {
 		param = l_schedulePool[i].do;
-	}
-	else if (l_schedulePool[i].argument) {
-		param = l_schedulePool[i].argument
+	} else if (l_schedulePool[i].argument) {
+		param = l_schedulePool[i].argument;
 	}
 
 	if (key) {
 		l_callbackPool[key](param);
-	}
-	else {
-		LOG.warn("Triggered but can do nothing.", l_cat);
+	} else {
+		LOG.warn('Triggered but can do nothing.', l_cat);
 	}
 
 	l_schedulePool[i].latestExecuted = new Date();
 	SR.DB.updateData(dbName_schedule, {
-			id: l_schedulePool[i].id
-		}, l_schedulePool[i],
-		function (msg) {
-			LOG.warn("success: ", l_cat);
-			LOG.warn(msg, l_cat);
-		},
-		function (msg) {
-			LOG.warn("failure: ", l_cat);
-			LOG.warn(msg, l_cat);
-		});
+		id: l_schedulePool[i].id
+	}, l_schedulePool[i],
+	function (msg) {
+		LOG.warn('success: ', l_cat);
+		LOG.warn(msg, l_cat);
+	},
+	function (msg) {
+		LOG.warn('failure: ', l_cat);
+		LOG.warn(msg, l_cat);
+	});
 
-}
+};
 
 
 ////////////////////////////////////////
@@ -507,94 +500,89 @@ var l_schedule = function () {
 		var trigger = false;
 		//~ console.log("l_schedulePool[i].cycle: ", l_schedulePool[i].cycle);
 		switch (l_schedulePool[i].cycle) {
-			case 'hourly':
-				if (l_schedulePool[i].minute === now.minute) {
-					if (deltaTS > resolutionTS) {
-						trigger = true;
-					}
+		case 'hourly':
+			if (l_schedulePool[i].minute === now.minute) {
+				if (deltaTS > resolutionTS) {
+					trigger = true;
 				}
-				break;
+			}
+			break;
 
-			case 'daily':
-				if (l_schedulePool[i].hour === now.hour && l_schedulePool[i].minute === now.minute) {
-					if (deltaTS > resolutionTS) {
-						trigger = true;
-					}
+		case 'daily':
+			if (l_schedulePool[i].hour === now.hour && l_schedulePool[i].minute === now.minute) {
+				if (deltaTS > resolutionTS) {
+					trigger = true;
 				}
-				break;
+			}
+			break;
 
-			case 'weekly':
-				//~ console.log(" " + typeof l_schedulePool[i].minute + " " + typeof now.minute );
-				//~ console.log("Weekdays: " + l_schedulePool[i].weekday + " " + now.weekDay );
-				//~ console.log("hours: " + l_schedulePool[i].hour + " " + now.hour );
-				//~ console.log("minutes: " + l_schedulePool[i].minute + " " + now.minute );
-				//~ console.log("DELTA and RESOLUTION: ",deltaTS + " " + resolutionTS);
-				if (l_schedulePool[i].weekday === now.weekDay && l_schedulePool[i].hour === now.hour && l_schedulePool[i].minute === now.minute) {
-					if (deltaTS > resolutionTS) {
-						trigger = true;
-					}
+		case 'weekly':
+			//~ console.log(" " + typeof l_schedulePool[i].minute + " " + typeof now.minute );
+			//~ console.log("Weekdays: " + l_schedulePool[i].weekday + " " + now.weekDay );
+			//~ console.log("hours: " + l_schedulePool[i].hour + " " + now.hour );
+			//~ console.log("minutes: " + l_schedulePool[i].minute + " " + now.minute );
+			//~ console.log("DELTA and RESOLUTION: ",deltaTS + " " + resolutionTS);
+			if (l_schedulePool[i].weekday === now.weekDay && l_schedulePool[i].hour === now.hour && l_schedulePool[i].minute === now.minute) {
+				if (deltaTS > resolutionTS) {
+					trigger = true;
 				}
-				break;
+			}
+			break;
 
-			case 'monthly':
-				if (l_schedulePool[i].monthday === now.monthday && l_schedulePool[i].hour === now.hour && l_schedulePool[i].minute === now.minute) {
-					if (deltaTS > resolutionTS) {
-						trigger = true;
-					}
+		case 'monthly':
+			if (l_schedulePool[i].monthday === now.monthday && l_schedulePool[i].hour === now.hour && l_schedulePool[i].minute === now.minute) {
+				if (deltaTS > resolutionTS) {
+					trigger = true;
 				}
-				break;
+			}
+			break;
 
-			default:
-				LOG.warn("The period is out of scope. please debug: " + l_schedulePool[i], l_cat);
-				break;
+		default:
+			LOG.warn('The period is out of scope. please debug: ' + l_schedulePool[i], l_cat);
+			break;
 		}
 
 		//LOG.sys("trigger---: " + trigger, l_cat);
 
 		if (trigger === true) {
-			LOG.warn("schedule: task is triggered: " + l_schedulePool[i].id + " " + l_schedulePool[i].action, l_cat);
+			LOG.warn('schedule: task is triggered: ' + l_schedulePool[i].id + ' ' + l_schedulePool[i].action, l_cat);
 			//~ l_callbackPool[l_schedulePool[i].action](l_schedulePool[i].do);
 
 			var key, param;
 
 			if (l_schedulePool[i].action && typeof l_callbackPool[l_schedulePool[i].action] === 'function') {
 				key = l_schedulePool[i].action.toString();
-			}
-			else if (l_schedulePool[i].id && typeof l_callbackPool[l_schedulePool[i].id] === 'function') {
+			} else if (l_schedulePool[i].id && typeof l_callbackPool[l_schedulePool[i].id] === 'function') {
 				key = l_schedulePool[i].id;
-			}
-			else {
-				LOG.warn("Scheduled But No Callback Provided!\nYou must set either action=startRecord|stopRecord or a callback", l_cat);
+			} else {
+				LOG.warn('Scheduled But No Callback Provided!\nYou must set either action=startRecord|stopRecord or a callback', l_cat);
 			}
 
 			if (l_schedulePool[i].do) {
 				param = l_schedulePool[i].do;
-			}
-			else if (l_schedulePool[i].argument) {
-				param = l_schedulePool[i].argument
+			} else if (l_schedulePool[i].argument) {
+				param = l_schedulePool[i].argument;
 			}
 
 			if (key) {
 				l_callbackPool[key](param);
-			}
-			else {
-				LOG.warn("Triggered but can do nothing.", l_cat);
+			} else {
+				LOG.warn('Triggered but can do nothing.', l_cat);
 			}
 
 			l_schedulePool[i].latestExecuted = new Date();
 			SR.DB.updateData(dbName_schedule, {
-					id: l_schedulePool[i].id
-				}, l_schedulePool[i],
-				function (msg) {
-					LOG.warn("success: ", l_cat);
-					LOG.warn(msg, l_cat);
-				},
-				function (msg) {
-					LOG.warn("failure: ", l_cat);
-					LOG.warn(msg, l_cat);
-				});
-		}
-		else {
+				id: l_schedulePool[i].id
+			}, l_schedulePool[i],
+			function (msg) {
+				LOG.warn('success: ', l_cat);
+				LOG.warn(msg, l_cat);
+			},
+			function (msg) {
+				LOG.warn('failure: ', l_cat);
+				LOG.warn(msg, l_cat);
+			});
+		} else {
 			//~ console.log("trigger is false ---------");
 		}
 	}
@@ -606,51 +594,51 @@ var getDateTime = function (d) {
 	if (d) var date = new Date(d);
 	else var date = new Date();
 	var hour = date.getHours();
-	hour = (hour < 10 ? "0" : "") + hour;
+	hour = (hour < 10 ? '0' : '') + hour;
 	var min = date.getMinutes();
-	min = (min < 10 ? "0" : "") + min;
+	min = (min < 10 ? '0' : '') + min;
 	var sec = date.getSeconds();
-	sec = (sec < 10 ? "0" : "") + sec;
+	sec = (sec < 10 ? '0' : '') + sec;
 	var year = date.getFullYear();
 	var month = date.getMonth() + 1;
-	month = (month < 10 ? "0" : "") + month;
+	month = (month < 10 ? '0' : '') + month;
 	var day = date.getDate();
-	day = (day < 10 ? "0" : "") + day;
+	day = (day < 10 ? '0' : '') + day;
 	var timeObj = {
-		"year": parseInt(year),
-		"month": parseInt(month),
-		"monthday": parseInt(day),
-		"weekday": date.getDay(),
-		"hour": parseInt(hour),
-		"minute": parseInt(min),
-		"second": parseInt(sec)
+		'year': parseInt(year),
+		'month': parseInt(month),
+		'monthday': parseInt(day),
+		'weekday': date.getDay(),
+		'hour': parseInt(hour),
+		'minute': parseInt(min),
+		'second': parseInt(sec)
 	};
 	//LOG.warn('SR.Schedule', "date.getDay: " + date.getDay());
 	switch (date.getDay()) {
-		case 0:
-			timeObj.weekDay = 'sunday';
-			break;
-		case 1:
-			timeObj.weekDay = 'monday';
-			break;
-		case 2:
-			timeObj.weekDay = 'tuesday';
-			break;
-		case 3:
-			timeObj.weekDay = 'wednesday';
-			break;
-		case 4:
-			timeObj.weekDay = 'thursday';
-			break;
-		case 5:
-			timeObj.weekDay = 'friday';
-			break;
-		case 6:
-			timeObj.weekDay = 'saturday';
-			break;
-		default:
-			LOG.warn("error code: xxxxxxxx", l_cat);
-			break;
+	case 0:
+		timeObj.weekDay = 'sunday';
+		break;
+	case 1:
+		timeObj.weekDay = 'monday';
+		break;
+	case 2:
+		timeObj.weekDay = 'tuesday';
+		break;
+	case 3:
+		timeObj.weekDay = 'wednesday';
+		break;
+	case 4:
+		timeObj.weekDay = 'thursday';
+		break;
+	case 5:
+		timeObj.weekDay = 'friday';
+		break;
+	case 6:
+		timeObj.weekDay = 'saturday';
+		break;
+	default:
+		LOG.warn('error code: xxxxxxxx', l_cat);
+		break;
 	}
 	return timeObj;
-}
+};

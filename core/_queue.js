@@ -18,81 +18,81 @@ http://creativecommons.org/publicdomain/zero/1.0/legalcode
 // Create a new queue
 exports.Queue = function (){
 
-  // initialise the queue and offset
-  var queue  = [];
-  var offset = 0;
+	// initialise the queue and offset
+	var queue  = [];
+	var offset = 0;
 
-  /* Returns the length of the queue.
+	/* Returns the length of the queue.
    */
-  this.getLength = function (){
+	this.getLength = function (){
 
-    // return the length of the queue
-    return (queue.length - offset);
+		// return the length of the queue
+		return (queue.length - offset);
 
-  }
+	};
 
-  /* Returns true if the queue is empty, and false otherwise.
+	/* Returns true if the queue is empty, and false otherwise.
    */
-  this.isEmpty = function (){
+	this.isEmpty = function (){
 
-    // return whether the queue is empty
-    return (queue.length == 0);
+		// return whether the queue is empty
+		return (queue.length == 0);
 
-  }
+	};
 
-  /* Enqueues the specified item. The parameter is:
+	/* Enqueues the specified item. The parameter is:
    *
    * item - the item to enqueue
    */
-  this.enqueue = function (item){
+	this.enqueue = function (item){
 
-    // enqueue the item
-    queue.push(item);
+		// enqueue the item
+		queue.push(item);
 
-  }
+	};
 
-  /* Enqueues the specified item to front. The parameter is:
+	/* Enqueues the specified item to front. The parameter is:
    *
    * item - the item to enqueue
    * (added by syhu: 2012-04-09)
    */
-  this.enqueueFront = function (item){
+	this.enqueueFront = function (item){
 
-    // enqueue the item to front
-    queue.unshift(item);
+		// enqueue the item to front
+		queue.unshift(item);
 
-  }
+	};
 
-  /* Dequeues an item and returns it. If the queue is empty then undefined is
+	/* Dequeues an item and returns it. If the queue is empty then undefined is
    * returned.
    */
-  this.dequeue = function (){
+	this.dequeue = function (){
 
-    // if the queue is empty, return undefined
-    if (queue.length == 0) return undefined;
+		// if the queue is empty, return undefined
+		if (queue.length == 0) return undefined;
 
-    // store the item at the front of the queue
-    var item = queue[offset];
+		// store the item at the front of the queue
+		var item = queue[offset];
 
-    // increment the offset and remove the free space if necessary
-    if (++ offset * 2 >= queue.length){
-      queue  = queue.slice(offset);
-      offset = 0;
-    }
+		// increment the offset and remove the free space if necessary
+		if (++ offset * 2 >= queue.length){
+			queue  = queue.slice(offset);
+			offset = 0;
+		}
 
-    // return the dequeued item
-    return item;
+		// return the dequeued item
+		return item;
 
-  }
+	};
 
-  /* Returns the item at the front of the queue (without dequeuing it). If the
+	/* Returns the item at the front of the queue (without dequeuing it). If the
    * queue is empty then undefined is returned.
    */
-  this.peek = function (){
+	this.peek = function (){
 
-    // return the item at the front of the queue
-    return (queue.length > 0 ? queue[offset] : undefined);
+		// return the item at the front of the queue
+		return (queue.length > 0 ? queue[offset] : undefined);
 
-  }
+	};
 
-}
+};

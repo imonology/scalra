@@ -39,7 +39,7 @@ exports.addHandler = function (handler) {
 		LOG.warn('redundent loading: (may be redundent loading of HTTP/HTTPS version)', 'SR.REST');
 		LOG.warn(redundent, 'SR.REST');
 	}
-}
+};
 
 // TODO: check validity of requester (?) IP address restriction?
 exports.route = function (req, res, JSONobj) {
@@ -85,7 +85,7 @@ exports.route = function (req, res, JSONobj) {
 	}
 
 	// extract first verb in path
-	var words = pathname.split("/");
+	var words = pathname.split('/');
 	var verb = words[1];
 
 	// show JSONobj attachments if monitor server
@@ -112,4 +112,4 @@ exports.route = function (req, res, JSONobj) {
 			res.end('404 Not Found: ' + pathname);
 		}
 	}
-}
+};
