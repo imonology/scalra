@@ -89,8 +89,8 @@ exports.start = function (type, route, port) {
 			}
 
 			route(req, res, JSONobj);
-		})
-	}
+		});
+	};
 
 	var server = undefined;
 	if (type === 'HTTPS') {
@@ -107,7 +107,7 @@ exports.start = function (type, route, port) {
 
 		// add CA info if available
 		if (SR.Keys.ca) {
-			options.ca = SR.Keys.ca			
+			options.ca = SR.Keys.ca;			
 		}		
 				
 		server = HTTPSserver = https.createServer(options, handle_request);
@@ -132,7 +132,7 @@ exports.start = function (type, route, port) {
 	*/	
 	
 	return server;
-}
+};
 
 // stop server
 exports.stop = function (type) {
@@ -151,4 +151,4 @@ exports.stop = function (type) {
 			delete SR.REST.HTTP_URL;
 		}
 	}
-}
+};

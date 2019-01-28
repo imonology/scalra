@@ -1,5 +1,4 @@
-﻿
-//
+﻿//
 //
 // icTF.js
 //
@@ -14,13 +13,10 @@
 //
 //
 
-
 //-----------------------------------------
 // define local variables
 //
 //-----------------------------------------
-
-
 
 //-----------------------------------------
 // define local function
@@ -30,75 +26,68 @@
 //-----------------------------------------
 var l_objPool = {};
 
-exports.createObj = function () {
-        var uid = UTIL.createUUID();
-        var tmpObj =
-        {
-            funcTable: [],
-            funcCounter: 0,
-            retryTimes: 0
-        };
-
-        l_objPool[uid] = tmpObj;
-        return uid;
-}
-    
-exports.addTF = function (pObj, pFunc) {
-        if (l_objPool.hasOwnProperty(pObj) === false)
-            return;
-
-        //console.log('[icTF]::addTF::adding pObj: ' + pObj + ' and pFunc: ' + pFunc);
-        
-        var obj = l_objPool[pObj];
-        obj.funcTable.push(
-            {
-                funcKey: pFunc,
-                ready: false,
-                runningKey: false,
-                completeKey: false
-            }
-        );
+exports.createObj = function() {
+	var uid = UTIL.createUUID();
+	l_objPool[uid] = {
+		funcTable: [],
+		funcCounter: 0,
+		retryTimes: 0,
+	};
+	return uid;
 };
-   
-exports.runTF = function (pObj) {
-        if (l_objPool.hasOwnProperty(pObj) === false)
-        {
-            console.log('[icTF]::runTF::'+SR.Tags.ERR+'pObj= '+pObj+' not found.');
-            return;
-        }
 
-        //console.log('[icTF]::runTF::'+'run pObj= ' + pObj);
-        
-        l_objPool[pObj].ready = true;
-        l_objPool[pObj].funcTable[ l_objPool[pObj].funcCounter ].funcKey();
+exports.addTF = function(pObj, pFunc) {
+	if (l_objPool.hasOwnProperty(pObj) === false)
+		return;
+
+	//console.log('[icTF]::addTF::adding pObj: ' + pObj + ' and pFunc: ' + pFunc);
+
+	var obj = l_objPool[pObj];
+	obj.funcTable.push(
+		{
+			funcKey: pFunc,
+			ready: false,
+			runningKey: false,
+			completeKey: false,
+		},
+	);
 };
-    
-exports.setCompleted = function (pObj, pFunc) {
-        if (l_objPool.hasOwnProperty(pObj) === false)
-            return;
 
-        // find the completed event and remove it
-        for (var i=0;i<l_objPool[pObj].funcTable.length; ++i)
-        {
-            
-            if (l_objPool[pObj].funcTable[i].funcKey === pFunc)
-            {   
-                l_objPool[pObj].funcTable[i].completeKey = true;
-                break;
-            }
-        }
+exports.runTF = function(pObj) {
+	if (l_objPool.hasOwnProperty(pObj) === false) {
+		console.log(
+			'[icTF]::runTF::' + SR.Tags.ERR + 'pObj= ' + pObj + ' not found.');
+		return;
+	}
 
-        // trigger next function
-        ++l_objPool[pObj].funcCounter;
+	//console.log('[icTF]::runTF::'+'run pObj= ' + pObj);
 
-        // if no more function, delete event
-        if (l_objPool[pObj].funcCounter === l_objPool[pObj].funcTable.length)
-        {
-            //delete object
-            delete l_objPool[pObj];
-        }
-        else
-            l_objPool[pObj].funcTable[ l_objPool[pObj].funcCounter ].funcKey();
+	l_objPool[pObj].ready = true;
+	l_objPool[pObj].funcTable[l_objPool[pObj].funcCounter].funcKey();
+};
+
+exports.setCompleted = function(pObj, pFunc) {
+	if (l_objPool.hasOwnProperty(pObj) === false)
+		return;
+
+	// find the completed event and remove it
+	for (var i = 0; i < l_objPool[pObj].funcTable.length; ++i) {
+
+		if (l_objPool[pObj].funcTable[i].funcKey === pFunc) {
+			l_objPool[pObj].funcTable[i].completeKey = true;
+			break;
+		}
+	}
+
+	// trigger next function
+	++l_objPool[pObj].funcCounter;
+
+	// if no more function, delete event
+	if (l_objPool[pObj].funcCounter === l_objPool[pObj].funcTable.length) {
+		//delete object
+		delete l_objPool[pObj];
+	} else
+		l_objPool[pObj].funcTable[l_objPool[pObj].funcCounter].funcKey();
 
 };
     

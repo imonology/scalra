@@ -20,7 +20,7 @@ exports.Allocate = function (size) {
 			}
 		}
 		return (-1);
-	}
+	};
 	
 	// check if a key is stored already
 	this.check = function (key) {
@@ -31,7 +31,7 @@ exports.Allocate = function (size) {
 			}
 		}
 		return (-1);	
-	}
+	};
 	
 	// release an allocated resource by key
 	this.release = function (key) {
@@ -40,5 +40,5 @@ exports.Allocate = function (size) {
 			return false;
 		this.resources[i] = null;
 		return true;
-	}
-}
+	};
+};

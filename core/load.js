@@ -38,9 +38,9 @@ exports.init = function (args, onDone) {
 	l_loading[args.type] = {
 		count: 0,				// how many tasks are currently for this I/O type
 		max: args.max || 100	// how many concurrent tasks are maximumally allowed
-	}
+	};
 	UTIL.safeCall(onDone, null);
-}
+};
 
 // check if maximum load is already reached for a given type of calls
 exports.check = function (type, increment, onDone) {
@@ -62,7 +62,7 @@ exports.check = function (type, increment, onDone) {
 	
 	UTIL.safeCall(onDone, null, {result: true});
 	return true;	
-}
+};
 
 
 

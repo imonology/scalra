@@ -74,7 +74,7 @@ var l_register = exports.register = function (type, callback, to_front) {
 	}
 
 	return true;
-}
+};
 
 // remove a callback of a given 'type'
 var l_unregister = exports.unregister = function (type, callback) {
@@ -99,7 +99,7 @@ var l_unregister = exports.unregister = function (type, callback) {
 	}
 
 	return false;
-}
+};
 
 // call the callbacks registered previously, in order
 // get all callbacks of a certain type
@@ -111,7 +111,7 @@ var l_get = exports.get = function (type) {
 	}
 
 	return l_callbacks[type];
-}
+};
 
 // clear a certain type of callbacks
 var l_clear = exports.clear = function (type) {
@@ -123,7 +123,7 @@ var l_clear = exports.clear = function (type) {
 	
 	l_callbacks[type] = [];
 	return true;
-}
+};
 
 // notify a certain type of callback & pass in a parameter
 // TODO: support multiple parameters
@@ -151,7 +151,7 @@ var l_notify = exports.notify = function (type, para1, para2, para3) {
 	
 	// return number of calls made
 	return callbacks.length;
-}
+};
 
 // passed in:
 //		conn		connection object
@@ -159,7 +159,7 @@ var l_notify = exports.notify = function (type, para1, para2, para3) {
 // callbacks called when a connection is made
 var l_onConnect = exports.onConnect = function (callback) {
 	return l_register('onConnect', callback);
-}
+};
 
 // passed in:
 //		conn		connection object
@@ -167,7 +167,7 @@ var l_onConnect = exports.onConnect = function (callback) {
 // callbacks called when a connection is lost
 var l_onDisconnect = exports.onDisconnect = function (callback) {
 	return l_register('onDisconnect', callback, true);
-}
+};
 
 // passed in:
 //		conn		connection object
@@ -175,7 +175,7 @@ var l_onDisconnect = exports.onDisconnect = function (callback) {
 // callbacks called when lobby server starts
 var l_onStart = exports.onStart = function (callback) {
 	return l_register('onStart', callback);
-}
+};
 
 // passed in:
 //		conn		connection object
@@ -183,7 +183,7 @@ var l_onStart = exports.onStart = function (callback) {
 // callbacks called when lobby server stops
 var l_onStop = exports.onStop = function (callback) {
 	return l_register('onStop', callback, true);
-}
+};
 
 // passed in:
 //
@@ -197,7 +197,7 @@ var l_onCrash = exports.onCrash = function (callback, delay) {
 	}
 
 	return l_register('onCrash', callback, true);
-}
+};
 
 // passed in:
 //		account		the connected user's account
@@ -207,7 +207,7 @@ var l_onCrash = exports.onCrash = function (callback, delay) {
 // callbacks called when a user connects to app server (often the lobby server handles this)
 var l_onAppUserConnect = exports.onAppUserConnect = function (callback) {
 	return l_register('onAppUserConnect', callback);
-}
+};
 
 // passed in:
 //		account		the connected user's account
@@ -217,7 +217,7 @@ var l_onAppUserConnect = exports.onAppUserConnect = function (callback) {
 // callbacks called when a user disconnects from an app server (the lobby server handles this)
 var l_onAppUserDisconnect = exports.onAppUserDisconnect = function (callback) {
 	return l_register('onAppUserDisconnect', callback, true);
-}
+};
 
 // passed in:
 //		app_info	info of the app server
@@ -225,7 +225,7 @@ var l_onAppUserDisconnect = exports.onAppUserDisconnect = function (callback) {
 // callback for App Server connection
 var l_onAppServerStart = exports.onAppServerStart = function (callback) {
 	return l_register('onAppServerStart', callback);
-}
+};
 
 // passed in:
 //		app_info:	info of the app server
@@ -233,7 +233,7 @@ var l_onAppServerStart = exports.onAppServerStart = function (callback) {
 // callback for AppServer disconnection
 var l_onAppServerStop = exports.onAppServerStop = function (callback) {
 	return l_register('onAppServerStop', callback);
-}
+};
 
 // passed in:
 //		account		login user's account
@@ -242,7 +242,7 @@ var l_onAppServerStop = exports.onAppServerStop = function (callback) {
 // callback for App Server User login/logout attempt
 var l_onAppUserLogin = exports.onAppUserLogin = function (callback) {
 	return l_register('onAppUserLogin', callback);
-}
+};
 
 // passed in:
 //		account		login user's account
@@ -251,7 +251,7 @@ var l_onAppUserLogin = exports.onAppUserLogin = function (callback) {
 // callback when App Server User logout
 var l_onAppUserLogout = exports.onAppUserLogout = function (callback) {
 	return l_register('onAppUserLogout', callback);
-}
+};
 
 // passed in:
 //		appID		the ID of the app server
@@ -260,18 +260,18 @@ var l_onAppUserLogout = exports.onAppUserLogout = function (callback) {
 // callback for handling when app stat has been updated
 var l_onStatUpdate = exports.onStatUpdate = function (callback) {
 	return l_register('onStatUpdate', callback);
-}
+};
 
 // passed in:
 //
 // callback for handling when a file is uploaded
 var l_onUpload = exports.onUpload = function (callback) {
 	return l_register('onUpload', callback);
-}
+};
 
 var l_onUploadProgress = exports.onUploadProgress = function (callback) {
 	return l_register('onUploadProgress', callback);
-}
+};
 
 // quit current server process
 var l_shutdown = exports.shutdown = function () {
@@ -288,13 +288,13 @@ var l_shutdown = exports.shutdown = function () {
 			process.exit();	
 		}
 	}, 2000);
-}
+};
 
 // forward crash or Ctrl-C events to onCrash callback
 // for Ctrl-C
 process.on('SIGINT', function () {
 	SR.Callback.notify('onCrash', 'SIGINT');
-	console.log("Caught interrupt signal, calling shutdown");
+	console.log('Caught interrupt signal, calling shutdown');
 	l_shutdown();
 });
 

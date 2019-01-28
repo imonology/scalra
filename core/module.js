@@ -43,7 +43,7 @@ var l_addStep = exports.addStep = function (step, name) {
 		l_startqueue.add(step.start, true, name);
 		
 	return true;
-}
+};
 
 // add a new module
 // a module needs to be:
@@ -60,11 +60,11 @@ var l_addStep = exports.addStep = function (step, name) {
 // create a valid component 
 var l_buildStep = function (module) {
 
-    var step = {
+	var step = {
 		
 		config : {},
 		
-        start : function (onDone) {
+		start : function (onDone) {
 			LOG.warn('starting module [' + module.name + ']...', l_name);
 			module.start(step.config, function () {
 				// NOTE: this is to prevent a project that calls onDone more than once by accident
@@ -73,13 +73,13 @@ var l_buildStep = function (module) {
 					onDone = undefined;
 				}
 			});
-        },
+		},
 
-        stop : module.stop
-    }
+		stop : module.stop
+	};
 
-    return step;
-}
+	return step;
+};
 
 
 // module needs to have parameters:
@@ -101,14 +101,14 @@ var l_add = exports.add = function (name, module) {
 	l_modules[name] = l_buildStep(module);
 	
 	return l_modules[name];
-}
+};
 
 // get a module
 var l_get = exports.get = function (name) {
 	if (l_modules.hasOwnProperty(name))
 		return l_modules[name];
 	return undefined;
-}
+};
 
 // load multiple modules at once
 /*
@@ -125,7 +125,7 @@ var l_loadModules = function (args) {
 	for (var i in names) {
 		l_load(args.dir + names[i], args.config);
 	}
-}
+};
 
 // load a given module from file
 var l_load = exports.load = function (name, config) {
@@ -189,7 +189,7 @@ var l_load = exports.load = function (name, config) {
 	SR.Module[name] = module.api;
 	
 	return true;
-}
+};
 
 // executing all loaded modules' start()
 exports.start = function (onDone) {
@@ -207,7 +207,7 @@ exports.start = function (onDone) {
 		LOG.warn('all module inits are done, result: ' + result, l_name);
 		UTIL.safeCall(onDone, result);
 	});
-}
+};
 
 // executing all loaded modules' stop()
 exports.stop = function (onDone) {
@@ -223,7 +223,7 @@ exports.stop = function (onDone) {
 		LOG.warn('all stop jobs are done, result: ' + result, l_name);
 		UTIL.safeCall(onDone, result);
 	});
-}
+};
 
 // init a module (load it and also perform start)
 exports.init = function (name, config, onDone) {
@@ -239,7 +239,7 @@ exports.init = function (name, config, onDone) {
 		LOG.error('module not loaded: ' + name, l_name);
 		UTIL.safeCall(onDone, false);
 	}
-}
+};
 
 exports.dispose = function (name, onDone) {
 	var module = l_get(name);
@@ -249,7 +249,7 @@ exports.dispose = function (name, onDone) {
 		LOG.error('module not loaded: ' + name, l_name);
 		UTIL.safeCall(onDone, false);
 	}
-}
+};
 
 // add a global function call
 SR.Call = function (api_name) {
@@ -280,8 +280,7 @@ SR.Call = function (api_name) {
 					
 		var args = Array.prototype.slice.call(arguments);
 		return func.apply(this, args.slice(1));
-	}
-	catch (e) {
+	} catch (e) {
 		LOG.error(e);	
 	}
-}
+};

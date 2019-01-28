@@ -171,7 +171,7 @@ exports.createEvent = function (name, para, onResponse, from) {
 	data[SR.Tags.PARA] = para;	
 	
 	return l_unpack(data, conn, from.cookie);
-}
+};
 
 // force checkout on a given event
 var l_dropEvent = exports.dropEvent = function (event) {
@@ -184,7 +184,7 @@ var l_dropEvent = exports.dropEvent = function (event) {
 
 	// drop first event
 	l_checkout(event, {});
-}
+};
 
 // setup default dispatcher
 var l_dispatcher = SR.Handler.get().dispatcher;
@@ -291,11 +291,9 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 		// default to empty parameter
 		para = para || {};
 		res_obj = l_createUpdatePacket(packet_type, para);
-	} 
-	else if (typeof packet_type === 'object') {
+	} else if (typeof packet_type === 'object') {
 		res_obj = packet_type;
-	}
-	else {
+	} else {
 		LOG.error('packet type is undefined or incorrect format, drop message', l_name);
 		return false;
 	}
@@ -308,8 +306,7 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 			// NOTE: make sure empty paremters indicate a 'no-send' for types besides 'HTTP'
 			if (typeof connections[i].connector === 'function') {
 				connections[i].connector();
-			}
-			else {
+			} else {
 				LOG.warn('connector missing or not a function', l_name);
 				LOG.warn(connections[i], l_name);
 				LOG.stack();
@@ -393,7 +390,7 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 		LOG.error(droppedMessage + ' messages dropped.', l_name);
 
 	return true;
-}
+};
 
 //-----------------------------------------
 // TODO: move this to socket-specific processing
@@ -422,14 +419,14 @@ exports.waitSocketsEmpty = function (socket, onDone) {
 			return true;
 		}
 	);
-}
+};
 
 // get session content based on a token
 // returns empty collection if not found
 exports.getSession = function (token) {
 	var session_token = new Buffer(token).toString('base64').substring(0,150);	
  	return SR.State.get(session_token);
-}
+};
 
 //
 // a Event object, for each incoming packet/request,
@@ -510,7 +507,7 @@ Event.prototype.done = function (packet_type, para, connections) {
 	// send packet to other client(s) if connections are provided	
 	if (typeof connections !== 'undefined')
 		this.send(packet_type, para, connections, false);
-}
+};
 
 // respond to a specific packet, or a number of other connections (if provided)
 // NOTE: default to not sending to self
@@ -521,8 +518,7 @@ Event.prototype.send = function (packet_type, para, connections, to_self) {
 	// check if sockets are specified (if not, default is this event's socket)
 	if (typeof connections === 'undefined' || connections instanceof Array === false) {
 		connections = [];
-	}
-	else {
+	} else {
 		// check if list of sockets has self
 		for (var i=0; i < connections.length; i++) {
 			if (connections[i].connID == this.conn.connID) {
@@ -538,13 +534,13 @@ Event.prototype.send = function (packet_type, para, connections, to_self) {
 	}
 
 	SR.EventManager.send(packet_type, para, connections);
-}
+};
 
 // print the source of the request for this event
 Event.prototype.printSource = function () {
 	var src = this.conn.host + ':' + this.conn.port + ' ' + this.conn.type;
 	return src;
-}
+};
 
 
 // session
@@ -574,8 +570,7 @@ Event.prototype._session = function (query, data) {
 	else if (typeof query === 'string' && typeof data === 'undefined') {
 		if (l_sessionPool[token] && l_sessionPool[token][query]) {
 			return l_sessionPool[token][query];
-		} 
-		else {
+		} else {
 			return null;
 		}
 	} 
@@ -583,22 +578,21 @@ Event.prototype._session = function (query, data) {
 	else if (typeof query === 'undefined' && typeof data === 'undefined') {
 		if (l_sessionPool[token]) {
 			return l_sessionPool[token];
-		} 
-		else {
+		} else {
 			return null;
     	}
 	}
-}
+};
 
 //-----------------------------------------
 // build an event from a general event and connection object
 var l_unpack = exports.unpack = function (data, conn, token) {
 
 	return new Event(data, conn, token);
-}
+};
 
 exports.list = function (arg) {
-	console.log("l_eventPool");
+	console.log('l_eventPool');
 	console.log(l_eventPool);
 	return true;
-}
+};

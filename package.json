@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "node test/*.js",
+    "lint": "eslint ./core --fix",
     "start": "node monitor/frontier.js monitor/settings.js",
     "postinstall": "node scripts/postinstall.js"
   },
@@ -62,5 +63,8 @@
     "sockjs": "0.3.18",
     "sockjs-client": "1.1.1",
     "swagger-ui": "2.2.6"
+  },
+  "devDependencies": {
+    "eslint": "^5.12.0"
   }
 }
