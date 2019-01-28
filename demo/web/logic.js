@@ -87,7 +87,6 @@ function login(type) {
 		
 		// try to login if register success
 		if (type === 'register') {
-			alert(l_lang.register_success);
 			login('account');
 			return;
 		}

@@ -43,7 +43,7 @@ var settings = exports.settings = {
 	},
 
 	// whether to connect to monitor server by default		
-	CONNECT_MONITOR_ONSTART:	false,
+	CONNECT_MONITOR_ONSTART:	true,
 
 	// settings for load balancing servers
 	servers: {
