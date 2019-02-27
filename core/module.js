@@ -196,8 +196,7 @@ exports.start = function (onDone) {
 
 	// create new processing queue
 	l_startqueue = SR.JobQueue.createQueue({timeout: 5000});
-	// console.log(l_steps.map(item=>item.name))
-	// return
+
 	// various steps
 	for (var i in l_steps) {
 		l_startqueue.add(l_steps[i].start, true, l_steps[i].name);
