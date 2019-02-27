@@ -66,13 +66,17 @@ var settings = exports.settings = {
 	// TODO: need to fix this to make it more flexible
 	PORT_INC_HTTP: 0,
 	PORT_INC_HTTPS: 1,
+
 	PORT_INC_WEBSOCKET: 2,
 	PORT_INC_SOCKETIO: 2,
+
 	PORT_INC_SOCKET: 3,
+
 	PORT_INC_APP_MANAGER: 4,
 	PORT_INC_LOG: 5,
 	PORT_INC_STREAM_IN: 6,
 	PORT_INC_STREAM_OUT: 7,
+
 	PORT_INC_EXPRESS: 8,
 	PORT_INC_EXPRESS_S: 8,
 

@@ -1,0 +1,48 @@
+DB_PORT
+    - core/DB.js (for mongo configuration)
+PORT_MONITOR
+    - modules/reporting.js:41 (reporting need monitor server params)
+    - modules/reporting.js:94 (add remote api configuration for monitor)
+    - modules/socketserver.js (return monitor server port)
+PORT_EDITOR
+    - NOT USED IN SCALRA PROJECT
+PORT_PROJECTS
+    - NOT USED IN SCALRA PROJECT
+PORT_APP_RANGE_START - PORT_APP_RANGE_END
+    - new port for every new project under monitor server, takes random port number
+      between this values and assign it if its free
+    - core/utility.js
+PORT_RESERVED_SIZE
+    - reserve ports from above selected + size
+    - core/utility.js
+
+PORTS BELOW HAVE one WORKING METHOD, THEY ARE USED TO INCREASE CURRENT WORKING PORT AND USE IT FOR APP
+FOR EXAMPLE, if lobby
+BASE_PORT is 1234 and PORT_INC_HTTP = 2.
+To serve frontier app server use 1236 (BASE_PORT +PORT_INC_HTTP)
+
+
+PORT_INC_HTTP, PORT_INC_HTTPS
+    - use case is in FRONTIER app create new port for every new frontier app.
+      It just increase main server port with entered value.
+    - entry/REST_handle.js
+PORT_INC_WEBSOCKET
+    - NOT USED IN SCALRA PROJECT
+PORT_INC_SOCKETIO
+    - core/component.js
+    - port for socket.io configuration difference from main server port
+PORT_INC_SOCKET
+    - modules/socketserver.js:78 (logic is same from above just for socket)
+    - core/component.js:374 (logic is same from above just for socket)
+PORT_INC_LOG
+    - NOT USED IN SCALRA PROJECT
+PORT_INC_STREAM_IN,PORT_INC_STREAM_OUT
+    - core/component.js:496 (stream port for frontier, use case is same, base port increase with this value)
+PORT_INC_EXPRESS,PORT_INC_EXPRESS_S
+    - modules/express.js:317 (express working port, use case is same, base port + this value)
+
+PORT_ENTRY
+    - multiple use case, is used for frontier app server
+    also PORT_ENTRY_ACTUAL is sometimes override by PORT_ENTRY
+PORT_G_ENTRY_PRIVATE, PORT_G_ENTRY_PUBLSR,S_ENTRY_PORTRANGE,PORT_S_ENTRY
+    - NOT USED IN SCALRA PROJECT
