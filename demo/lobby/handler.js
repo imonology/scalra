@@ -107,46 +107,45 @@ SR.API.after('UPDATE_FORM', function (args, output, onDone) {
 		return onDone();
 	}
 	
-	LOG.warn('perform post-action for UPDATE_FORM...')
+	LOG.warn('perform post-action for UPDATE_FORM...');
 	var form = l_form[args.form_id];
 	
 	switch (form.name) {
-		case 'DeviceInfo':
-			LOG.warn('output:');
-			LOG.warn(output);
+	case 'DeviceInfo':
+		LOG.warn('output:');
+		LOG.warn(output);
 			
-			var record_ids = output.result.record_ids;
-			LOG.warn('record_ids:');
-			LOG.warn(record_ids);
-			if (!record_ids)
-				break;
-			
-			var values = form.data.values;
-			
-			// find records just added
-			for (var record_id in values) {
-				if (record_ids.indexOf(record_id) >= 0) {
-					var record = values[record_id];
-					record.id = UTIL.createUUID();
-				}
-			}
-			// write back to DB
-			form.sync(function (err) {
-				if (err) {
-					LOG.error(err);
-					return onDone(err);
-				}
-				return onDone();
-			})
-			return;
+		var record_ids = output.result.record_ids;
+		LOG.warn('record_ids:');
+		LOG.warn(record_ids);
+		if (!record_ids)
 			break;
 			
-		default:
-			break;					 
+		var values = form.data.values;
+			
+		// find records just added
+		for (var record_id in values) {
+			if (record_ids.indexOf(record_id) >= 0) {
+				var record = values[record_id];
+				record.id = UTIL.createUUID();
+			}
+		}
+		// write back to DB
+		form.sync(function (err) {
+			if (err) {
+				LOG.error(err);
+				return onDone(err);
+			}
+			return onDone();
+		});
+		return;
+
+	default:
+		break;					 
 	}
 	
 	onDone();
-})
+});
 
 //
 // system events

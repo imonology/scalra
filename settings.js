@@ -65,7 +65,7 @@ var settings = exports.settings = {
 	// NOTE: PORT_INC_APP_MANAGER may be hard-coded by client's net layer
 	// TODO: need to fix this to make it more flexible
 	PORT_INC_HTTP: 0,
-	PORT_INC_HTTPS: 1,
+	PORT_INC_HTTPS: 0,
 
 	PORT_INC_WEBSOCKET: 2,
 	PORT_INC_SOCKETIO: 2,
