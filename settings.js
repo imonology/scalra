@@ -13,8 +13,6 @@
 // define global variables
 //
 //-----------------------------------------
-var merge = require('merge'), original, cloned;
-var local_config = require('./config.js').config;
 
 // default settings
 var settings = exports.settings = { 
@@ -174,7 +172,13 @@ var settings = exports.settings = {
 	DEFAULT_FILES: ['index.htm', 'index.html', 'default.htm', 'default.html'],
 
 	// Wordpress host for authentication
-	WORDPRESS_HOST: 'https://www.imoncloud.com'
+	WORDPRESS_HOST: 'https://www.imoncloud.com',
+
+  // use pm2
+  PM2_ENABLE: true,
+
+  // pm2 auto restart
+  PM2_AUTO_RESTART: false,
 };
 
 
@@ -196,7 +200,6 @@ settings.SLASH = SR.path.sep;
 // merge system default (should not change easily) with local config (may be machine-specific)
 // NOTE: this needs to happen before the following environment-specific defaults are applied
 // otherwise settings.MODE may be incorrect
-settings = merge(settings, local_config);
 
 //
 // Environment-specific settings
