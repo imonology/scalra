@@ -23,7 +23,7 @@ var l_api = exports.api = {};
 var l_name = 'Module.Express';
 
 // for form processing
-var formidable = require("formidable");
+var formidable = require('formidable');
 
 //-----------------------------------------
 // Handlers (format checkers and event handlers)
@@ -65,7 +65,7 @@ l_module.start = function (config, onDone) {
 	var express = require('express');
 		
 	var app = express();
-	var cookieParser = require('cookie-parser')
+	var cookieParser = require('cookie-parser');
 	
 	// set view engine & directory
 	var views_paths = [];
@@ -99,7 +99,7 @@ l_module.start = function (config, onDone) {
 	for (var i=0; i < lib_paths.length; i++) {
 		app.use('/lib', express.static(lib_paths[i]));
 	}
-	
+
 	if (typeof config.public === 'string') {
 		//app.use(express.static(SR.Settings.FRONTIER_PATH + '/../public'));
 		//app.use('/pub/', express.directory(SR.Settings.FRONTIER_PATH + '/public'));
@@ -121,17 +121,14 @@ l_module.start = function (config, onDone) {
 		
 		// check if client sent cookie
 		var cookie = req.cookies[SR.REST.cookieName];
-		if (cookie === undefined)
-		{
+		if (cookie === undefined) {
 			// get cookie			
 			cookie = SR.REST.getCookie();
 			//res.cookie(SR.REST.cookieName, cookie, { maxAge: 900000, httpOnly: true });
 			// NOTE: if 'httpOnly' is set then cookie won't be shared for websocket connections
 			res.cookie(SR.REST.cookieName, cookie);
 			LOG.sys('express: cookie created successfully: ' + cookie, l_name);
-		} 
-		else
-		{
+		} else {
 			// yes, cookie was already present 
 			LOG.sys('express: cookie exists: ' + cookie);
 		} 
@@ -189,7 +186,7 @@ l_module.start = function (config, onDone) {
 						var arr = upload.path.split('/');
 						var upload_name = arr[arr.length-1];
 						var filename = (preserve_name ? upload.name : upload_name); 
-						LOG.warn("The file " + upload.name + " was uploaded as: " + filename + ". size: " + upload.size, l_name);
+						LOG.warn('The file ' + upload.name + ' was uploaded as: ' + filename + '. size: ' + upload.size, l_name);
 						uploaded.push({name: filename, size: upload.size, type: upload.type});						
 
 						// check if we might need to re-name
@@ -203,7 +200,7 @@ l_module.start = function (config, onDone) {
 							if (err) {
 								return LOG.error('rename fail: ' + new_name, l_name);
 							}
-							LOG.warn("File " + upload_name + " renamed as: " + upload.name + " . size: " + upload.size, l_name);							
+							LOG.warn('File ' + upload_name + ' renamed as: ' + upload.name + ' . size: ' + upload.size, l_name);							
 						});
 					};
 
@@ -223,8 +220,7 @@ l_module.start = function (config, onDone) {
 							var upload = files.upload[i];
 							renameFile(upload);
 						}
-					}
-					else {
+					} else {
 						LOG.error('file upload error, no upload file(s)', l_name);
 						SR.REST.reply(res, {message: 'failure (no file)'});
 						return;
@@ -237,7 +233,7 @@ l_module.start = function (config, onDone) {
 					};
 
 					SR.REST.reply(res, result);
-				}
+				};
 				
 				
 				var file_names = {};
@@ -246,14 +242,14 @@ l_module.start = function (config, onDone) {
 						LOG.error(err, l_name);	
 						return SR.Callback.notify('onUpload', {result: false, msg: err});
 					}
-					LOG.warn("file uploaded", l_name);
+					LOG.warn('file uploaded', l_name);
 					//LOG.warn(result, l_name);
 					SR.Callback.notify('onUpload', {result: true, file: 'filepath'});
-// 					var result = {
-// 						message: 'success'
-// 					};
+					// 					var result = {
+					// 						message: 'success'
+					// 					};
 
-// 					SR.REST.reply(res, result);
+					// 					SR.REST.reply(res, result);
 
 				});
 
@@ -275,13 +271,13 @@ l_module.start = function (config, onDone) {
 				});
  
 				form.on('fileBegin', function (name, file) {
-					LOG.warn("fileBegin: name " + name + ", file " + JSON.stringify(file));
+					LOG.warn('fileBegin: name ' + name + ', file ' + JSON.stringify(file));
 					file_names['original_name'] = JSON.stringify(file);
 					
 				});
 
 				form.on('file', function (fields, files) {
-					LOG.warn("on file: name " + fields + ", file " + JSON.stringify(files));
+					LOG.warn('on file: name ' + fields + ', file ' + JSON.stringify(files));
 					// onUploadDone(fields, files);
 				});				
 				
@@ -311,31 +307,31 @@ l_module.start = function (config, onDone) {
 		}
 		// end of "for file uploading
 	});
-	
-	if (config.secured === true && SR.Keys) {
-						
-		var express_port = UTIL.getProjectPort('PORT_INC_EXPRESS_S');
-		var options = {
-			key: SR.Keys.privatekey,
-			cert: SR.Keys.certificate
-		};
 
-		// add CA info if available
-		if (SR.Keys.ca) {
-			options.ca = SR.Keys.ca;			
-		}		
+	// if (config.secured === true && SR.Keys) {
+	//
+	// 	var express_port = UTIL.getProjectPort('PORT_INC_EXPRESS_S');
+	// 	var options = {
+	// 		key: SR.Keys.privatekey,
+	// 		cert: SR.Keys.certificate
+	// 	};
+	//
+	// 	// add CA info if available
+	// 	if (SR.Keys.ca) {
+	// 		options.ca = SR.Keys.ca;
+	// 	}
+	//
+	// 	var server = SR.https.createServer(options, app).listen(express_port, function() {
+	// 		LOG.warn('Express server listening securely on port ' + express_port, l_name);
+	// 	});
+	//
+	// } else {
+	var express_port = UTIL.getProjectPort('PORT_INC_EXPRESS');
+	var server = SR.http.createServer(app).listen(express_port, function() {
+		LOG.warn('Express server listening on port ' + express_port, l_name);
+	});
 		
-		var server = SR.https.createServer(options, app).listen(express_port, function() {
-			LOG.warn('Express server listening securely on port ' + express_port, l_name);
-		});
-				
-	} else {
-		var express_port = UTIL.getProjectPort('PORT_INC_EXPRESS');
-		var server = SR.http.createServer(app).listen(express_port, function() {
-			LOG.warn('Express server listening on port ' + express_port, l_name);
-		});
-		
-	}
+	// }
 
 	// set up script monitor, so we may hot-load router
 	//var router_path = SR.Settings.FRONTIER_PATH + '/' + (config.router || 'router.js'); 
@@ -349,13 +345,13 @@ l_module.start = function (config, onDone) {
 
 	// process config & verify correctness here
 	UTIL.safeCall(onDone, err);
-}
+};
 
 // module shutdown
 l_module.stop = function (onDone) {
 	// close / release resources used
 	UTIL.safeCall(onDone);
-}
+};
 
 // register this module
 SR.Module.add('express', l_module);

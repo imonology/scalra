@@ -87,7 +87,7 @@ var SocketHandler = function (connHandler, eventHandler) {
 
 	// setup a usable socket (can be either a server-received incoming connection, or a outgoing client connection)
 	this.setup = function (socket) {
-    
+		// start from here step 3
 		// NOTE: this part is called when connection is made
 		LOG.sys('setup new socket...', l_name);
     
