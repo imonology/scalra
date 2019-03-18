@@ -1,4 +1,3 @@
-
 //
 //
 // component.js
@@ -372,7 +371,7 @@ l_components['SocketIO'] = exports.SocketIO = function (type) {
 		start : function (onDone) {
 
 			var port = SR.Settings.FRONTIER.getHostAddress().port + SR.Settings.PORT_INC_SOCKETIO;
-		console.log('port listening on - ',port)
+		    console.log('port listening on - ',port);
 			// check if we'll use secured socket.io
 			var options = undefined;
 			
