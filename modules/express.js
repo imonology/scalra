@@ -308,30 +308,30 @@ l_module.start = function (config, onDone) {
 		// end of "for file uploading
 	});
 
-	if (config.secured === true && SR.Keys) {
-
-		var express_port = UTIL.getProjectPort('PORT_INC_EXPRESS_S');
-		var options = {
-			key: SR.Keys.privatekey,
-			cert: SR.Keys.certificate
-		};
-
-		// add CA info if available
-		if (SR.Keys.ca) {
-			options.ca = SR.Keys.ca;
-		}
-
-		var server = SR.https.createServer(options, app).listen(express_port, function() {
-			LOG.warn('Express server listening securely on port ' + express_port, l_name);
-		});
-
-	} else {
-		var express_port = UTIL.getProjectPort('PORT_INC_EXPRESS');
-		var server = SR.http.createServer(app).listen(express_port, function() {
-			LOG.warn('Express server listening on port ' + express_port, l_name);
-		});
-
-	}
+	// if (config.secured === true && SR.Keys) {
+	//
+	// 	var express_port = UTIL.getProjectPort('PORT_INC_EXPRESS_S');
+	// 	var options = {
+	// 		key: SR.Keys.privatekey,
+	// 		cert: SR.Keys.certificate
+	// 	};
+	//
+	// 	// add CA info if available
+	// 	if (SR.Keys.ca) {
+	// 		options.ca = SR.Keys.ca;
+	// 	}
+	//
+	// 	var server = SR.https.createServer(options, app).listen(express_port, function() {
+	// 		LOG.warn('Express server listening securely on port ' + express_port, l_name);
+	// 	});
+	//
+	// } else {
+	var express_port = UTIL.getProjectPort('PORT_INC_EXPRESS');
+	var server = SR.http.createServer(app).listen(express_port, function() {
+		LOG.warn('Express server listening on port ' + express_port, l_name);
+	});
+		
+	// }
 
 	// set up script monitor, so we may hot-load router
 	//var router_path = SR.Settings.FRONTIER_PATH + '/' + (config.router || 'router.js');
