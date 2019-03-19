@@ -176,11 +176,11 @@ var settings = exports.settings = {
 	// Wordpress host for authentication
 	WORDPRESS_HOST: 'https://www.imoncloud.com',
 
-  // use pm2
-  PM2_ENABLE: true,
+	// use pm2
+	PM2_ENABLE: true,
 
-  // pm2 auto restart
-  PM2_AUTO_RESTART: false,
+	// pm2 auto restart
+	PM2_AUTO_RESTART: false,
 };
 
 // OS Specific
