@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head>
+    <title>Title</title
+</head>
+<body>
+
+<input id="m" autocomplete="off"/>
+<button onclick="_sendMessage()">Send</button>
+<script>
+  const exampleSocket = new WebSocket('ws://localhost:1400');
+  let _sendMessage = (event) => {
+    exampleSocket.send(m.value);
+    m.value = '';
+  };
+
+</script>
+</body>
+</html>

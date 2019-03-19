@@ -137,6 +137,8 @@ exports.icListener = function (config) {
 		try {
 			
 			// pass in callback to handle new incoming socket connections
+
+			// start from here step 2
 			l_server = SR.net.createServer(l_socketHandler.setup);
     
 			// get local IP
