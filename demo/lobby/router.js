@@ -25,7 +25,7 @@ var l_getSession = function (req) {
 	var cookie = SR.REST.getCookie(req.headers.cookie);
 	var session = SR.EventManager.getSession(cookie);
 	return session;
-}
+};
 
 // pass in request object, returns session data if logined, otherwise returns null
 var l_checkLogin = function (req) {
@@ -38,7 +38,7 @@ var l_checkLogin = function (req) {
 	
 	LOG.warn('user not yet logined...');
 	return {control: {groups: [], permissions: []}};
-}
+};
 
 module.exports = function (app) {
 	
@@ -154,4 +154,4 @@ module.exports = function (app) {
 			}
 		});
 	});
-}
+};

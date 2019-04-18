@@ -32,10 +32,10 @@ SR.Console.add('t', 'show current time', function (para) {
 var collections =  ['test_db'];
 
 var config = {
-    path:               __dirname,
+	path:               __dirname,
 	//console:			false,				// turn off console if you don't want it
-    handlers: [
-        {file: 'handler.js'},
+	handlers: [
+		{file: 'handler.js'},
 		{file: 'login.js', owner: 'SR'},
 		{file: 'system.js', owner: 'SR'},
 		{file: 'log.js', owner: 'SR'},
@@ -50,16 +50,16 @@ var config = {
 		{file: 'example/API.js'},
 		{file: 'example/chat.js'},
 		//{file: 'example/DHT.js'},
-    ],
+	],
 	// TODO: init core SR functions without using components		
-    components: [
+	components: [
 		//SR.Component.REST(),                    // start a HTTP server,
 		//SR.Component.REST('HTTPS'),             // start a HTTPS server,
 		//SR.Component.SockJS(),					// start a sockjs HTTP server
 		//SR.Component.SockJS('HTTPS'),			// start a sockjs HTTPS server
 		//SR.Component.SocketIO(),					// start a socketio HTTP server
 		//SR.Component.SocketIO('HTTPS'),			// start a socketio HTTPS server		
-    ],
+	],
 	modules: {
 		// disable DB usage by default, uncomment if DB (currently MongoDB) is installed
 		'DB': {collections: collections, shutdown_if_fail: true},
