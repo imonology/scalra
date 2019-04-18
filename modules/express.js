@@ -5,6 +5,7 @@
 //
 //	history:
 //		2015-12-26	init
+//		2019-04-18	make express meth accessible
 //
 //	note:
 //		the following node modules are required for this module to function properly
@@ -19,6 +20,10 @@ var l_module = {};
 var l_handlers = exports.handlers = {};
 var l_checkers = exports.checkers = {};
 var l_api = exports.api = {};
+
+const express = require('express');
+const app = exports.app = express();
+const cookieParser = require('cookie-parser');
 
 var l_name = 'Module.Express';
 
@@ -62,11 +67,6 @@ l_module.start = function (config, onDone) {
 	/*
 		Web Frontend
 	*/
-	var express = require('express');
-
-	var app = express();
-	var cookieParser = require('cookie-parser');
-
 	// set view engine & directory
 	var views_paths = [];
 	var web_paths = [];
@@ -92,11 +92,11 @@ l_module.start = function (config, onDone) {
 
 	// set directory to serve static files
 	//app.use('/web', express.static(SR.Settings.FRONTIER_PATH + '/../web'));
-	for (var i=0; i < web_paths.length; i++) {
+	for (let i=0; i < web_paths.length; i++) {
 		app.use('/web', express.static(web_paths[i]));
 	}
 	app.use('/lib', express.static(SR.Settings.SR_PATH + '/lib'));
-	for (var i=0; i < lib_paths.length; i++) {
+	for (let i=0; i < lib_paths.length; i++) {
 		app.use('/lib', express.static(lib_paths[i]));
 	}
 
@@ -161,9 +161,9 @@ l_module.start = function (config, onDone) {
 					}
 
 					var uploaded = [];
-
+					var result = {};
 					if (typeof files.upload !== 'object') {
-						var result = {
+						result = {
 							message: 'fail',
 							upload : uploaded,
 						};
@@ -210,9 +210,8 @@ l_module.start = function (config, onDone) {
 						LOG.warn('single file uploaded, rename upload obj:', l_name);
 						LOG.warn(files.upload, l_name);
 						renameFile(files.upload);
-					}
-					// for multiple files in an array
-					else if (files.upload.length) {
+					} else if (files.upload.length) {
+						// for multiple files in an array
 						LOG.warn('multiple files uploaded [' + files.upload.length +']:', l_name);
 						LOG.warn(files.upload, l_name);
 
@@ -227,7 +226,7 @@ l_module.start = function (config, onDone) {
 					}
 
 					// remove sensitive info (such as path) from response
-					var result = {
+					result = {
 						message: 'success',
 						upload : uploaded,
 					};
