@@ -20,11 +20,11 @@ var l_convert = function (str) {
 	var obj = {};
 	str = str.split('; ');
 	for (var i = 0; i < str.length; i++) {
-    	var tmp = str[i].split('=');
-    	obj[tmp[0]] = tmp[1];
+		var tmp = str[i].split('=');
+		obj[tmp[0]] = tmp[1];
 	}
 	return obj;
-}
+};
 
 // start server
 exports.start = function (http_server, onDone) {
@@ -57,17 +57,39 @@ exports.start = function (http_server, onDone) {
 				
 				// for first time we assume message is cookie
 				if (!cookie) {
+					// console.dir('no cookie, message');
+					// console.dir(message);
 
-					cookie = SR.REST.getCookie(message);
+					var cookieHeader = sock_conn._session.recv.ws._stream._readableState.pipes._driver._request.headers.cookie;
+					if (cookieHeader && typeof cookieHeader === 'string') {
+						cookieHeader.split(';').forEach(cookie_str => {
+							var parts = cookie_str.split('=');
+							// cookie[ parts[ 0 ].trim() ] = ( parts[ 1 ] || '' ).trim();
+							cookie = parts[1];
+						});
+					}
+					// console.dir('cookieHeader');
+					// console.dir(cookieHeader);
+					// console.dir('cookie');
+					// console.dir(cookie);
+
+					if (!cookie && message && message !== '') {
+						cookie = SR.REST.getCookie(message);
+						// console.dir('get cookie from message');
+						// console.dir(cookie);
+					}
+
 					LOG.warn('cookie received: ', 'SR.SockJS');
 					LOG.warn(cookie, 'SR.SockJS');
 					
 					var host = sock_conn.remoteAddress.split(':');
 					host = host[host.length-1];
 					
-					var from = {host: host, 
-								port: sock_conn.remotePort,
-								cookie: cookie};
+					var from = {
+						host: host, 
+						port: sock_conn.remotePort,
+						cookie: cookie
+					};
 					
 					// create connection object for Scalra
 					conn_obj = l_connHandler.addConnection(
@@ -78,7 +100,60 @@ exports.start = function (http_server, onDone) {
 								
 							sock_conn.write(JSON.stringify(res_obj));
 							return true;
-            
+						}, 'sockjs', from);
+
+					// necessary?
+					sock_conn.connID = conn_obj.connID;
+					
+					LOG.sys('recording new sockjs connection: ' + conn_obj.connID, 'SR.SockJS');				
+				} else {
+					console.info('got cookie');
+					console.info(cookie);
+					try {
+						// console.dir(message);
+						if (message && message !== '') {
+							var obj = JSON.parse(message);
+						}
+
+						var event = SR.EventManager.unpack(obj, conn_obj, conn_obj.cookie);
+						SR.EventManager.checkin(event);
+					} catch (e) {
+						// console.error(message);
+						// console.error(e);
+					}
+				}
+			});
+
+			// on connection close event
+			sock_conn.on('close', function() {
+
+            	LOG.warn('user disconnected', 'SR.SockJS');
+
+				// remove connection object
+				if (conn_obj)
+					l_connHandler.removeConnection(conn_obj);
+			});
+		}
+		
+		// when error occurs (used at all?)
+		sock_conn.on('error', function (code) {
+			LOG.error('error code: ', 'SR.SockJS');
+			LOG.error(code);
+		});
+	});
+
+	// assocate sockJS server with HTTP server
+	http_server.addListener('upgrade', function (req, res){
+    	res.end();
+	});
+
+	// Integrate SockJS and listen on /echo
+	server.installHandlers(http_server, {prefix: '/sockjs'});
+	
+	//LOG.warn('SockJS server started');
+	UTIL.safeCall(onDone, server);
+};
+
 						}, 'sockjs', from);
             
 					// necessary?
