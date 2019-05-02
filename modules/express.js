@@ -65,7 +65,7 @@ l_module.start = function (config, onDone) {
 	var express = require('express');
 		
 	var app = express();
-	var cookieParser = require('cookie-parser')
+	var cookieParser = require('cookie-parser');
 	
 	// set view engine & directory
 	var views_paths = [];
@@ -127,13 +127,14 @@ l_module.start = function (config, onDone) {
 			cookie = SR.REST.getCookie();
 			//res.cookie(SR.REST.cookieName, cookie, { maxAge: 900000, httpOnly: true });
 			// NOTE: if 'httpOnly' is set then cookie won't be shared for websocket connections
-			res.cookie(SR.REST.cookieName, cookie);
-			LOG.sys('express: cookie created successfully: ' + cookie, l_name);
+			res.cookie(SR.REST.cookieName, cookie, { httpOnly: true });
+			// res.cookie(SR.REST.cookieName, cookie);
+			LOG.warn('express: cookie created successfully: ' + cookie, l_name);
 		} 
 		else
 		{
 			// yes, cookie was already present 
-			LOG.sys('express: cookie exists: ' + cookie);
+			LOG.warn('express: cookie exists: ' + cookie);
 		} 
 		next(); // <-- important!
 	});	
@@ -336,6 +337,13 @@ l_module.start = function (config, onDone) {
 		});
 		
 	}
+
+	SR.SockJS.start(server, function (s) {
+		// record server created
+		this.created = true;
+		LOG.warn('SockJS [' + (config.secured ? 'https' : 'http') + '] server started', 'SR.Component');
+		UTIL.safeCall(onDone);
+	});
 
 	// set up script monitor, so we may hot-load router
 	//var router_path = SR.Settings.FRONTIER_PATH + '/' + (config.router || 'router.js'); 
