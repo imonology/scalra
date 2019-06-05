@@ -41,117 +41,70 @@ var l_checkLogin = function (req) {
 };
 
 module.exports = function (app) {
-	
-	// home page (login)
-	app.get('/', function (req, res) {
-		var login = l_checkLogin(req);
-		res.render('login', {login: login, language: l_lang});
-	});
-		
-	// login
-	app.get('/login', function (req, res) { 
-		var login = l_checkLogin(req);		
-		if (login.account)
-			return res.redirect('/main');
-		
-		res.render('login', {language: l_lang});
-	});	
 
-	// account register
-	app.get('/register', function (req, res) { 
-		var login = l_checkLogin(req);
-		res.render('register', {login: login, language: l_lang});
-	});	
-	
-	// main
-	app.get('/main', function (req, res) { 
-		var login = l_checkLogin(req);		
-		if (!login.account)
-			return res.redirect('/');
-	
-		res.render('main', {login: login, language: l_lang});
-	});	
-	
-	// view/create basic info
-	app.get('/device', function (req, res) {
-		var login = l_checkLogin(req);
-		
-		if (!login.account)
-			return res.redirect('/');
-							
-		res.render('flexform/view', {login: login, language: l_lang, forms: [{name: req.query.form_name}]});	
-	});	
-	
-	// list records
-	app.get('/list', function (req, res) { 
-		var login = l_checkLogin(req);
-		if (!login.account)
-			return res.redirect('/');
-		
-		var args = {login: login, language: l_lang, para: {form_name: req.query.form_name}};		
-		res.render('flexform/list_filter', args);
-	});	
-	
-	// connect a single device
-	app.get('/connect', function (req, res) { 
-		var login = l_checkLogin(req);
-		if (!login.account)
-			return res.redirect('/');
-		
-		var args = {login: login, language: l_lang};		
-		res.render('connect', args);
+	// CORS header
+	app.use(function(req, res, next) {
+		res.header('Access-Control-Allow-Origin', '*');
+		res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+		next();
 	});
 
-	app.get('/userList', (req, res) => {
-		const login = l_checkLogin(req);
-		if (!login.account) {
-			res.redirect('/');
-		}
 
-		res.render('flexform/v2/view', {
-			language: l_lang,
-			title: 'User list',
-			s_title: 'User list',
-			mode: 'show',
-			nav: [
-				{
-					name: 'Device list',
-					link: '/deviceList'
+	app.get('/api/menu', (req, res) => {
+		const menu = [
+			{
+				"path": "/",
+				"redirect": "/dashboard",
+				"name": "Home",
+				"hidden": true,
+				"children": [
+					{
+						"path": "dashboard"
+					}
+				]
+			},
+			{
+				"path": "/device",
+				"redirect": "/device",
+				"name": "Device Manege",
+				"meta": {
+					"title": "device",
+					"icon": "device"
 				},
-				{
-					name: 'User list',
-					link: '/userList'
-				}
-			],
-			para: {
-				form_query: { name: 'Users' }
+				"children": [
+					{
+						"path": "create",
+						"name": "create device",
+						"type": "create",
+						"meta": {
+							"title": "create device",
+							"icon": "device"
+						}
+					},
+					{
+						"path": "list",
+						"name": "list device",
+						"type": "list",
+						"meta": {
+							"title": "list",
+							"icon": "edit"
+						}
+					}
+				]
+			},
+			{
+				"path": "external-link",
+				"children": [
+					{
+						"path": "https://www.google.com/",
+						"meta": {
+							"title": "External Link",
+							"icon": "link"
+						}
+					}
+				]
 			}
-		});
-	});
-
-	app.get('/deviceList', (req, res) => {
-		const login = l_checkLogin(req);
-		if (!login.account) {
-			res.redirect('/');
-		}
-
-		res.render('flexform/v2/list', {
-			language: l_lang,
-			title: 'Device list',
-			s_title: 'Device list',
-			nav: [
-				{
-					name: 'Device list',
-					link: '/deviceList'
-				},
-				{
-					name: 'User list',
-					link: '/userList'
-				}
-			],
-			para: {
-				form_query: { name: 'DeviceInfo' }
-			}
-		});
+		];
+		res.send(menu);
 	});
 };
