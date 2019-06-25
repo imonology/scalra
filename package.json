@@ -63,7 +63,7 @@
     "socket.io": "^2.2.0",
     "sockjs": "0.3.18",
     "sockjs-client": "1.1.1",
-    "swagger-ui": "2.2.6"
+    "swagger-ui": "3.18.0"
   },
   "devDependencies": {
     "eslint": "^5.12.0"
