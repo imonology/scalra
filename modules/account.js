@@ -539,22 +539,22 @@ SR.API.add('_ACCOUNT_LOGIN', {
 			// attach login (account) to connection
 			// NOTE: we use session because login could come from an HTTP request
 			// that does not have a persistent connection record in SR.Conn
-			SR.Conn.setSessionName(extra.conn, account);
+			SR.Conn.setSessionName(extra.conn, username);
 
 			// init session by recording login-related info
 			// NOTE: 'control' info may change during the session
 			extra.session._user = {
-				account: account,
+				account: username,
 				control: user.control,
 				login: user.login
 			};
 
 			// record current login (also the conn object for logout purpose)
-			l_logins[account] = extra.conn;
+			l_logins[username] = extra.conn;
 
 			// return login success
-			LOG.warn('[' + account + '] login success, total online accounts: ' + Object.keys(l_logins).length, l_name);
-			onDone(null, {account: account, token: token});
+			LOG.warn('[' + username + '] login success, total online accounts: ' + Object.keys(l_logins).length, l_name);
+			onDone(null, {account: username, token: token});
 		});
 	}).catch((err) => {
 		onDone(err);
