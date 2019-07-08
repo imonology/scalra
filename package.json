@@ -56,14 +56,14 @@
     "mysql": "^2.16.0",
     "node-df": "0.1.1",
     "node-upload-progress": "0.0.1",
-    "orm": "^5.0.2",
+    "orm": "^5.0.4",
     "os-utils": "0.0.14",
     "parse-filepath": "1.0.1",
     "pm2": "^2.8.0",
     "socket.io": "^2.2.0",
     "sockjs": "0.3.18",
     "sockjs-client": "1.1.1",
-    "swagger-ui": "3.18.0"
+    "swagger-ui": "^3.22.3"
   },
   "devDependencies": {
     "eslint": "^5.12.0"
