@@ -94,8 +94,9 @@ l_module.start = function (config, onDone) {
 	//LOG.warn('views path: ' + views_path, l_name);
 	//app.set('views', views_path);
 
-	var engine = require('./ejs-wrapper.js');
-	app.engine('ejs', engine);
+	// var engine = require('./ejs-wrapper.js');
+	// app.engine('ejs', engine);
+	app.engine('ejs', require('ejs-locals'));
 	app.set('view engine', 'ejs');
 
 	// set directory to serve static files
