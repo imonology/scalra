@@ -51,6 +51,23 @@ var settings = exports.settings = {
 		max: 3,
 		overload:  100,
 		//underload: 0
+	},
+	Flexform: {
+		permission: 'o',
+		permission_config: {
+			register: 'on',
+			password_validation: {
+				characters: 5,
+				indlude: [
+					'numbers',
+					'upperLetters',
+					'lowerLetters',
+					'punctuation'
+				]
+				// regex: ''
+			},
+			username_validation: '' // 'email', 'normal'
+		}
 	}
 };
 
