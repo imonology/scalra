@@ -353,7 +353,7 @@ var l_add = function (name) {
 
 	return function (onD) {
 		l_addCollection(name, onD);
-	}
+	};
 };
 
 // add a collection to those to be initialized
@@ -518,9 +518,9 @@ exports.getData = function (clt_name, query, onSuccess, onFail) {
 
 	// get data from newest to oldest
 	var options = {
-		"limit": 1,
+		'limit': 1,
 		//"skip": 10,
-		"sort": [['_id', 'desc']]
+		'sort': [['_id', 'desc']]
 	};
 
 	try {
@@ -573,7 +573,7 @@ var l_updateData = exports.updateData = function (clt_name, query, data_obj, onS
 		// check and remove _id field if exists, as update should not replace the _id field already in DB
 		if (data.hasOwnProperty('_id')) {
 			LOG.warn('data to update has _id field [' + data._id + ']. remove it!', 'SR.DB');
-			delete data["_id"];
+			delete data['_id'];
 		}
 
 		// NOTE: we by default use 'upsert' and 'multi', so it'll be an insert if record does not exist,
@@ -582,7 +582,7 @@ var l_updateData = exports.updateData = function (clt_name, query, data_obj, onS
 		// see: http://docs.mongodb.org/manual/core/update/
 
 		if (data.hasOwnProperty('bare')) {
-			console.log("db data");
+			console.log('db data');
 			console.log(data);
 
 			collection.update(
@@ -716,7 +716,7 @@ var l_incrementData = exports.incrementData = function (clt_name, query, change,
 
 		// make this update an 'upsert' (insert if not exist)
 		// also 'multi' (if multiple records match, then they will all be modified)
-		collection.update(query, {"$inc": change},
+		collection.update(query, {'$inc': change},
 			function (err) {
 
 				if (err) {
@@ -953,7 +953,7 @@ exports.paginate = function (name, clt_name, query, opts, cb) {
 	var initReferDocs = function (err_getPageByReferDoc, docs, last_doc) {
 		if (err_getPageByReferDoc) {
 			var err = new Error(err_getPageByReferDoc.toString());
-			err.name = "paginate Error";
+			err.name = 'paginate Error';
 			UTIL.safeCall(cb, err);
 		} else {
 			if (last_doc) {
@@ -1051,7 +1051,7 @@ exports.updateArrayAsync = function (clt_name, query, data) {
 
 // helper to check if a javascript object is empty
 var l_isEmpty = function (obj) {
-   return (Object.keys(obj).length === 0);
+	return (Object.keys(obj).length === 0);
 };
 
 //-----------------------------------------
@@ -1080,8 +1080,7 @@ var l_cacheData = function (clt_name, onSuccess, onFail, query_obj) {
 
 		// load all documents from the DB
 		collection.findOne(query,
-			function (err, data)
-			{
+			function (err, data) {
 				if (err) {
 					return l_notifyError(clt_name, 'cacheData', err, onFail);
 				}
@@ -1297,7 +1296,7 @@ var l_getSettings = exports.getSettings = function () {
 	var DB_name = project_name;
 
 	// convert forbidden characters: .
-	DB_name = DB_name.replace(/\./g, "_");
+	DB_name = DB_name.replace(/\./g, '_');
 
 	// use project-specific DB password, so RockMongo can use it...
 	var settings = {
@@ -1307,27 +1306,27 @@ var l_getSettings = exports.getSettings = function () {
 		serverPort: SR.Settings.DB_PORT
 	};
 
-	if (UTIL.userSettings("mongoAccess", "username") && UTIL.userSettings("mongoAccess","password")) {
-		settings.account = UTIL.userSettings("mongoAccess","username");
-		settings.password = UTIL.userSettings("mongoAccess","password");
+	if (UTIL.userSettings('mongoAccess', 'username') && UTIL.userSettings('mongoAccess','password')) {
+		settings.account = UTIL.userSettings('mongoAccess','username');
+		settings.password = UTIL.userSettings('mongoAccess','password');
 		settings.DB_type = 'mongodb';
 
-		if (UTIL.userSettings("mongoAccess","DB_name")) {
-			settings.DB_name = UTIL.userSettings("mongoAccess","DB_name");
+		if (UTIL.userSettings('mongoAccess','DB_name')) {
+			settings.DB_name = UTIL.userSettings('mongoAccess','DB_name');
 		}
 
-	} else if (UTIL.userSettings("DB_AUTH", "username") && UTIL.userSettings("DB_AUTH","password")) {
-		settings.account = UTIL.userSettings("DB_AUTH","username");
-		settings.password = UTIL.userSettings("DB_AUTH","password");
+	} else if (UTIL.userSettings('DB_AUTH', 'username') && UTIL.userSettings('DB_AUTH','password')) {
+		settings.account = UTIL.userSettings('DB_AUTH','username');
+		settings.password = UTIL.userSettings('DB_AUTH','password');
 
-		if (UTIL.userSettings("DB_AUTH","DB_name")) {
-			settings.DB_name = UTIL.userSettings("DB_AUTH","DB_name");
+		if (UTIL.userSettings('DB_AUTH','DB_name')) {
+			settings.DB_name = UTIL.userSettings('DB_AUTH','DB_name');
 		}
 
 	} else {
 		settings.password = Math.random().toString().substring(3,9);
-		var DBauth = "\nsettings.DB_AUTH = " + JSON.stringify({DB_name: DB_name, username: settings.account, password: settings.password}) + ";\n";
-		LOG.warn("Creating a new credential " + DBauth, 'SR.DB');
+		var DBauth = '\nsettings.DB_AUTH = ' + JSON.stringify({DB_name: DB_name, username: settings.account, password: settings.password}) + ';\n';
+		LOG.warn('Creating a new credential ' + DBauth, 'SR.DB');
 		LOG.warn('append at: ' + SR.Settings.PATH_SETTINGS, 'SR.DB');
 		SR.fs.appendFile(SR.Settings.PATH_SETTINGS, DBauth, function (err) {
 			if (err) {
@@ -1337,8 +1336,8 @@ var l_getSettings = exports.getSettings = function () {
 	}
 
 	// set DB type if available
-	if (UTIL.userSettings("DB_TYPE")) {
-		settings.DB_type = UTIL.userSettings("DB_TYPE");
+	if (UTIL.userSettings('DB_TYPE')) {
+		settings.DB_type = UTIL.userSettings('DB_TYPE');
 	}
 
 	return settings;
@@ -1478,7 +1477,7 @@ exports.initDB = function (dbSetting, collections, onDone) {
 					l_DBclient[DB_name] = client;
 					UTIL.safeCall(onOpenDone, true);
 				});
-			}
+			};
 
 			// perform first DB authentication
 			auth_user();
@@ -1531,9 +1530,9 @@ exports.initDB = function (dbSetting, collections, onDone) {
 
 				onDone(result);
 			}, prefix);
-		}
+		};
 		return func;
-	}
+	};
 
 	// NOTE: loading of collections will not execute (2nd parameter) if previous init has failed
 	// create & store different steps to load a given collection

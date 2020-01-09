@@ -72,15 +72,15 @@ exports.subscribe = function (sub_id, channel, conn) {
 
 	// return number of subscribers in current channel
 	return Object.keys(sub_list).length;
-}
+};
 
 var l_removeChannel = function (channel) {
 	return function () {
 		LOG.warn('channel [' + channel + '] is empty, removed after: ' + SR.Settings.TIMEOUT_UNUSED_CHANNEL_REMOVAL + ' seconds', 'unsubscribe');
-        delete l_channels[channel];
+		delete l_channels[channel];
 		delete l_timeouts[channel];				
-	}
-}
+	};
+};
 
 // unsubscribe from existing channel(s)
 exports.unsubscribe = function (sub_id, channel) {
@@ -90,15 +90,14 @@ exports.unsubscribe = function (sub_id, channel) {
 	// channels to unsubscribe from
 	var channels = [];
 
-    // check if channel specified exists
+	// check if channel specified exists
 	if (channel !== undefined) {
-        if (l_channels.hasOwnProperty(channel) === false) {
-            LOG.warn('cannot find channel [' + channel + '] to unsubscribe', 'unsubscribe');
-            return false;
-        }
+		if (l_channels.hasOwnProperty(channel) === false) {
+			LOG.warn('cannot find channel [' + channel + '] to unsubscribe', 'unsubscribe');
+			return false;
+		}
 		channels.push(channel);
-	}
-	else {
+	} else {
 		// if channel is not specified, then unsubscribe from all
 		for (var name in l_channels)
 			channels.push(name);
@@ -111,35 +110,35 @@ exports.unsubscribe = function (sub_id, channel) {
 		
 		var target_channel = l_channels[channels[i]];
 
-        // check if subscriber exists in this channel
-        if (target_channel.hasOwnProperty(sub_id) === false)
+		// check if subscriber exists in this channel
+		if (target_channel.hasOwnProperty(sub_id) === false)
 			continue;
 
 		unsub_list += (channels[i] + ' ');
 
-        // perform unsubscribe from this channel
-        delete target_channel[sub_id];
+		// perform unsubscribe from this channel
+		delete target_channel[sub_id];
 		
 		// notify interested parties of the unsubscription
 		for (var j=0; j < l_onUnsubscribe.length; j++) {
 			UTIL.safeCall(l_onUnsubscribe[j], sub_id);	
 		}
 
-        // set to destroy channel if empty after some time
-        if (Object.keys(target_channel).length === 0) {
+		// set to destroy channel if empty after some time
+		if (Object.keys(target_channel).length === 0) {
 
 			var channel_name = channels[i];
 			
 			// set timeout and store timer's id (to revoke timer if later subscribed again)			
 			l_timeouts[channel_name] = setTimeout(l_removeChannel(channel_name), SR.Settings.TIMEOUT_UNUSED_CHANNEL_REMOVAL * 1000);
-        }
+		}
 	}
 
 	// print which to unsubscribe from
 	LOG.warn('[' + sub_id + '] unsubscribes from: ' + unsub_list);
 
-    return true;
-}
+	return true;
+};
 
 // automatic unsubscribe when a connection breaks
 SR.Callback.onDisconnect(function (conn) {
@@ -153,7 +152,7 @@ exports.onUnsubscribed = function (onEvent) {
 	}
 	
 	l_onUnsubscribe.push(onEvent);
-}
+};
 
 // channel publication
 // returns success or not (true/false)
@@ -199,7 +198,7 @@ var l_publish = exports.publish = function (channel, msg, packet_type) {
 
 	//LOG.warn('publish [' + packet_type + '] to ' + connections.length + ' connections', l_name);
 	return SR.EventManager.send(packet_type, msg, connections);
-}
+};
 
 // return a list of current channels 
 exports.list = function () {
@@ -208,7 +207,7 @@ exports.list = function () {
 		channel_list.push(name);
 	}
 	return channel_list;
-}
+};
 
 // return number of subscribers of a channel
 exports.count = function (channel) {
@@ -231,7 +230,7 @@ exports.count = function (channel) {
 	//LOG.sys('get number of subscribers for channel [' + channel + ']: ' + count);
 
 	return count;
-}
+};
 
 //
 // spatial pub/sub
@@ -255,7 +254,7 @@ var l_defaultLayer = '_';
 // get distance between two points with x, y coordinates
 var l_dist = function (pt1, pt2) {
 	return Math.sqrt((pt2.x -= pt1.x) * pt2.x + (pt2.y -= pt1.y) * pt2.y);
-}
+};
 
 // find a list of subscribers covering a given point or area
 var l_getSubscribers = function (area, layer) {
@@ -280,7 +279,7 @@ var l_getSubscribers = function (area, layer) {
 	}
 	
 	return connections;
-}
+};
 
 
 exports.sub = function (para) {
@@ -297,7 +296,7 @@ exports.sub = function (para) {
 		return true;
 	}
 	return false;
-}
+};
 
 exports.unsub = function (para) {
 	var layer = para.layer || l_defaultLayer;
@@ -326,7 +325,7 @@ exports.unsub = function (para) {
 		return true;
 	}
 	return false;
-}
+};
 
 // check over existing subscriptions to see which will receive the publications
 // returns number of matching subscriptions
@@ -342,7 +341,7 @@ exports.pub = function (para) {
 	
 	// publish to all matching subscriptions
 	return SR.EventManager.send(packet_type, para.msg, conn_list);
-}
+};
 
 // change subscribed area
 exports.move = function (para) {
@@ -364,7 +363,7 @@ exports.move = function (para) {
 
 	// publish to all matching subscriptions
 	return SR.EventManager.send(packet_type, para, conn_list);
-}
+};
 
 //
 //	VAST-based SPS 
@@ -626,4 +625,4 @@ exports.deleteNode = function (ident, onDone) {
 exports.dump = function (arg) {
 	console.log(l_channels);
 	console.log(l_timeouts);
-}
+};

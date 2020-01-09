@@ -37,16 +37,3 @@ fs.stat('lib/swagger-ui', function (err) {
 		})
 	}
 });
-
-fs.stat('config.js', function (err) {
-	if (err) {
-		console.log('copying default config.js file from config.js.default...');
-		fs.copy('config.js.default', 'config.js', function (err) {
-			if (err) {
-				console.error(err);
-			} else {
-				console.log("default config.js ready!");
-			}
-		});
-	}
-});

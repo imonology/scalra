@@ -142,7 +142,7 @@ exports.icFrontier = function (config) {
 				SR.Settings.MOD_PATHS.push(SR.path.resolve(root_path, dirs[i]));
 			}
 		}
-	}
+	};
 	
 	// determine proper server info
 	// lobby_port_opened: true/false
@@ -191,7 +191,7 @@ exports.icFrontier = function (config) {
 			SR.Settings.SERVER_INFO.type = 'app';		
 		
 		LOG.warn('server: ' + l_frontierName + ' type: ' + SR.Settings.SERVER_INFO.type, l_name);
-	}
+	};
 	
 	// store frontier path
 	SR.Settings.FRONTIER_PATH = SR.FRONTIER_PATH;
@@ -227,41 +227,41 @@ exports.icFrontier = function (config) {
 	LOG.warn('module paths:', l_name);
 	LOG.warn(SR.Settings.MOD_PATHS, l_name);
 		
-    //
-    // local variables
-    //
+	//
+	// local variables
+	//
     
-    // flag to indicate shutdown
-    var l_shutting_down = false;
+	// flag to indicate shutdown
+	var l_shutting_down = false;
 	
 	// flag to indicate if server is ready
 	var l_ready = false;
 
-    //
-    // public functions
-    //
+	//
+	// public functions
+	//
 	
 	// get connection handler
 	this.getConnectionHandler = function () {
 		LOG.error('getConnectionHandler: this method is obsolete, please remove its usage..', l_name);
-        LOG.stack();
+		LOG.stack();
 		
 		var server = SR.Call('socketserver.get');
 		return (server ? server.getConnectionHandler() : undefined); 
-	}
+	};
     
 	// get frontier's name
 	this.getName = function () {
 		return l_frontierName;
-	}
+	};
 	
-    // enable logging
+	// enable logging
 	//var stepLog = SR.Component.Log(SR.Settings.FRONTIER_PATH, SR.Settings.SERVER_INFO.name);
 	
-    // init necessary data for server execution
-    this.init = function (onDone) {
+	// init necessary data for server execution
+	this.init = function (onDone) {
 	
-        // actually execute the steps
+		// actually execute the steps
 		SR.Module.start(function () {
 			
 			// call other registered callbacks upon server start
@@ -269,26 +269,26 @@ exports.icFrontier = function (config) {
 			SR.Callback.notify('onStart');
 			UTIL.safeCall(onDone);
 		});
-    }
+	};
 
-    //-----------------------------------------
-    // shutdown all connected sockets (clients)
-    // NOTE: this can also be called from outside via 'dispose' method
-    var l_dispose = this.dispose = function (onDone) {
+	//-----------------------------------------
+	// shutdown all connected sockets (clients)
+	// NOTE: this can also be called from outside via 'dispose' method
+	var l_dispose = this.dispose = function (onDone) {
 		
-        LOG.warn('trigger dispose (close all sockets and shutdown)...', l_name);
+		LOG.warn('trigger dispose (close all sockets and shutdown)...', l_name);
 
-        // if we're already shutting down (e.g., Ctrl-C is pressed again)
-        // then perform force shutdown        
-        if (l_shutting_down === true) {
-            LOG.warn('already shutting down, force close-down in 3 seconds', l_name);
+		// if we're already shutting down (e.g., Ctrl-C is pressed again)
+		// then perform force shutdown        
+		if (l_shutting_down === true) {
+			LOG.warn('already shutting down, force close-down in 3 seconds', l_name);
 			setTimeout(function () {
 				process.exit();
 			}, 3000);
 			return;
-        }
+		}
 
-        l_shutting_down = true;
+		l_shutting_down = true;
 		
 		// let app-level stop steps be executed
 		SR.Callback.notify('onStop');
@@ -297,29 +297,29 @@ exports.icFrontier = function (config) {
 			UTIL.safeCall(onDone);
 			process.exit();
 		});
-    }
+	};
 
-    // check whether server is successfully created
-    this.isServerReady = function () {
+	// check whether server is successfully created
+	this.isServerReady = function () {
 		return l_ready;
-    }
+	};
 
 	// get ip & port info for this frontier
 	this.getHostAddress = function () {
 		return SR.Settings.SERVER_INFO;
-	}
+	};
 
 	// get ip & port info for this frontier
 	this.setHostAddress = function (addr) {
 		LOG.error('setHostAddress: this method is obsolete, please remove its usage..', l_name);
 		LOG.stack();
 		//ip_port = addr;
-	}
+	};
         	
 
-    //
-    // steps to init/dispose
-    //
+	//
+	// steps to init/dispose
+	//
 	
 	SR.Module.load('log', config);
 	SR.Module.load('key_loader', config);	
@@ -355,7 +355,7 @@ exports.icFrontier = function (config) {
 	}	
 	
 	// add components, if available	
-    if (config.components && config.components instanceof Array) {
+	if (config.components && config.components instanceof Array) {
 		LOG.warn('loading components from Frontier config...', l_name);
 		for (var i=0; i < config.components.length; i++) { 
 			
@@ -380,7 +380,7 @@ exports.icFrontier = function (config) {
 			
         	SR.Module.addStep(config.components[i]);
 		}
-    }
+	}
 		
 	// add modules, if available
 	// NOTE: config.modules contains module 'name' and 'config' ONLY
@@ -403,4 +403,4 @@ exports.icFrontier = function (config) {
 	// change process / group id in the end (if another identity is desired for server execution)
 	SR.Module.load('owner_switcher', config);	
 		
-} // end icFrontier
+}; // end icFrontier

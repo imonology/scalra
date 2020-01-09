@@ -17,13 +17,12 @@ l_lang['english'] = {
 	register_account:	'account',
 	register_password:	'password',
 	register_email:		'email',
-	register_password:	'password',
 	register_checkpass:	'please enter password again',
 	
 	button_login:		'Login',
 	button_register:	'Register Account',
 	button_getpass:		'Forgot Password',
-}
+};
 
 
 module.exports = function (type) {

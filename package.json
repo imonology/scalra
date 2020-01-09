@@ -1,10 +1,11 @@
 {
   "name": "scalra",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "description": "node.js framework to prototype and scale rapidly",
   "main": "index.js",
   "scripts": {
     "test": "node test/*.js",
+    "lint": "eslint ./core --fix",
     "start": "node monitor/frontier.js monitor/settings.js",
     "postinstall": "node scripts/postinstall.js"
   },
@@ -31,12 +32,14 @@
     "anyroute": "1.0.3",
     "async": "2.0.0-rc.5",
     "bluebird": "3.4.0",
-    "bootstrap": "3.3.6",
+    "bootstrap": "3.4.1",
     "cookie": "0.2.4",
     "cookie-parser": "1.4.3",
-    "ejs": "2.4.2",
+    "ejs": "2.5.5",
+    "ejs-locals": "^1.0.2",
     "ejs-mate": "2.3.0",
     "emailjs": "^2.2.0",
+    "eslint": "^5.11.0",
     "expect": "1.20.1",
     "express": "^4.16.4",
     "formidable": "1.1.1",
@@ -45,21 +48,24 @@
     "http-proxy": "1.13.3",
     "humanize": "0.0.9",
     "memcached": "2.2.2",
-    "merge": "1.2.0",
+    "merge": "^1.2.1",
     "minimist": "1.2.0",
     "mocha": "^5.2.0",
-    "moment": "^2.22.2",
+    "moment": "^2.24.0",
     "mongodb": "2.2.31",
     "mysql": "^2.16.0",
     "node-df": "0.1.1",
     "node-upload-progress": "0.0.1",
-    "orm": "^5.0.2",
+    "orm": "^5.0.4",
     "os-utils": "0.0.14",
     "parse-filepath": "1.0.1",
     "pm2": "^2.8.0",
-    "socket.io": "^2.1.1",
+    "socket.io": "^2.2.0",
     "sockjs": "0.3.18",
     "sockjs-client": "1.1.1",
-    "swagger-ui": "2.2.6"
+    "swagger-ui": "^3.23.1"
+  },
+  "devDependencies": {
+    "eslint": "^5.12.0"
   }
 }

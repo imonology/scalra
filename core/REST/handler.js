@@ -15,7 +15,7 @@ shutdown
 var url = require('url');
 
 // for form processing
-var formidable = require("formidable");
+var formidable = require('formidable');
 
 var l_name = 'REST';
 
@@ -30,8 +30,8 @@ var l_name = 'REST';
 
 // get origin from request
 var _getOrigin = function(req) {
-	return ((req.headers.origin && req.headers.origin !== "null") ? req.headers.origin : "*");
-}
+	return ((req.headers.origin && req.headers.origin !== 'null') ? req.headers.origin : '*');
+};
 
 // check if incoming request is from valid host
 // TODO: may need to determine local IP to check if request comes from the same IP
@@ -39,7 +39,7 @@ var _checkRequester = function (req, res) {
 
 	var requesterIP = req.connection.remoteAddress;
 	return true;
-}
+};
 
 
 //
@@ -70,7 +70,7 @@ var l_extList = {
 // file types where direct download behavior is desired (instead of being viewed inside browser)
 var l_directExt = {
 	'zip': true	
-}
+};
 
 // client events
 exports.event = function (path_array, res, JSONobj, req) {
@@ -171,7 +171,7 @@ exports.event = function (path_array, res, JSONobj, req) {
 				
 				if (l_extList[extFilename]) {
 					resHeader['Content-Type'] = l_extList[extFilename];
-				};
+				}
 				
 				var start = undefined;
 				var end = undefined;
@@ -204,7 +204,7 @@ exports.event = function (path_array, res, JSONobj, req) {
 				else if (l_directExt.hasOwnProperty(extFilename)) {
 					// NOTE: code below will cause the file be downloaded in a "Save As.." format
 					// (instead of being displayed directly), we only want this behavior for certain file types (such as .zip)				
-					var filename = file.replace(/^.*[\\\/]/, '')
+					var filename = file.replace(/^.*[\\\/]/, '');
 					LOG.warn('requesting a file: ' + filename, l_name);
 					resHeader['Content-Disposition'] = 'attachment; filename=' + filename;
 				}
@@ -233,14 +233,13 @@ exports.event = function (path_array, res, JSONobj, req) {
 				origin: origin,
 				cookie: cookie
 			});
-		}
-		else {
+		} else {
 			LOG.error('HTTP request has already responded (cannot respond twice)', l_name);
 			LOG.stack();
 		}
 
 		return true;
-	}
+	};
 
 	var event_name = path_array[2];
 
@@ -270,7 +269,7 @@ exports.event = function (path_array, res, JSONobj, req) {
 
 	// checkin event with default dispatcher
 	SR.EventManager.checkin(event);
-}
+};
 
 // scalra functions
 exports.SR = function(path_array, res, JSONobj, req) {
@@ -288,8 +287,7 @@ exports.SR = function(path_array, res, JSONobj, req) {
 		if (SR.sys.isArray(JSONobj)) {
 			for (var i = 0; JSONobj.length; i++)
 				args[i] = JSONobj[i];
-		}
-		else {
+		} else {
 			// otherwise it's an object
 			for (var key in JSONobj)
 				args.push((JSONobj[key] === '' ? undefined : JSONobj[key]));
@@ -331,7 +329,7 @@ exports.SR = function(path_array, res, JSONobj, req) {
 		SR.REST.reply(res, res_str, {
 			origin: origin
 		});
-	}
+	};
 
 	// will definitely return something after a timeout
 	var callback = UTIL.timeoutCall(reply_func, SR.Settings.TIMEOUT_EVENTHANDLE, 'executing ' + fullname + ' timeout');
@@ -350,14 +348,14 @@ exports.SR = function(path_array, res, JSONobj, req) {
 
 		res_str = JSON.stringify(res_obj);
 		callback();
-	}
+	};
 
 	// store callback as last argument
 	args.push(onDone);
 
 	// execute and return result
 	SR[svc_name][func_name].apply(this, args);
-}
+};
 
 // to handle payment
 exports.payment = function(path_array, res, JSONobj) {
@@ -398,8 +396,7 @@ exports.payment = function(path_array, res, JSONobj) {
 				'Location': msg.url
 			});
 			res.end();
-		}
-		else {
+		} else {
 			// NOTE: we respond HTML page by default
 			res.writeHead(200, {
 				'Content-Type': 'text/html'
@@ -407,7 +404,7 @@ exports.payment = function(path_array, res, JSONobj) {
 			res.end(msg);
 		}
 	});
-}
+};
 
 // handle SNS requests
 exports.SNS = function(path_array, res, para, req) {
@@ -428,7 +425,7 @@ exports.SNS = function(path_array, res, para, req) {
 	var cookies = SR.REST.getCookies(req.headers.cookie);
 
 	SR.SNS[SNS_type].handleRequest(path_array, res, para, cookies);
-}
+};
 
 // handle client login requests
 exports.login = function(path_array, res, para, req) {
@@ -442,8 +439,7 @@ exports.login = function(path_array, res, para, req) {
 	if (app_url === undefined) {
 		SR.REST.reply(res, 'invalid app_name: ' + app_name);
 		return;
-	}
-	else {
+	} else {
 		// valid app exists, redirect to app_url
 
 		// obtain a unique login ID for a given app
@@ -455,7 +451,7 @@ exports.login = function(path_array, res, para, req) {
 		});
 		res.end();
 	}
-}
+};
 
 SR.Callback.onStart(function () {
 	// validate upload path
@@ -476,9 +472,9 @@ exports.do_upload = function (path_array, res, para, req) {
 	// uploadHandler.upload(req, res);
 
 
-    uploadHandler.upload(req, res);
+	uploadHandler.upload(req, res);
 
-}
+};
 
 
 exports.do_progress = function (path_array, res, para, req) {
@@ -489,9 +485,9 @@ exports.do_progress = function (path_array, res, para, req) {
 	// uploadHandler.upload(req, res);
 
 
-    uploadHandler.progress(req, res);
+	uploadHandler.progress(req, res);
 
-}
+};
 
 exports.new_upload = function (path_array, res, para, req) {
 
@@ -503,18 +499,18 @@ exports.new_upload = function (path_array, res, para, req) {
 
 	// store all uploads in the /uploads directory
 	form.uploadDir = SR.Settings.UPLOAD_PATH;
-	LOG.warn('form.uploadDir')
-	LOG.warn(form.uploadDir)
+	LOG.warn('form.uploadDir');
+	LOG.warn(form.uploadDir);
 	// every time a file has been uploaded successfully,
 	// rename it to it's orignal name
 	form.on('file', function(field, file) {
 		// fs.rename(file.path, path.join(form.uploadDir, file.name));
-		LOG.warn('on file')
+		LOG.warn('on file');
 	});
 
 	// log any errors that occur
 	form.on('error', function(err) {
-		LOG.warn('on error')
+		LOG.warn('on error');
 		SR.Callback.notify('onUpload', {result: false, msg: 'fail reason: error'});
 		var result = {
 			message: 'error',
@@ -524,7 +520,7 @@ exports.new_upload = function (path_array, res, para, req) {
 
 	// once all the files have been uploaded, send a response to the client
 	form.on('end', function() {
-		LOG.warn('on end')
+		LOG.warn('on end');
 		// res.end('success');
 		var uploaded = [];
 		var result = {
@@ -539,14 +535,14 @@ exports.new_upload = function (path_array, res, para, req) {
 	form.parse(req);
 	
 	
-}
+};
 
 // handle file upload requests
 exports.upload = function (path_array, res, para, req) {
 
-		// for file uploading
-		// to be notified:
-		/*
+	// for file uploading
+	// to be notified:
+	/*
 			SR.Callback.onUpload(function (para) {
 				// success
 				if (para.result) {
@@ -557,7 +553,7 @@ exports.upload = function (path_array, res, para, req) {
 				}
 			});
 		*/
-		// TODO: move this block of code elsewhere
+	// TODO: move this block of code elsewhere
 	// LOG.warn('--------------------path_array');
 	// LOG.warn(path_array);
 	// LOG.warn('--------------------res');
@@ -566,185 +562,184 @@ exports.upload = function (path_array, res, para, req) {
 	// LOG.warn(para);
 	// LOG.warn('--------------------req');
 	// LOG.warn(req);
-		if (req.headers['content-type']) {
-			if (req.headers['content-type'].startsWith('multipart/form-data; boundary=')) {
-				var form = new formidable.IncomingForm();
+	if (req.headers['content-type']) {
+		if (req.headers['content-type'].startsWith('multipart/form-data; boundary=')) {
+			var form = new formidable.IncomingForm();
 				
-				var onUploadDone = function(fields, files) {
-					LOG.warn('files uploaded');
-					// LOG.warn(files);
+			var onUploadDone = function(fields, files) {
+				LOG.warn('files uploaded');
+				// LOG.warn(files);
 
-					if (!SR.Status) {
-						SR.Status = {};
-					}
+				if (!SR.Status) {
+					SR.Status = {};
+				}
 
-					if (fields.firstOption) {
-						SR.Status.latestUploadedFile = {};
-						SR.Status.latestUploadedFile[fields.firstOption] = {};
-						SR.Status.latestUploadedFile[fields.firstOption] = files.upload;
-					}
+				if (fields.firstOption) {
+					SR.Status.latestUploadedFile = {};
+					SR.Status.latestUploadedFile[fields.firstOption] = {};
+					SR.Status.latestUploadedFile[fields.firstOption] = files.upload;
+				}
 
-					// specific path to upload
-					if (fields.path) {
-						form.uploadDir = fields.path;
-					}
+				// specific path to upload
+				if (fields.path) {
+					form.uploadDir = fields.path;
+				}
 
-					// process one file, assume following fields
-					/*
+				// process one file, assume following fields
+				/*
 						upload = {
 							name:	'string',
 							path:	'string'
 							size:	'number'
 						}
 					*/
-					var uploaded = [];
+				var uploaded = [];
 
-					if (typeof files.upload !== 'object') {
-						var result = {
-							message: 'fail',
-							upload : uploaded,
-						};
-
-						return SR.REST.reply(res, result);						
-					}
-
-					// default to preserve original name
-					var preserve_name = (fields.toPreserveFileName !== 'false');
-
-					// modify uploaded file to have original filename
-					var renameFile = function (upload) {
-
-						if (!upload || !upload.path || !upload.name || !upload.size) {
-							LOG.error('upload object incomplete:', l_name);
-							return;
-						}
-
-						// record basic file info
-						var arr = upload.path.split('/');
-						var upload_name = arr[arr.length-1];
-						var filename = (preserve_name ? upload.name : upload_name); 
-						LOG.warn("The file " + upload.name + " was uploaded as: " + filename + ". size: " + upload.size, l_name);
-						uploaded.push({name: filename, size: upload.size, type: upload.type});						
-
-						// check if we might need to re-name
-						// default is to rename (preserve upload file names)
-						if (preserve_name === false) {
-							return;
-						}
-
-						var new_name = SR.path.resolve(form.uploadDir, upload.name);
-						SR.fs.rename(upload.path, new_name, function (err) {
-							if (err) {
-								return LOG.error('rename fail: ' + new_name, l_name);
-							}
-							LOG.warn("File " + upload_name + " renamed as: " + upload.name + " . size: " + upload.size, l_name);							
-						});
-					};
-
-					// check for single or multiple file processing							
-					// for single file upload
-					if (files.upload.name) {
-						LOG.warn('single file uploaded, rename upload obj:', l_name);
-						LOG.warn(files.upload, l_name);
-						renameFile(files.upload);
-					}
-					// for multiple files in an array
-					else if (files.upload.length) {
-						LOG.warn('multiple files uploaded [' + files.upload.length +']:', l_name);
-						LOG.warn(files.upload, l_name);
-
-						for (var i in files.upload) {
-							var upload = files.upload[i];
-							renameFile(upload);
-						}
-					}
-					else {
-						LOG.error('file upload error, no upload file(s)', l_name);
-						SR.REST.reply(res, {message: 'failure (no file)'});
-						return;
-					}
-
-					// remove sensitive info (such as path) from response
+				if (typeof files.upload !== 'object') {
 					var result = {
-						message: 'success',
+						message: 'fail',
 						upload : uploaded,
 					};
 
-					SR.REST.reply(res, result);
+					return SR.REST.reply(res, result);						
 				}
-				
-				
-				var file_names = {};
-				form.on('end', function (err, result) {
-					if (err) {
-						LOG.error(err, l_name);	
-						return SR.Callback.notify('onUpload', {result: false, msg: err});
-					}
-					LOG.warn("file uploaded", l_name);
-					//LOG.warn(result, l_name);
-					SR.Callback.notify('onUpload', {result: true, file: 'filepath'});
-// 					var result = {
-// 						message: 'success'
-// 					};
 
-// 					SR.REST.reply(res, result);
+				// default to preserve original name
+				var preserve_name = (fields.toPreserveFileName !== 'false');
 
-				});
+				// modify uploaded file to have original filename
+				var renameFile = function (upload) {
 
-				form.on('aborted', function () {
-					//console.log("on aborted");
-					SR.Callback.notify('onUpload', {result: false, msg: 'fail reason: abort'});
-					var result = {
-						message: 'aborted',
-					};
-					SR.REST.reply(res, result);
-				});
-
-				form.on('error', function (err) { 
-					SR.Callback.notify('onUpload', {result: false, msg: 'fail reason: error'});
-					var result = {
-						message: 'error',
-					};
-					SR.REST.reply(res, result);
-				});
- 
-				form.on('fileBegin', function (name, file) {
-					LOG.warn("fileBegin: name " + name + ", file " + JSON.stringify(file));
-					file_names['original_name'] = JSON.stringify(file);
-					
-				});
-
-				form.on('file', function (fields, files) {
-					LOG.warn("on file: name " + fields + ", file " + JSON.stringify(files));
-					// onUploadDone(fields, files);
-				});				
-				
-				form.on('field', function (name, value) {
-					//LOG.debug("on field: name " + name + ", value " + value);
-				});
-
-				// form.on('progress', function (bytesReceived, bytesExpected) { 
-				// 	SR.Callback.notify('onUploadProgress', {bytesReceived: bytesReceived, bytesExpected: bytesExpected, form: form, file_names: file_names});
-				// 	//LOG.debug("on progress: bytesReceived " + bytesReceived + ", bytesExpected " + bytesExpected);
-				// });
-				
-				form.uploadDir = SR.Settings.UPLOAD_PATH;
-				form.keepExtensions = true;
-				form.multiples = true;
-
-
-				form.parse(req, function (error, fields, files) {
-					
-					if (error) {
-						LOG.error(error, l_name);
+					if (!upload || !upload.path || !upload.name || !upload.size) {
+						LOG.error('upload object incomplete:', l_name);
 						return;
 					}
-					onUploadDone(fields, files);
-				});
-			}
+
+					// record basic file info
+					var arr = upload.path.split('/');
+					var upload_name = arr[arr.length-1];
+					var filename = (preserve_name ? upload.name : upload_name); 
+					LOG.warn('The file ' + upload.name + ' was uploaded as: ' + filename + '. size: ' + upload.size, l_name);
+					uploaded.push({name: filename, size: upload.size, type: upload.type});						
+
+					// check if we might need to re-name
+					// default is to rename (preserve upload file names)
+					if (preserve_name === false) {
+						return;
+					}
+
+					var new_name = SR.path.resolve(form.uploadDir, upload.name);
+					SR.fs.rename(upload.path, new_name, function (err) {
+						if (err) {
+							return LOG.error('rename fail: ' + new_name, l_name);
+						}
+						LOG.warn('File ' + upload_name + ' renamed as: ' + upload.name + ' . size: ' + upload.size, l_name);							
+					});
+				};
+
+				// check for single or multiple file processing							
+				// for single file upload
+				if (files.upload.name) {
+					LOG.warn('single file uploaded, rename upload obj:', l_name);
+					LOG.warn(files.upload, l_name);
+					renameFile(files.upload);
+				}
+				// for multiple files in an array
+				else if (files.upload.length) {
+					LOG.warn('multiple files uploaded [' + files.upload.length +']:', l_name);
+					LOG.warn(files.upload, l_name);
+
+					for (var i in files.upload) {
+						var upload = files.upload[i];
+						renameFile(upload);
+					}
+				} else {
+					LOG.error('file upload error, no upload file(s)', l_name);
+					SR.REST.reply(res, {message: 'failure (no file)'});
+					return;
+				}
+
+				// remove sensitive info (such as path) from response
+				var result = {
+					message: 'success',
+					upload : uploaded,
+				};
+
+				SR.REST.reply(res, result);
+			};
+				
+				
+			var file_names = {};
+			form.on('end', function (err, result) {
+				if (err) {
+					LOG.error(err, l_name);	
+					return SR.Callback.notify('onUpload', {result: false, msg: err});
+				}
+				LOG.warn('file uploaded', l_name);
+				//LOG.warn(result, l_name);
+				SR.Callback.notify('onUpload', {result: true, file: 'filepath'});
+				// 					var result = {
+				// 						message: 'success'
+				// 					};
+
+				// 					SR.REST.reply(res, result);
+
+			});
+
+			form.on('aborted', function () {
+				//console.log("on aborted");
+				SR.Callback.notify('onUpload', {result: false, msg: 'fail reason: abort'});
+				var result = {
+					message: 'aborted',
+				};
+				SR.REST.reply(res, result);
+			});
+
+			form.on('error', function (err) { 
+				SR.Callback.notify('onUpload', {result: false, msg: 'fail reason: error'});
+				var result = {
+					message: 'error',
+				};
+				SR.REST.reply(res, result);
+			});
+ 
+			form.on('fileBegin', function (name, file) {
+				LOG.warn('fileBegin: name ' + name + ', file ' + JSON.stringify(file));
+				file_names['original_name'] = JSON.stringify(file);
+					
+			});
+
+			form.on('file', function (fields, files) {
+				LOG.warn('on file: name ' + fields + ', file ' + JSON.stringify(files));
+				// onUploadDone(fields, files);
+			});				
+				
+			form.on('field', function (name, value) {
+				//LOG.debug("on field: name " + name + ", value " + value);
+			});
+
+			// form.on('progress', function (bytesReceived, bytesExpected) { 
+			// 	SR.Callback.notify('onUploadProgress', {bytesReceived: bytesReceived, bytesExpected: bytesExpected, form: form, file_names: file_names});
+			// 	//LOG.debug("on progress: bytesReceived " + bytesReceived + ", bytesExpected " + bytesExpected);
+			// });
+				
+			form.uploadDir = SR.Settings.UPLOAD_PATH;
+			form.keepExtensions = true;
+			form.multiples = true;
+
+
+			form.parse(req, function (error, fields, files) {
+					
+				if (error) {
+					LOG.error(error, l_name);
+					return;
+				}
+				onUploadDone(fields, files);
+			});
 		}
-		// end of "for file uploading
-}
+	}
+	// end of "for file uploading
+};
 
 
 
@@ -759,5 +754,5 @@ exports.shutdown = function (path_array, res, para, req) {
 		LOG.warn('received self shutdown request', l_name);
 		SR.Settings.FRONTIER.dispose();
 	}
-}
+};
 

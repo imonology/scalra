@@ -45,14 +45,14 @@ var l_pendingEvents = SR.State.get('SR.RPC.events');
 // record default connector
 exports.registerConnector = function (connector) {
 	l_connector = connector;	
-}
+};
 
 // store my own server info for RPC event handling
 // local_info format: 
 // {name: 'string', info: 'object'}
 exports.registerLocal = function (local_info) {
 	l_localinfo = local_info;
-}
+};
 
 /* example info
 	{ 
@@ -80,7 +80,7 @@ var l_addServer = exports.addServer = function (name, info, conn) {
 	l_servers[name] = UTIL.clone(info);
 	l_servers[name].conn = conn;
 	return true;
-}
+};
 
 // remove a server by its connection object
 var l_removeServer = exports.removeServer = function (conn) {
@@ -94,7 +94,7 @@ var l_removeServer = exports.removeServer = function (conn) {
 		}
 	}
 	return false;
-}
+};
 
 // query currently registered servers (without conn objects)
 // TODO: better approach than copy everything?
@@ -112,7 +112,7 @@ var l_queryServer = exports.queryServer = function () {
 				list[id][name] = l_servers[id][name];
 	}
 	return list;
-}
+};
 
 // make an RPC call to a remote server via a connector
 // NOTE: last argument in parameters is a onDone callback
@@ -136,13 +136,13 @@ exports.call = function (svc_name, func_name, parameters, connector) {
 	LOG.warn('func_name: ' + func_name + ' return by callback: ' + has_callback, 'SR.RPC');
 	
 	if (!connector || typeof connector.send !== 'function') {
-        LOG.error('cannot call remote service, connector missing', 'SR.RPC');
-        return false;
-    }	
+		LOG.error('cannot call remote service, connector missing', 'SR.RPC');
+		return false;
+	}	
     
-    // send an event with an expected response type
+	// send an event with an expected response type
 	connector.send('SR_SYS_RPC', {grp: svc_name, func: func_name, cb: has_callback, args: args}, 'SRR_SYS_RPC', 
-        function (event) {
+		function (event) {
     
 			LOG.sys('SRR_SYS_RPC received', 'SR.RPC');
     
@@ -151,10 +151,10 @@ exports.call = function (svc_name, func_name, parameters, connector) {
 				UTIL.safeCall(onDone, event.data.res);
 			else
 				LOG.warn('RPC call to [' + svc_name + '.' + func_name + '] returns: ' + event.data.res, 'SR.RPC');
-        }
-    );
-    return true;
-}
+		}
+	);
+	return true;
+};
 
 // send an event to remote server for processing
 // NOTE: this works similarly as notifyLobby in SR.AppConnector
@@ -188,7 +188,7 @@ exports.remoteEvent = function (server_name, event_type, para, onDone) {
 	if (l_relayEvent(server_name, event_type, event) === false) {
 		UTIL.safeCall(onDone);
 	}
-}
+};
 
 // relay an event (without changing event object) to a remote server for processing
 var l_relayEvent = exports.relayEvent = function (server_name, event_type, event) {
@@ -234,16 +234,16 @@ var l_relayEvent = exports.relayEvent = function (server_name, event_type, event
 		host: event.conn.host,
 		port: event.conn.port,
 		cookie: event.conn.cookie
-	}
+	};
 	
-    // store callback when event processing result is returned
+	// store callback when event processing result is returned
 	l_pendingEvents[packet.id] = event;
 
 	// send away the event to remote server for processing
 	SR.EventManager.send('SR_SYS_RPC_EVENT', packet, [info.conn]);
 	
 	return true;
-}
+};
 
 //
 //	event handlers
@@ -255,7 +255,7 @@ var l_handlers = exports.handlers = {};
 var l_checkers = exports.checkers = {};
 
 // RPC handling from other servers
-l_checkers.SR_SYS_RPC = {}
+l_checkers.SR_SYS_RPC = {};
 
 l_handlers.SR_SYS_RPC = function (event) {
 
@@ -269,7 +269,7 @@ l_handlers.SR_SYS_RPC = function (event) {
 
 		var return_obj = {func: func, res: result};		
 		event.done('SRR_SYS_RPC', return_obj); 	
-	}
+	};
 
 	// check if we need to add onDone to arguments
 	if (has_callback)
@@ -281,8 +281,7 @@ l_handlers.SR_SYS_RPC = function (event) {
 		group = group.substring(3);
 		LOG.warn('group: ' + group, 'SR.RPC');
 		SR[group][func].apply(this, args);
-	}
-	else {
+	} else {
 
 		if (global.hasOwnProperty(group) === false) {
 			var msg = 'no handler by name [' + group + '] found'; 
@@ -297,13 +296,12 @@ l_handlers.SR_SYS_RPC = function (event) {
 			// see if need to actively return
 			if (has_callback === false)
 				onDone(result);
-		}
-		catch(e) {
+		} catch(e) {
 			LOG.error(e, 'SR.RPC');
 			onDone(e);
 		}
 	}	
-}
+};
 
 
 var l_serial_checker = undefined;
@@ -314,11 +312,11 @@ exports.registerSerialChecker = function (checker) {
 		l_serial_checker = checker;
 	else
 		LOG.error('checker is not a valid function', 'SR.RPC');
-}
+};
 
 // process a registeration request of the local server
 l_checkers.SR_REGISTER_SERVER = {
-    name:   'string',
+	name:   'string',
 	info:   'object'
 };
 
@@ -333,19 +331,18 @@ l_handlers.SR_REGISTER_SERVER = function (event) {
 		if (l_serial_checker(event.data.serial)) {
 			LOG.warn('serial registeration success: ' + event.data.serial, 'SR.RPC');
 			l_addServer(event.data.name, event.data, event.conn);		
-		}
-		else {
+		} else {
 			result = false;
 			LOG.warn('serial registeration failed: ' + event.data.serial, 'SR.RPC');		
 		}	
 	}
 	
 	event.done('SR_REGISTER_SERVER_R', {name: event.data.name, result: result});
-}
+};
 
 // process relayEvent requests
 l_checkers.SR_SYS_RPC_EVENT = {
-    type:   'string',
+	type:   'string',
 	data:   'object',
 	id:		'number',
 	host:	'string',
@@ -364,20 +361,20 @@ l_handlers.SR_SYS_RPC_EVENT = function (event) {
 	var relayed_event = SR.EventManager.createEvent(event_type, para, function (res_obj) {
 		event.done('SRR_SYS_RPC_EVENT', {type: res_obj.U, data: res_obj.P, id: event.data.id});
 	},
-											{	// NOTE: we pass in the host/port/cookie of the original client
-												host: event.data.host,
-												port: event.data.port,
-												type: 'relay',
-												cookie: event.data.cookie
-											});
+	{	// NOTE: we pass in the host/port/cookie of the original client
+		host: event.data.host,
+		port: event.data.port,
+		type: 'relay',
+		cookie: event.data.cookie
+	});
 	
 	// process event using dispatcher, and return results
 	SR.Handler.dispatch(relayed_event);
-}
+};
 
 // process relayEvent responses
 l_checkers.SRR_SYS_RPC_EVENT = {
-    type:   'string',
+	type:   'string',
 	data:   'object',
 	id:		'number'
 };
@@ -405,7 +402,7 @@ l_handlers.SRR_SYS_RPC_EVENT = function (event) {
 	// TODO: record how long it took for the remote event to finish?
 	
 	// TODO: if event takes too long to return, can we indicate there's a timeout error?
-}
+};
 
 //
 //	init / dispose actions during server start/stop or connect/disconnect 	
@@ -417,15 +414,15 @@ SR.Callback.onStart(function () {
 	var handler_set = {
 		handlers: l_handlers,
 		checkers: l_checkers
-	}
+	};
 
 	// register RPC handlers for both lobby server and AppManager (if this is a lobby server)
 	// NOTE: better approach than install twice?
-	LOG.sys('load RPC handlers for main server...', 'SR.RPC')
+	LOG.sys('load RPC handlers for main server...', 'SR.RPC');
 	SR.Handler.add(handler_set);
 
 	if (SR.Settings.SERVER_INFO.type === 'lobby') {
-		LOG.sys('load RPC handlers for AppManager...', 'SR.RPC')
+		LOG.sys('load RPC handlers for AppManager...', 'SR.RPC');
 		SR.Handler.add(handler_set, 'manager');
 	}
 });
