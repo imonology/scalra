@@ -52,7 +52,7 @@ exports.icFrontier = function (config) {
 	// default to empty config
 	config = config || {components: []};
 	
-	LOG.warn('path in SR: ' + __dirname, l_name);
+	LOG.debug('path in SR: ' + __dirname, l_name);
 	
 	// reference to still access current object despite going into callbacks
 	var that = this;
@@ -151,8 +151,8 @@ exports.icFrontier = function (config) {
 		// extract frontier name from path, avoid unusable characters
 		var words = SR.Settings.FRONTIER_PATH.replace(':', ']').split(SR.path.sep);
 		
-		LOG.warn('path split:', l_name);
-		LOG.warn(words, l_name);		
+		//LOG.debug('path split:', l_name);
+		//LOG.debug(words, l_name);		
 		
 		var owner   = words[words.length-3];
 		var project = words[words.length-2];
@@ -224,8 +224,8 @@ exports.icFrontier = function (config) {
 	// add project's 'modules' directory to it
 	SR.Settings.MOD_PATHS.push(SR.path.join(SR.Settings.FRONTIER_PATH, '..'));
 		
-	LOG.warn('module paths:', l_name);
-	LOG.warn(SR.Settings.MOD_PATHS, l_name);
+	LOG.debug('module paths:', l_name);
+	LOG.debug(SR.Settings.MOD_PATHS, l_name);
 		
 	//
 	// local variables

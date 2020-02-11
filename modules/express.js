@@ -84,9 +84,9 @@ l_module.start = function (config, onDone) {
 		web_paths.push(SR.path.join(SR.Settings.MOD_PATHS[i], 'web'));
 		lib_paths.push(SR.path.join(SR.Settings.MOD_PATHS[i], 'lib'));
 	}
-	LOG.warn('views paths: ' + views_paths, l_name);
-	LOG.warn('web paths: ' + web_paths, l_name);
-	LOG.warn('lib paths: ' + lib_paths, l_name);
+	LOG.debug('views paths: ' + views_paths, l_name);
+	LOG.debug('web paths: ' + web_paths, l_name);
+	LOG.debug('lib paths: ' + lib_paths, l_name);
 
 	app.set('views', views_paths);
 
