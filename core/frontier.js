@@ -215,13 +215,15 @@ exports.icFrontier = function (config) {
 	SR.Settings.MOD_PATHS = [];
 
 	var root_path = SR.path.join(SR.Settings.SR_PATH, '..');	
+	var project_module_path = SR.path.join(SR.Settings.PROJECT_PATH, 'node_modules');
+	
+	// NOTE: we give priority for project modules before others
+	l_buildModulePath(project_module_path, 'scalra');	
 	l_buildModulePath(root_path);
 	
 	// we search for modules one-level deeper
+	// NOTE: appears to be not necessary now
 	//l_buildModulePath(SR.path.join(root_path, '..'), 'scalra');
-	
-	var project_module_path = SR.path.join(SR.Settings.PROJECT_PATH, 'node_modules');
-	l_buildModulePath(project_module_path, 'scalra');
 	
 	// add project's 'modules' directory to it
 	SR.Settings.MOD_PATHS.push(SR.path.join(SR.Settings.FRONTIER_PATH, '..'));
