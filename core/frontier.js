@@ -131,15 +131,17 @@ exports.icFrontier = function (config) {
 		var arr = SR.Settings.SR_PATH.split(SR.path.sep);
 		var prefix = arr[arr.length-1] + '-';
 		var dirs = UTIL.getDirectoriesSync(root_path);
+		//LOG.warn('root_path: ' + root_path, l_name);
+		//LOG.warn(dirs, l_name);
 
 		if (default_prefix)
 			prefix = default_prefix;
 		
-		//LOG.warn('default_prefix: ' + default_prefix + ' prefix: ' + prefix + ' paths to check:');
+		//LOG.warn('default_prefix: ' + default_prefix + ' prefix: ' + prefix + ' paths to check:', l_name);
 		for (var i in dirs) {
 			//LOG.warn(dirs[i]);
 			if (dirs[i].startsWith(prefix)) { 
-				SR.Settings.MOD_PATHS.push(SR.path.resolve(root_path, dirs[i]));
+				SR.Settings.MOD_PATHS.push(SR.path.join(root_path, dirs[i]));
 			}
 		}
 	};
@@ -212,13 +214,13 @@ exports.icFrontier = function (config) {
 	// store paths to modules	
 	SR.Settings.MOD_PATHS = [];
 
-	var root_path = SR.path.resolve(SR.Settings.SR_PATH, '..');	
+	var root_path = SR.path.join(SR.Settings.SR_PATH, '..');	
 	l_buildModulePath(root_path);
 	
 	// we search for modules one-level deeper
-	l_buildModulePath(SR.path.resolve(root_path, '..'), 'scalra');
+	//l_buildModulePath(SR.path.join(root_path, '..'), 'scalra');
 	
-	var project_module_path = SR.path.resolve(SR.Settings.PROJECT_PATH, 'node_modules');
+	var project_module_path = SR.path.join(SR.Settings.PROJECT_PATH, 'node_modules');
 	l_buildModulePath(project_module_path, 'scalra');
 	
 	// add project's 'modules' directory to it
