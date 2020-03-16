@@ -397,7 +397,7 @@ exports.icFrontier = function (config) {
 	// load default modules
 	SR.Module.load('system', config);
 	SR.Module.load('account', config);
-	SR.Module.load('gmail', config);
+	//SR.Module.load('gmail', config);
 	
 	// load monitor-related functions if specified
 	if (SR.Settings.CONNECT_MONITOR_ONSTART) {
