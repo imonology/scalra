@@ -10,6 +10,7 @@
 		steps to use:
 			1. prepare a "client_secret.json" file in /keys directory (of scalra module or project)
 				see: https://developers.google.com/gmail/api/quickstart/nodejs
+				(click on "Enable Gmail API")
 				
 			2. generate ServerAuthCode
 			3. generate AccessToken
@@ -89,29 +90,36 @@ l_module.start = function (config, onDone) {
 		return onDone();
 	}
 	
+	LOG.error('loading gmail modules...');
+	LOG.stack();
+	
 	var onAccessToken = function () {
 		//LOG.warn('accessToken: ' + JSON.stringify(l_gmailAccessToken), l_name);			
 		
-		// replace UTIL.emailText
-		UTIL.emailText = function (msg, onD) {
-			
-			// see if conversion is needed
-			// ref: https://stackoverflow.com/questions/11206443/how-can-i-check-if-variable-contains-chinese-japanese-characters
-			if (msg.subject.match(/[\u3400-\u9FBF]/)) {
-				// encode subject to allow Chinese
-				// ref: https://stackoverflow.com/questions/27695749/gmail-api-not-respecting-utf-encoding-in-subject
-				// base64: https://stackoverflow.com/questions/246801/how-can-you-encode-a-string-to-base64-in-javascript				
-				// example subject: =?utf-8?B?${convertToBase64(subject)}?=
-				LOG.warn('subject is Chinese/Japanese, convert it..', l_name);
-				msg.subject = '=?utf-8?B?' + new Buffer(msg.subject).toString('base64') + '?=';	
-			}
-			
-			SR.API._gmailText({
-				from:		msg.from,
-				to:			msg.to,
-				subject:	msg.subject, 
-				body:		msg.text,
-			}, onD)
+		// check if gmail is loaded as the ONLY email module, default to true
+		if (config.only !== false) {
+
+			// replace UTIL.emailText
+			UTIL.emailText = function (msg, onD) {
+
+				// see if conversion is needed
+				// ref: https://stackoverflow.com/questions/11206443/how-can-i-check-if-variable-contains-chinese-japanese-characters
+				if (msg.subject.match(/[\u3400-\u9FBF]/)) {
+					// encode subject to allow Chinese
+					// ref: https://stackoverflow.com/questions/27695749/gmail-api-not-respecting-utf-encoding-in-subject
+					// base64: https://stackoverflow.com/questions/246801/how-can-you-encode-a-string-to-base64-in-javascript				
+					// example subject: =?utf-8?B?${convertToBase64(subject)}?=
+					LOG.warn('subject is Chinese/Japanese, convert it..', l_name);
+					msg.subject = '=?utf-8?B?' + new Buffer(msg.subject).toString('base64') + '?=';	
+				}
+
+				SR.API._gmailText({
+					from:		msg.from,
+					to:			msg.to,
+					subject:	msg.subject, 
+					body:		msg.text,
+				}, onD)
+			}		
 		}		
 		
 		UTIL.safeCall(onDone, null);		
