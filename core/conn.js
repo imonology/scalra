@@ -389,7 +389,7 @@ exports.ConnHandler = function (conn_module) {
 		// loop through each connection to disconnect
 		for (var connID in connections) {
 			LOG.sys('removing connID: ' + connID, l_name);
-			if (l_conn[connID].type.startsWith('sock')) {
+			if (l_conn.hasOwnProperty(connID) && l_conn[connID].type.startsWith('sock')) {
 				pending_count++;
 				this.removeConnection(l_conn[connID].connector, function () {
 					pending_count--;
