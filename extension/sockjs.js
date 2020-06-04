@@ -127,11 +127,12 @@ exports.start = function (http_server, onDone) {
 			// on connection close event
 			sock_conn.on('close', function() {
 
-            	LOG.warn('user disconnected', 'SR.SockJS');
+				LOG.warn('user disconnected', 'SR.SockJS');
 
 				// remove connection object
-				if (conn_obj)
+				if (conn_obj) {
 					l_connHandler.removeConnection(conn_obj);
+				}
 			});
 		}
 		
@@ -144,7 +145,7 @@ exports.start = function (http_server, onDone) {
 
 	// assocate sockJS server with HTTP server
 	http_server.addListener('upgrade', function (req, res){
-    	res.end();
+		res.end();
 	});
 
 	// Integrate SockJS and listen on /echo
@@ -254,7 +255,7 @@ exports.attach = function (http_server, onDone) {
 			// on connection close event
 			sock_conn.on('close', function() {
 
-            	LOG.warn('user disconnected', 'SR.SockJS');
+				LOG.warn('user disconnected', 'SR.SockJS');
 
 				// remove connection object
 				if (conn_obj)
@@ -271,7 +272,7 @@ exports.attach = function (http_server, onDone) {
 
 	// assocate sockJS server with HTTP server
 	http_server.addListener('upgrade', function (req, res){
-    	res.end();
+		res.end();
 	});
 
 	// Integrate SockJS and listen on /echo
@@ -292,4 +293,4 @@ exports.stop = function (type) {
     if (io !== undefined)
         io = undefined;
 	*/
-}
+};

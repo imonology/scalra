@@ -42,7 +42,7 @@ var l_server = undefined;
 // get server instance
 exports.get = function () {
 	return l_server;	
-}
+};
 
 SR.Callback.onStart(function () {
 });
@@ -74,6 +74,7 @@ l_module.start = function (config, onDone) {
 		
 		// NOTE: name will determine which handler set to get/store
 		// create a listener that'll listen to the default socket port for this server
+		// start from here step 1
 		l_server = new SR.Listener({
 			port:           l_ip_port.port + SR.Settings.PORT_INC_SOCKET,
 			conn_module:    config.conn_handler
@@ -94,8 +95,7 @@ l_module.start = function (config, onDone) {
 				// TODO: try to close down more gracefully, right now this will trigger many 
 				// unnecessary shutdown steps (& print too many error messages not useful)
 				//l_dispose();
-			}
-			else {
+			} else {
 				LOG.warn('server is ready & running...', l_name);
 								
 				// for entry server, we report the entry server HTTP base port
@@ -112,7 +112,7 @@ l_module.start = function (config, onDone) {
 			
 			UTIL.safeCall(onDone, true);
 		});
-	}
+	};
 	
 	// get main server port
 	// the rules are:
@@ -152,7 +152,7 @@ l_module.start = function (config, onDone) {
 			// return only the first one
 			UTIL.safeCall(onDone, (typeof port === 'number' ? port : port[0]));
 		}, size);
-	}
+	};
 	
 	// determine server IP & port then start server
 	// get my own local IP (for future uses)
@@ -172,7 +172,7 @@ l_module.start = function (config, onDone) {
 			start_server();
 		});				
 	});
-}
+};
 
 // module shutdown
 l_module.stop = function (onDone) {
@@ -187,4 +187,4 @@ l_module.stop = function (onDone) {
 			UTIL.safeCall(onDone, true);			
 		});
 	}
-}
+};

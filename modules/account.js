@@ -296,10 +296,10 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	if (typeof l_accounts === 'undefined') {
 		return onDone('DB_NOT_LOADED');
 	}
-		
-	let account = args.account;	
+
+	let account = args.account.toLowerCase();
 	let password = args.password;
-  
+
 	LOG.warn('login: [' + account + '] pass: ' + args.password + (args.from ? ' from: ' + args.from : ''), l_name);
 
 	let userExist = true;
@@ -322,9 +322,10 @@ SR.API.add('_ACCOUNT_LOGIN', {
 
 	var user = l_accounts[account];
 	let username;
-	let doubleAccount = false;
+	let duplicatedAccount = false;
+
 	new Promise((resolve, reject) => {
-		if (!!args.authWP) {
+		if (args.authWP) {
 			SR.API._wpGenerateAuthCookie({
 				username: account,
 				password: args.password
@@ -333,11 +334,11 @@ SR.API.add('_ACCOUNT_LOGIN', {
 					reject(err);
 					return;
 				}
-				username = data.user.username;
+				username = data.user.username.toLowerCase();
 				user = l_accounts[username];
 				resolve(data);
 			});
-		} else if (!!args.authMySQL) {
+		} else if (args.authMySQL) {
 			SR.API._mysql_user_login({
 				username: account,
 				password: args.password
@@ -363,24 +364,44 @@ SR.API.add('_ACCOUNT_LOGIN', {
 			return;
 		}
 
-		if (!!args.authWP) {
+		if (args.authWP) {
 			const wpGroups = Object.keys(wpInfo.user.capabilities).filter((key) => wpInfo.user.capabilities[key] === true);
-			loginViaEmail = false;
-			if (account === wpInfo.user.email) {
+			var loginViaEmail = false;
+
+			if (account === wpInfo.user.email.toLowerCase()) {
 				loginViaEmail = true;
-				args.account = wpInfo.user.username;
+				args.account = wpInfo.user.username.toLowerCase();
+				l_accounts[account].data.wpUsername = wpInfo.user.username;
 			}
+
 			/*  XXX: the code below are to resolve problem cause by the code last version
 			 *	the new method wouldn't create two accounts
 			 *	and should be delete while migration has been done.
 			 */
-			if (l_accounts.hasOwnProperty(account) || l_accounts.hasOwnProperty(wpInfo.user.username)) {
+
+			// already got an account
+			if (l_accounts.hasOwnProperty(account) || l_accounts.hasOwnProperty(wpInfo.user.username.toLowerCase())) {
 				userExist = true;
 			}
-			if (l_accounts.hasOwnProperty(account) && l_accounts.hasOwnProperty(wpInfo.user.username)) {
-				doubleAccount = true;
+
+			// FIXME: how can this be duplicated
+			if (l_accounts.hasOwnProperty(account) && l_accounts.hasOwnProperty(wpInfo.user.username.toLowerCase())) {
+				duplicatedAccount = true;
 			}
+
+			const found = Object.values(l_accounts).filter(x => x.email === wpInfo.user.email.toLowerCase());
+
+			if (found && found[0]) {
+				userExist = true;
+				if (found.length > 1) {
+					duplicatedAccount = true;
+				}
+				// login with original account
+				username = found[0].account.toLowerCase();
+			}
+
 			/*	XXX end	*/
+
 			if (!!wpInfo && userExist) {
 				// update user data in local server
 				return new Promise((resolve, reject) => {
@@ -391,7 +412,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 					};
 					/*	XXX	*/
 					// user has only one account, change account to username
-					if (loginViaEmail && !doubleAccount) {
+					if (loginViaEmail && !duplicatedAccount) {
 						fields.account = username;
 					}
 					/*	XXX end	*/
@@ -403,8 +424,9 @@ SR.API.add('_ACCOUNT_LOGIN', {
 							reject(err);
 							return;
 						}
-						account = args.account;
-						resolve(SR.State.get('_accountMap')[account]);
+
+						// account = args.account.toLowerCase();
+						resolve(SR.State.get('_accountMap')[username]);
 					});
 				});
 			} else {
@@ -413,7 +435,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 					SR.API._ACCOUNT_REGISTER({
 						account: username,
 						password: args.password,
-						email: wpInfo.user.email,
+						email: wpInfo.user.email.toLowerCase(),
 						data: Object.assign(args.data, { wpID: wpInfo.user.id }),
 						groups: wpGroups
 					}, (err, data) => {
@@ -422,11 +444,12 @@ SR.API.add('_ACCOUNT_LOGIN', {
 							return;
 						}
 
-						resolve(SR.State.get('_accountMap')[account]);
+						resolve(SR.State.get('_accountMap')[username]);
 					});
 				});
 			}
-		} else if (!!args.authMySQL) {
+
+		} else if (args.authMySQL) {
 			if (!!wpInfo && userExist) {
 				// update user data in local server
 				return new Promise((resolve, reject) => {
@@ -491,14 +514,14 @@ SR.API.add('_ACCOUNT_LOGIN', {
 		}
 	}).then((u) => {
 		user = u || user;
-		var ip = (extra) ? extra.conn.host : "server";
+		var ip = (extra) ? extra.conn.host : 'server';
 		// update login time
 		user.login = {
 			IP: ip,
 			time_in: new Date(),
 			time_out: null,
 			count: user.login.count+1
-		}
+		};
 
 		// generate unique token if the request is relayed from a server
 		var token = undefined;
@@ -525,7 +548,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 				account: account,
 				control: user.control,
 				login: user.login
-			}
+			};
 
 			// record current login (also the conn object for logout purpose)
 			l_logins[account] = extra.conn;
@@ -717,7 +740,6 @@ SR.API.add('_ACCOUNT_GETDATA', {
 	if (l_validateAccount(account) === false) {
 		return onDone('INVALID_ACCOUNT', account);
 	}
-
 	var data = l_accounts[account];
 
 	// convert needed types into array form

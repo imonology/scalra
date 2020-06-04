@@ -52,7 +52,7 @@ exports.icFrontier = function (config) {
 	// default to empty config
 	config = config || {components: []};
 	
-	LOG.warn('path in SR: ' + __dirname, l_name);
+	LOG.debug('path in SR: ' + __dirname, l_name);
 	
 	// reference to still access current object despite going into callbacks
 	var that = this;
@@ -131,15 +131,17 @@ exports.icFrontier = function (config) {
 		var arr = SR.Settings.SR_PATH.split(SR.path.sep);
 		var prefix = arr[arr.length-1] + '-';
 		var dirs = UTIL.getDirectoriesSync(root_path);
+		//LOG.warn('root_path: ' + root_path, l_name);
+		//LOG.warn(dirs, l_name);
 
 		if (default_prefix)
 			prefix = default_prefix;
 		
-		//LOG.warn('default_prefix: ' + default_prefix + ' prefix: ' + prefix + ' paths to check:');
+		//LOG.warn('default_prefix: ' + default_prefix + ' prefix: ' + prefix + ' paths to check:', l_name);
 		for (var i in dirs) {
 			//LOG.warn(dirs[i]);
 			if (dirs[i].startsWith(prefix)) { 
-				SR.Settings.MOD_PATHS.push(SR.path.resolve(root_path, dirs[i]));
+				SR.Settings.MOD_PATHS.push(SR.path.join(root_path, dirs[i]));
 			}
 		}
 	};
@@ -151,8 +153,8 @@ exports.icFrontier = function (config) {
 		// extract frontier name from path, avoid unusable characters
 		var words = SR.Settings.FRONTIER_PATH.replace(':', ']').split(SR.path.sep);
 		
-		LOG.warn('path split:', l_name);
-		LOG.warn(words, l_name);		
+		//LOG.debug('path split:', l_name);
+		//LOG.debug(words, l_name);		
 		
 		var owner   = words[words.length-3];
 		var project = words[words.length-2];
@@ -212,20 +214,22 @@ exports.icFrontier = function (config) {
 	// store paths to modules	
 	SR.Settings.MOD_PATHS = [];
 
-	var root_path = SR.path.resolve(SR.Settings.SR_PATH, '..');	
+	var root_path = SR.path.join(SR.Settings.SR_PATH, '..');	
+	var project_module_path = SR.path.join(SR.Settings.PROJECT_PATH, 'node_modules');
+	
+	// NOTE: we give priority for project modules before others
+	l_buildModulePath(project_module_path, 'scalra');	
 	l_buildModulePath(root_path);
 	
 	// we search for modules one-level deeper
-	l_buildModulePath(SR.path.resolve(root_path, '..'), 'scalra');
-	
-	var project_module_path = SR.path.resolve(SR.Settings.PROJECT_PATH, 'node_modules');
-	l_buildModulePath(project_module_path, 'scalra');
+	// NOTE: appears to be not necessary now
+	//l_buildModulePath(SR.path.join(root_path, '..'), 'scalra');
 	
 	// add project's 'modules' directory to it
 	SR.Settings.MOD_PATHS.push(SR.path.join(SR.Settings.FRONTIER_PATH, '..'));
 		
-	LOG.warn('module paths:', l_name);
-	LOG.warn(SR.Settings.MOD_PATHS, l_name);
+	LOG.debug('module paths:', l_name);
+	LOG.debug(SR.Settings.MOD_PATHS, l_name);
 		
 	//
 	// local variables
@@ -393,7 +397,7 @@ exports.icFrontier = function (config) {
 	// load default modules
 	SR.Module.load('system', config);
 	SR.Module.load('account', config);
-	SR.Module.load('gmail', config);
+	//SR.Module.load('gmail', config);
 	
 	// load monitor-related functions if specified
 	if (SR.Settings.CONNECT_MONITOR_ONSTART) {
