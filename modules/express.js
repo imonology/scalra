@@ -17,16 +17,15 @@
 var l_module = {};
 
 // a pool for all message handlers
-var l_handlers = exports.handlers = {};
-var l_checkers = exports.checkers = {};
-var l_api = exports.api = {};
+var l_handlers = (exports.handlers = {});
+var l_checkers = (exports.checkers = {});
+var l_api = (exports.api = {});
 
 const express = require('express');
-const app = exports.app = express();
-const static = exports.static = express.static;
+const app = (exports.app = express());
+const static = (exports.static = express.static);
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-
 
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -42,8 +41,6 @@ var formidable = require('formidable');
 // Handlers (format checkers and event handlers)
 //
 //-----------------------------------------
-
-
 
 //-----------------------------------------
 // Server Event Handling
@@ -68,24 +65,20 @@ SR.Callback.onDisconnect(function (conn) {
 	// handle disconnect
 });
 
-
 // module init
 l_module.start = function (config, onDone) {
-
 	/*
 		Web Frontend
 	*/
-	var express = require('express');
-		
-	var app = express();
-	var cookieParser = require('cookie-parser');
-	
+
 	// set view engine & directory
 	var views_paths = [];
 	var web_paths = [];
 	var lib_paths = [];
-	for (var i=0; i < SR.Settings.MOD_PATHS.length; i++) {
-		views_paths.push(SR.path.join(SR.Settings.MOD_PATHS[i], (config.views || 'views')));
+	for (var i = 0; i < SR.Settings.MOD_PATHS.length; i++) {
+		views_paths.push(
+			SR.path.join(SR.Settings.MOD_PATHS[i], config.views || 'views')
+		);
 		web_paths.push(SR.path.join(SR.Settings.MOD_PATHS[i], 'web'));
 		lib_paths.push(SR.path.join(SR.Settings.MOD_PATHS[i], 'lib'));
 	}
@@ -95,29 +88,25 @@ l_module.start = function (config, onDone) {
 
 	app.set('views', views_paths);
 
-	//var views_path = SR.path.join(SR.Settings.FRONTIER_PATH, '..', (config.views || 'views'));
-	//LOG.warn('views path: ' + views_path, l_name);
-	//app.set('views', views_path);
-
-	// var engine = require('./ejs-wrapper.js');
-	// app.engine('ejs', engine);
 	app.engine('ejs', require('ejs-locals'));
 	app.set('view engine', 'ejs');
 
 	// set directory to serve static files
 	//app.use('/web', express.static(SR.Settings.FRONTIER_PATH + '/../web'));
-	for (let i=0; i < web_paths.length; i++) {
+	for (let i = 0; i < web_paths.length; i++) {
 		app.use('/web', express.static(web_paths[i]));
 	}
 	app.use('/lib', express.static(SR.Settings.SR_PATH + '/lib'));
-	for (let i=0; i < lib_paths.length; i++) {
+	for (let i = 0; i < lib_paths.length; i++) {
 		app.use('/lib', express.static(lib_paths[i]));
 	}
 
 	if (typeof config.public === 'string') {
 		//app.use(express.static(SR.Settings.FRONTIER_PATH + '/../public'));
 		//app.use('/pub/', express.directory(SR.Settings.FRONTIER_PATH + '/public'));
-		var public_path = SR.path.resolve(SR.Settings.FRONTIER_PATH + '/..' + config.public);
+		var public_path = SR.path.resolve(
+			SR.Settings.FRONTIER_PATH + '/..' + config.public
+		);
 		LOG.warn('set public web directory to: ' + public_path, l_name);
 		app.use(express.static(public_path));
 	}
@@ -132,7 +121,6 @@ l_module.start = function (config, onDone) {
 	// set a cookie
 	// ref: http://stackoverflow.com/questions/16209145/how-to-set-cookie-in-node-js-using-express-framework
 	app.use(function (req, res, next) {
-
 		// check if client sent cookie
 		var cookie = req.cookies[SR.REST.cookieName];
 		if (cookie === undefined) {
@@ -143,22 +131,22 @@ l_module.start = function (config, onDone) {
 			res.cookie(SR.REST.cookieName, cookie, { httpOnly: true });
 			// res.cookie(SR.REST.cookieName, cookie);
 			LOG.warn('express: cookie created successfully: ' + cookie, l_name);
-		} 
-		else
-		{
-			// yes, cookie was already present 
+		} else {
+			// yes, cookie was already present
 			LOG.warn('express: cookie exists: ' + cookie);
-		} 
+		}
 		next(); // <-- important!
 	});
 
 	// upload
 	app.post('/upload', function (req, res) {
 		if (req.headers['content-type']) {
-			if (req.headers['content-type'].startsWith('multipart/form-data; boundary=')) {
+			if (
+				req.headers['content-type'].startsWith('multipart/form-data; boundary=')
+			) {
 				var form = new formidable.IncomingForm();
 
-				var onUploadDone = function(fields, files) {
+				var onUploadDone = function (fields, files) {
 					LOG.warn('files uploaded');
 					// LOG.warn(files);
 
@@ -182,18 +170,17 @@ l_module.start = function (config, onDone) {
 					if (typeof files.upload !== 'object') {
 						result = {
 							message: 'fail',
-							upload : uploaded,
+							upload: uploaded,
 						};
 
 						return SR.REST.reply(res, result);
 					}
 
 					// default to preserve original name
-					var preserve_name = (fields.toPreserveFileName !== 'false');
+					var preserve_name = fields.toPreserveFileName !== 'false';
 
 					// modify uploaded file to have original filename
 					var renameFile = function (upload) {
-
 						if (!upload || !upload.path || !upload.name || !upload.size) {
 							LOG.error('upload object incomplete:', l_name);
 							return;
@@ -201,10 +188,22 @@ l_module.start = function (config, onDone) {
 
 						// record basic file info
 						var arr = upload.path.split('/');
-						var upload_name = arr[arr.length-1];
-						var filename = (preserve_name ? upload.name : upload_name);
-						LOG.warn('The file ' + upload.name + ' was uploaded as: ' + filename + '. size: ' + upload.size, l_name);
-						uploaded.push({name: filename, size: upload.size, type: upload.type});
+						var upload_name = arr[arr.length - 1];
+						var filename = preserve_name ? upload.name : upload_name;
+						LOG.warn(
+							'The file ' +
+								upload.name +
+								' was uploaded as: ' +
+								filename +
+								'. size: ' +
+								upload.size,
+							l_name
+						);
+						uploaded.push({
+							name: filename,
+							size: upload.size,
+							type: upload.type,
+						});
 
 						// check if we might need to re-name
 						// default is to rename (preserve upload file names)
@@ -217,7 +216,15 @@ l_module.start = function (config, onDone) {
 							if (err) {
 								return LOG.error('rename fail: ' + new_name, l_name);
 							}
-							LOG.warn('File ' + upload_name + ' renamed as: ' + upload.name + ' . size: ' + upload.size, l_name);
+							LOG.warn(
+								'File ' +
+									upload_name +
+									' renamed as: ' +
+									upload.name +
+									' . size: ' +
+									upload.size,
+								l_name
+							);
 						});
 					};
 
@@ -229,7 +236,10 @@ l_module.start = function (config, onDone) {
 						renameFile(files.upload);
 					} else if (files.upload.length) {
 						// for multiple files in an array
-						LOG.warn('multiple files uploaded [' + files.upload.length +']:', l_name);
+						LOG.warn(
+							'multiple files uploaded [' + files.upload.length + ']:',
+							l_name
+						);
 						LOG.warn(files.upload, l_name);
 
 						for (var i in files.upload) {
@@ -238,40 +248,41 @@ l_module.start = function (config, onDone) {
 						}
 					} else {
 						LOG.error('file upload error, no upload file(s)', l_name);
-						SR.REST.reply(res, {message: 'failure (no file)'});
+						SR.REST.reply(res, { message: 'failure (no file)' });
 						return;
 					}
 
 					// remove sensitive info (such as path) from response
 					result = {
 						message: 'success',
-						upload : uploaded,
+						upload: uploaded,
 					};
 
 					SR.REST.reply(res, result);
 				};
 
-
 				var file_names = {};
 				form.on('end', function (err, result) {
 					if (err) {
 						LOG.error(err, l_name);
-						return SR.Callback.notify('onUpload', {result: false, msg: err});
+						return SR.Callback.notify('onUpload', { result: false, msg: err });
 					}
 					LOG.warn('file uploaded', l_name);
 					//LOG.warn(result, l_name);
-					SR.Callback.notify('onUpload', {result: true, file: 'filepath'});
+					SR.Callback.notify('onUpload', { result: true, file: 'filepath' });
 					// 					var result = {
 					// 						message: 'success'
 					// 					};
 
 					// 					SR.REST.reply(res, result);
-
 				});
 
 				form.on('aborted', function () {
 					//console.log("on aborted");
-					SR.Callback.notify('onUpload', {result: false, msg: 'fail reason: abort'});
+					SR.Callback.notify('onUpload', {
+						result: false,
+						msg: 'fail reason: abort',
+					});
 					var result = {
 						message: 'aborted',
 					};
@@ -279,7 +290,10 @@ l_module.start = function (config, onDone) {
 				});
 
 				form.on('error', function (err) {
-					SR.Callback.notify('onUpload', {result: false, msg: 'fail reason: error'});
+					SR.Callback.notify('onUpload', {
+						result: false,
+						msg: 'fail reason: error',
+					});
 					var result = {
 						message: 'error',
 					};
@@ -287,13 +301,16 @@ l_module.start = function (config, onDone) {
 				});
 
 				form.on('fileBegin', function (name, file) {
-					LOG.warn('fileBegin: name ' + name + ', file ' + JSON.stringify(file));
+					LOG.warn(
+						'fileBegin: name ' + name + ', file ' + JSON.stringify(file)
+					);
 					file_names['original_name'] = JSON.stringify(file);
-
 				});
 
 				form.on('file', function (fields, files) {
-					LOG.warn('on file: name ' + fields + ', file ' + JSON.stringify(files));
+					LOG.warn(
+						'on file: name ' + fields + ', file ' + JSON.stringify(files)
+					);
 					// onUploadDone(fields, files);
 				});
 
@@ -310,9 +327,7 @@ l_module.start = function (config, onDone) {
 				form.keepExtensions = true;
 				form.multiples = true;
 
-
 				form.parse(req, function (error, fields, files) {
-
 					if (error) {
 						LOG.error(error, l_name);
 						return;
@@ -343,22 +358,28 @@ l_module.start = function (config, onDone) {
 	//
 	// } else {
 	var express_port = UTIL.getProjectPort('PORT_INC_EXPRESS');
-	var server = SR.http.createServer(app).listen(express_port, function() {
+	var server = SR.http.createServer(app).listen(express_port, function () {
 		LOG.warn('Express server listening on port ' + express_port, l_name);
 	});
-		
+
 	// }
 
 	SR.SockJS.start(server, function (s) {
 		// record server created
 		this.created = true;
-		LOG.warn('SockJS [' + (config.secured ? 'https' : 'http') + '] server started', 'SR.Component');
+		LOG.warn(
+			'SockJS [' + (config.secured ? 'https' : 'http') + '] server started',
+			'SR.Component'
+		);
 		UTIL.safeCall(onDone);
 	});
 
 	// set up script monitor, so we may hot-load router
 	//var router_path = SR.Settings.FRONTIER_PATH + '/' + (config.router || 'router.js');
-	var router_path = SR.path.join(SR.Settings.FRONTIER_PATH, (config.router || 'router.js'));
+	var router_path = SR.path.join(
+		SR.Settings.FRONTIER_PATH,
+		config.router || 'router.js'
+	);
 
 	var err = undefined;
 	if (SR.Script.monitor('router', router_path, app) === undefined) {
