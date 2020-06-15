@@ -461,7 +461,7 @@ l_components['SockJS'] = exports.SockJS = function (type) {
 			LOG.sys('dispose SockJS [' + type + '] server...', 'SR.Component');
 
 			if (this.created === true)
-           		SR.SockJS.stop(type);
+				SR.SockJS.stop(type);
 			else
 				LOG.warn('SockJS [' + type + '] server not created, cannot dispose', 'SR.Component');
 			
