@@ -358,7 +358,7 @@ l_module.start = function (config, onDone) {
 			JSONobj = Object.assign({}, JSONobj, req.params);
 		}
 		if (req.body) {
-			JSONobj = Object.assign({}, JSONobj, req.query);
+			JSONobj = Object.assign({}, JSONobj, req.body);
 		}
 
 		// callback to return response to client
