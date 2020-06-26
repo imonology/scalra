@@ -28,7 +28,7 @@ var settings = exports.settings = {
 	//
 	DB_IP: '127.0.0.1',
 	DB_PORT: 27017,
-	DB_ADMIN: {account: '', pass: ''},
+	DB_ADMIN: {account: 'dbadmin', pass: 'dbadmin-pass'},
 
 	// default to show error & warning only
 	LOG_LEVEL: 2,
