@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "demo for the Scalra node.js framework",
   "scripts": {
-    "start": "node lobby/frontier.js"
+	"start": "node lobby/frontier.js",
+	"build": "cd ./node_modules/scalra-flexform && npm run build -- --dest $(pwd)/../../dist"
+
   },
   "keywords": [
     "prototyping",

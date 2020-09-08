@@ -371,6 +371,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 			if (account === wpInfo.user.email.toLowerCase()) {
 				loginViaEmail = true;
 				args.account = wpInfo.user.username.toLowerCase();
+				l_accounts[account].data.wpUsername = wpInfo.user.username;
 			}
 
 			/*  XXX: the code below are to resolve problem cause by the code last version
@@ -739,7 +740,6 @@ SR.API.add('_ACCOUNT_GETDATA', {
 	if (l_validateAccount(account) === false) {
 		return onDone('INVALID_ACCOUNT', account);
 	}
-
 	var data = l_accounts[account];
 
 	// convert needed types into array form

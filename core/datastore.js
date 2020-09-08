@@ -237,7 +237,7 @@ var l_createSync = function (name, src, array_fields) {
 			// first check if 'key' has been modified
 			var mapping = l_mappers[name].mapping;
 			var key = l_mappers[name].key;
-			LOG.warn('key [' + key + '] exists for DS [' + name + ']', l_name);
+			//LOG.warn('key [' + key + '] exists for DS [' + name + ']', l_name);
 			
 			if (mapping.hasOwnProperty(src[key]) === false) {
 				build_mapper = true;
