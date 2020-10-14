@@ -53,22 +53,27 @@ exports.start = function (type, route, port) {
 		var data = '';
 		var JSONobj = undefined;
 		
+
 		req.on('data', function (chunk) {
 			data += chunk;
+			console.log("on [data]", data)
 		});
-
+		
 		req.on('end', function () {
 			
 			var JSONobj = undefined;
-			
+
 			try {
-				if (data !== '') {
-						
-					if (content_type.startsWith('application/x-www-form-urlencoded')) {
+				if (data != '') {
+					// [ERROR] method startsWith is undefined.
+					// if (content_type.startsWith('application/x-www-form-urlencoded')) { 
+					if (content_type == 'application/x-www-form-urlencoded') {
 						JSONobj = qs.parse(data);
-					} else if (content_type.startsWith('application/json')) {
+					// } else if (content_type.startsWith('application/json')) {
+					} else if (content_type == 'application/json') {
 						JSONobj = UTIL.convertJSON(decodeURIComponent(data));
-					} else if (content_type.startsWith('application/sdp')) {
+					// } else if (content_type.startsWith('application/sdp')) {
+					} else if (content_type == 'application/sdp') {
 						JSONobj = data;
 					} else {
 						var msg = 'content type not known: ' + content_type;

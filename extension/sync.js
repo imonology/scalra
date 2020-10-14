@@ -68,25 +68,25 @@ var l_store = function (arr) {
 
 		if (size <= 0)
 			return false;
-		
+
 		LOG.sys('try to store to array [' + arr._name + '], # of elements to store: ' + size, 'SR.Sync');
-				
+
 		// TODO: wasteful of space?
 		// NOTE: only new array entries will be stored to DB
 		var elements = [];
-		for (var i=arr._index; i < arr.length; i++)
+		for (var i = arr._index; i < arr.length; i++)
 			elements.push(arr[i]);
 
 		// update index count (regardless of update success or not?)
 		arr._index = arr.length;
-		
+
 		// TODO: find right way to store
 		// store away
 		// NOTE: $each is used here (try to hide it?)
-		SR.DB.updateArray(SR.Settings.DB_NAME_SYNC, {name: arr._name}, {data: elements},
+		SR.DB.updateArray(SR.Settings.DB_NAME_SYNC, { name: arr._name }, { data: elements },
 			function (result) {
 				LOG.sys('update array success: ' + result, 'SR.Sync');
-			}, 
+			},
 			function (result) {
 				LOG.error('update array fail: ' + result, 'SR.Sync');
 			}
@@ -95,7 +95,7 @@ var l_store = function (arr) {
 	}
 	else
 		LOG.error('cannot store to DB, arr_name unavailable', 'SR.Sync');
-		
+
 	return false;
 }
 
@@ -131,10 +131,10 @@ var l_store = function (arr, length, element) {
 var l_push = function () {
 
 	var now = new Date();
-	
-	for (var i = 0, l = arguments.length; i < l; i++ ) {
+
+	for (var i = 0, l = arguments.length; i < l; i++) {
 		var item = UTIL.clone(arguments[i]);
-		
+
 		// put timestamp to element stored
 		if (item && item !== null) {
 			item._time = now;
@@ -142,7 +142,7 @@ var l_push = function () {
 		}
 		else
 			LOG.error('push data is null', 'SR.Sync');
-		
+
 		// NOTE: do not store right away, but rather periodically
 		//l_store(this, this.length, this[this.length-1]); 
 	}
@@ -154,126 +154,126 @@ var l_push = function () {
 // {interval: 5, limit: 1000}
 // returns true/false on whether set is successful
 var l_set = function (arr, arr_name, config) {
-	
+
 	if (l_names.hasOwnProperty(arr_name)) {
 		LOG.warn('array [' + arr_name + '] already sync with DB', 'SR.Sync');
 		//return UTIL.safeCall(onDone, false);
 		return false;
 	}
-	
+
 	// first override the array's functions	
 	arr.push = l_push;
-	
+
 	// store array's name
 	arr._name = arr_name;
-	
+
 	// store last stored index
 	arr._index = 0;
 
 	// store to list of arrays
 	l_names[arr_name] = arr;
-	
+
 	// NOTE: the DB creation may finish *after* this function returns
 	// check if the array has been created inside DB, if not then create new record
 	SR.DB.getArray(SR.Settings.DB_NAME_SYNC,
-					function (result) {
-						// NOTE: if array does not exist it'll return success with an empty array
-						if (result === null || result.length === 0) {
+		function (result) {
+			// NOTE: if array does not exist it'll return success with an empty array
+			if (result === null || result.length === 0) {
 
-							LOG.sys('array [' + arr_name + '] does not exist, create...', 'SR.Sync');
-							SR.DB.setData(SR.Settings.DB_NAME_SYNC, {name: arr_name, data: []}, 
-											function (r) {
-												LOG.sys('array [' + arr_name + '] create success', 'SR.Sync');
-												//UTIL.safeCall(onDone, true);
-											},
-											function (r) {
-												LOG.error('array [' + arr_name + '] create fail', 'SR.Sync');
-										  		//UTIL.safeCall(onDone, false);
-											});
-						}
-						else {
-							LOG.sys('array [' + arr_name + '] exists', 'SR.Sync');
-							LOG.warn(result);
-							//UTIL.safeCall(onDone, true);										
-						}
-					}, 
-					function (result) {
+				LOG.sys('array [' + arr_name + '] does not exist, create...', 'SR.Sync');
+				SR.DB.setData(SR.Settings.DB_NAME_SYNC, { name: arr_name, data: [] },
+					function (r) {
+						LOG.sys('array [' + arr_name + '] create success', 'SR.Sync');
+						//UTIL.safeCall(onDone, true);
+					},
+					function (r) {
+						LOG.error('array [' + arr_name + '] create fail', 'SR.Sync');
 						//UTIL.safeCall(onDone, false);
-					}, 
-					{name: arr_name});		
+					});
+			}
+			else {
+				LOG.sys('array [' + arr_name + '] exists', 'SR.Sync');
+				LOG.warn(result);
+				//UTIL.safeCall(onDone, true);										
+			}
+		},
+		function (result) {
+			//UTIL.safeCall(onDone, false);
+		},
+		{ name: arr_name });
 
 	return true;
-	
+
 	// TODO: consider config's effect
 }
 
 // load data from DB to an in-memory array
 // returns a list of the names of arrays loaded
 var l_load = function (arrays, config, onDone) {
-	
+
 	var names = [];
-		
+
 	// load array's content from DB, if any	
 	SR.DB.getArray(SR.Settings.DB_NAME_SYNC,
-					function (result) {
-						// NOTE: if array does not exist it'll return success with an empty array
-						if (result === null || result.length === 0) {
-							LOG.warn('no arrays found, cannot load', 'SR.Sync');
-						}
-						else {
-							
-							var array_limit = (typeof config.limit === 'number' ? config.limit : 0);
-							
-							LOG.sys('arrays exist, try to load (limit: ' + array_limit + ')', 'SR.Sync');
-							
-							for (var i=0; i < result.length; i++) {
-								var record = result[i];
-														
-								var arr = arrays[record.name] = [];
-																
-								// load data (clone is better?)
-								var limit = (record.data.length > array_limit ? array_limit : record.data.length);
+		function (result) {
+			// NOTE: if array does not exist it'll return success with an empty array
+			if (result === null || result.length === 0) {
+				LOG.warn('no arrays found, cannot load', 'SR.Sync');
+			}
+			else {
 
-								var start = record.data.length - limit;
-																
-								for (var j=0; j < limit; j++)
-									arr[j] = UTIL.clone(record.data[start+j]);
-								
-								// override array's default behavior
-								arr.push = l_push;
-	
-								// store array's name
-								arr._name = record.name;
-								
-								// store last stored index (next index to store)
-								arr._index = j;
-								
-								LOG.sys('[' + record.name + '] DB record length: ' + record.data.length + ' start: ' + start + ' actual limit: ' + limit + ' _index: ' + arr._index, 'SR.Sync');
-																
-								l_names[record.name] = arr;
-								names.push(record.name);
-							}															
-						}
-						UTIL.safeCall(onDone, names);
-						
-					}, 
-					function (result) {
-						UTIL.safeCall(onDone, names);
-					}, 
-					{});
+				var array_limit = (typeof config.limit === 'number' ? config.limit : 0);
+
+				LOG.sys('arrays exist, try to load (limit: ' + array_limit + ')', 'SR.Sync');
+
+				for (var i = 0; i < result.length; i++) {
+					var record = result[i];
+
+					var arr = arrays[record.name] = [];
+
+					// load data (clone is better?)
+					var limit = (record.data.length > array_limit ? array_limit : record.data.length);
+
+					var start = record.data.length - limit;
+
+					for (var j = 0; j < limit; j++)
+						arr[j] = UTIL.clone(record.data[start + j]);
+
+					// override array's default behavior
+					arr.push = l_push;
+
+					// store array's name
+					arr._name = record.name;
+
+					// store last stored index (next index to store)
+					arr._index = j;
+
+					LOG.sys('[' + record.name + '] DB record length: ' + record.data.length + ' start: ' + start + ' actual limit: ' + limit + ' _index: ' + arr._index, 'SR.Sync');
+
+					l_names[record.name] = arr;
+					names.push(record.name);
+				}
+			}
+			UTIL.safeCall(onDone, names);
+
+		},
+		function (result) {
+			UTIL.safeCall(onDone, names);
+		},
+		{});
 }
 
 var l_timer = undefined;
 
 SR.Callback.onStart(function () {
-	
+
 	// init periodic storage to DB
 	LOG.warn('init periodic syncing to DB for arrays at intervals (ms): ' + SR.Settings.TIMEOUT_SYNC_PERIOD * 1000, 'SR.Sync');
 	l_timer = setInterval(l_storeAll, SR.Settings.TIMEOUT_SYNC_PERIOD * 1000);
 });
 
 SR.Callback.onStop(function () {
-	
+
 	// stop timer
 	if (l_timer) {
 		clearTimeout(l_timer);
