@@ -32,13 +32,13 @@ var l_add = exports.add = function (name, func, checker) {
 	}
 
 	if (typeof name !== 'string' || typeof func !== 'function') {
-		LOG.error('[' + name +'] argument type error, please re-check function definition', l_name);
+		LOG.error('[' + name + '] argument type error, please re-check function definition', l_name);
 		return false;
 	}
 
 	// check redundency & type correctness
 	if (l_list.hasOwnProperty(name)) {
-		LOG.warn('API [' + name +'] already defined, replace it...', l_name);
+		LOG.warn('API [' + name + '] already defined, replace it...', l_name);
 	}
 
 	// store direct calling functions (return results directly and not via callback)
@@ -51,8 +51,12 @@ var l_add = exports.add = function (name, func, checker) {
 	// define post-event action
 	var post_action = function (args, result, func, extra) {
 		return new SR.promise(function (resolve, reject) {
-			UTIL.safeCall(func, args, result, function () {
-				UTIL.safeCall(resolve);
+			UTIL.safeCall(func, args, result, function (err, customData) {
+				if (!customData) {
+					UTIL.safeCall(resolve);
+				} else {
+					UTIL.safeCall(resolve, customData);
+				}
 			}, extra);
 		});
 	}
@@ -89,15 +93,15 @@ var l_add = exports.add = function (name, func, checker) {
 		// TODO: perform argument type check (currently there's none, so internal API calls won't do type checks)
 		// TODO: move checker to here
 
-		var onError = function(err) {
-			LOG.error('onError '+ err, l_name);
+		var onError = function (err) {
+			LOG.error('onError ' + err, l_name);
 			UTIL.safeCall(onDone, err);
 		}
 
 		function onExec() {
 			// make actual call to user-defined function
 			// NOTE: we also return values for direct function calls
-			return UTIL.safeCall(l_list[name], args, function (err, result, unsupported_return) {
+			return UTIL.safeCall(l_list[name], args, async function (err, result, unsupported_return) {
 				if (err) {
 					LOG.error('[' + name + '] error:', l_name);
 					LOG.error(err, l_name);
@@ -117,7 +121,7 @@ var l_add = exports.add = function (name, func, checker) {
 
 				var posts = l_afterActions[name];
 				var promise = undefined;
-				for (var i=0; i < posts.length; i++) {
+				for (var i = 0; i < posts.length; i++) {
 					if (!promise) {
 						promise = post_action(args, { err: err, result: result }, posts[i], extra);
 					} else {
@@ -125,13 +129,17 @@ var l_add = exports.add = function (name, func, checker) {
 					}
 				}
 
+				let customData = await promise
+				if (customData) {
+					result['customData'] = JSON.parse(JSON.stringify(customData))
+				}
+
 				// last action
-				promise.then(new SR.promise(function (resolve, reject) {
+				new SR.promise(function (resolve, reject) {
 					//LOG.warn('everything is done... call original onDone...', l_name);
 					UTIL.safeCall(onDone, err, result);
 					resolve();
-				}));
-
+				});
 			}, extra);
 		}
 
@@ -166,7 +174,7 @@ var l_add = exports.add = function (name, func, checker) {
 	// simply reject requests for _prviate API
 	if (checkers[name] && checkers[name]['_private'] === true) {
 		handlers[name] = function (event) {
-			event.done({err: '[' + name + '] is private'});
+			event.done({ err: '[' + name + '] is private' });
 		}
 	} else {
 		handlers[name] = function (event) {
@@ -177,7 +185,7 @@ var l_add = exports.add = function (name, func, checker) {
 				if (typeof result === 'object' && typeof result.type === 'string') {
 					if (result.type === 'html' && typeof result.data === 'string') {
 						// return webpage
-						return event.done('SR_HTML', {page: result.data});
+						return event.done('SR_HTML', { page: result.data });
 					}
 
 					// check for special SR messages
@@ -192,7 +200,7 @@ var l_add = exports.add = function (name, func, checker) {
 				}
 				else {
 					// normal processing
-					event.done({err: err, result: result});
+					event.done({ err: err, result: result });
 				}
 
 			}, {
@@ -204,8 +212,10 @@ var l_add = exports.add = function (name, func, checker) {
 	}
 
 	LOG.sys('transforming [' + name + '] as handler...', l_name);
-	SR.Handler.add({handlers: handlers,
-					checkers: checkers});
+	SR.Handler.add({
+		handlers: handlers,
+		checkers: checkers
+	});
 
 	return true;
 }
@@ -216,7 +226,7 @@ l_add('SR_API_QUERY', function (args, onDone) {
 	var list = Object.keys(l_list);
 
 	// remove direct functions
-	for (var i=list.length-1; i >= 0; i--) {
+	for (var i = list.length - 1; i >= 0; i--) {
 		if (l_direct_list.hasOwnProperty(list[i])) {
 			list.splice(i, 1);
 		}
@@ -284,10 +294,10 @@ var l_pending = {};
 //		SR.API['server_name'].API_NAME()
 //
 l_add('_addRemote', {
-	name:		'string',
-	host:		'object',
-	secured:	'+boolean',
-	use_socket:	'+boolean',
+	name: 'string',
+	host: 'object',
+	secured: '+boolean',
+	use_socket: '+boolean',
 	auto_reconnect: '+boolean',
 	offlineWarning: 'object',
 	retryInterval: '+number',
@@ -322,17 +332,17 @@ l_add('_addRemote', {
 	}
 
 	if (typeof args.disconnectFrom === 'number') {
-		disconnectTime = Math.floor((Date.now() - args.disconnectFrom)/1000);
+		disconnectTime = Math.floor((Date.now() - args.disconnectFrom) / 1000);
 		let retryIntervalSec = Math.round(retryInterval / 1000);
 		if (disconnectTime > 30 && (retryIntervalSec < 30 && Math.round(disconnectTime % 30) >= retryIntervalSec))
 			showLOG = false;
-		if (args.offlineWarning && disconnectTime > 30 && Math.round(disconnectTime / 30)  === 1 && Math.round(disconnectTime % 30) <= retryIntervalSec) {
+		if (args.offlineWarning && disconnectTime > 30 && Math.round(disconnectTime / 30) === 1 && Math.round(disconnectTime % 30) <= retryIntervalSec) {
 			let notifyMail = args.offlineWarning.mail || UTIL.userSettings('adminMail');
-			UTIL.notifyAdmin('WARNING: ' + args.name + ' offline!' , args.name + 'has disconnected for ' + disconnectTime + ' seconds');
+			UTIL.notifyAdmin('WARNING: ' + args.name + ' offline!', args.name + 'has disconnected for ' + disconnectTime + ' seconds');
 			LOG.warn('notify admin to ' + UTIL.userSettings('adminMail'), l_name);
 		}
 	}
-	
+
 	// add a remote host calling function
 	if (args.use_socket === true) {
 
@@ -350,7 +360,7 @@ l_add('_addRemote', {
 
 			// Open the connection
 			sock.onopen = function () {
-				
+
 				args.disconnectFrom = undefined;
 				// send cookie explicitly (my serverID)
 				var cookie = SR.Settings.SERVER_INFO.id;
@@ -365,7 +375,7 @@ l_add('_addRemote', {
 					LOG.warn(l_pending, l_name);
 				}
 
-				for (var i=0; i < pending.length; i++) {
+				for (var i = 0; i < pending.length; i++) {
 					sock.sendJSON(pending[i]);
 				}
 				pending = [];
@@ -386,7 +396,7 @@ l_add('_addRemote', {
 					if (!args.disconnectFrom) {
 						args.disconnectFrom = Date.now();
 					}
-					
+
 					setTimeout(function () {
 						SR.API.addRemote(args);
 					}, retryInterval);
@@ -409,7 +419,7 @@ l_add('_addRemote', {
 				var list = l_onDisconnect[args.name];
 				if (showLOG)
 					LOG.warn('notify onDisconnect callbacks: ' + list.length, l_name);
-				for (var i=0; i < list.length; i++)
+				for (var i = 0; i < list.length; i++)
 					UTIL.safeCall(list[i]);
 			}
 
