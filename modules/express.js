@@ -564,8 +564,14 @@ l_module.start = function (config, onDone) {
 		LOG.error(err, l_name);
 	}
 
+	SR.SockJS.start(server, function(s) {
+		this.created = true;
+		LOG.warn('SockJS [' + (config.secured ? 'https' : 'http') + '] server started', 'SR.Component');
+		UTIL.safeCall(onDone);
+	})
+
 	// process config & verify correctness here
-	UTIL.safeCall(onDone, err);
+	// UTIL.safeCall(onDone, err);
 };
 
 // module shutdown
