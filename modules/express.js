@@ -551,11 +551,11 @@ l_module.start = function (config, onDone) {
 	var server = SR.http.createServer(app).listen(express_port, function() {
 		LOG.warn('Express server listening on port ' + express_port, l_name);
 	});
-		
+
 	// }
 
 	// set up script monitor, so we may hot-load router
-	//var router_path = SR.Settings.FRONTIER_PATH + '/' + (config.router || 'router.js');
+	// var router_path = SR.Settings.FRONTIER_PATH + '/' + (config.router || 'router.js');
 	var router_path = SR.path.join(SR.Settings.FRONTIER_PATH, (config.router || 'router.js'));
 
 	var err = undefined;

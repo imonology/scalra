@@ -20,8 +20,8 @@ var l_convert = function (str) {
 	var obj = {};
 	str = str.split('; ');
 	for (var i = 0; i < str.length; i++) {
-    	var tmp = str[i].split('=');
-    	obj[tmp[0]] = tmp[1];
+		var tmp = str[i].split('=');
+		obj[tmp[0]] = tmp[1];
 	}
 	return obj;
 }
@@ -105,16 +105,14 @@ exports.start = function (http_server, onDone) {
 								
 							sock_conn.write(JSON.stringify(res_obj));
 							return true;
-            
 						}, 'sockjs', from);
-            
+
 					// necessary?
 					sock_conn.connID = conn_obj.connID;
 					
 					LOG.sys('recording new sockjs connection: ' + conn_obj.connID, 'SR.SockJS');				
 				}
 				else {
-				
 					var obj = JSON.parse(message);
 					var event = SR.EventManager.unpack(obj, conn_obj, conn_obj.cookie);
 					SR.EventManager.checkin(event);
@@ -124,7 +122,7 @@ exports.start = function (http_server, onDone) {
 			// on connection close event
 			sock_conn.on('close', function() {
 
-            	LOG.warn('user disconnected', 'SR.SockJS');
+				LOG.warn('user disconnected', 'SR.SockJS');
 
 				// remove connection object
 				if (conn_obj)
