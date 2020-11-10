@@ -60,16 +60,20 @@ exports.start = function (http_server, onDone) {
 					// console.dir('no cookie, message');
 					// console.dir(message);
 
-					var cookieHeader = sock_conn._session.recv.ws._stream._readableState.pipes._driver._request.headers.cookie;
-					if (cookieHeader && typeof cookieHeader === 'string') {
-						cookieHeader.split(';').forEach((cookie_str) => {
-							var parts = cookie_str.split('=');
-							// cookie[ parts[ 0 ].trim() ] = ( parts[ 1 ] || '' ).trim();
-							if (parts[0] == 'ic.sess') {
-								cookie = parts[1];
-							}
-						});
+					if (sock_conn._session.recv.ws != undefined
+					    && sock_conn._session.recv.ws._stream._readableState.pipes._driver != undefined) {
+						var cookieHeader = sock_conn._session.recv.ws._stream._readableState.pipes._driver._request.headers.cookie;
+						if (cookieHeader && typeof cookieHeader === 'string') {
+							cookieHeader.split(';').forEach((cookie_str) => {
+								var parts = cookie_str.split('=');
+								// cookie[ parts[ 0 ].trim() ] = ( parts[ 1 ] || '' ).trim();
+								if (parts[0] == 'ic.sess') {
+									cookie = parts[1];
+								}
+							});
+						}
 					}
+
 					// console.dir('cookieHeader');
 					// console.dir(cookieHeader);
 					// console.dir('cookie');
