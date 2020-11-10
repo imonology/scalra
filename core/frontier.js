@@ -345,7 +345,7 @@ exports.icFrontier = function (config) {
 	
 	// load default components
 	SR.Module.addStep(SR.Component.REST());
-	// SR.Module.addStep(SR.Component.SockJS());
+	SR.Module.addStep(SR.Component.SockJS());
 	
 	// determine if we should load AppManager or AppConnector components depending on server type
 	if (SR.Settings.ENABLE_CLUSTER_MODE) {		

@@ -515,6 +515,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 	}).then((u) => {
 		user = u || user;
 		var ip = (extra) ? extra.conn.host : 'server';
+
 		// update login time
 		user.login = {
 			IP: ip,
@@ -529,7 +530,7 @@ SR.API.add('_ACCOUNT_LOGIN', {
 			token = UTIL.createToken();
 			user.tokens.pass[token] = args.from;
 		}
-
+		
 		// save data
 		user.sync(function (err) {
 			if (err) {
