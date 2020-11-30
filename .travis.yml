@@ -1,9 +1,9 @@
 language: node_js
 node_js:
   - "node"
-  - "0.10"
-  - "0.12"
-  - "4"
-  - "6"
+  - "14"
+  - "12"
+  - "10"
+  - "8"
 notifications:
   slack: imonology:6XuV0eT2hcTdERw7WEEdvAUm
