@@ -222,14 +222,16 @@ l_safeCall = exports.safeCall = function (callback) {
 			'server:\n' + UTIL.convertString(SR.Settings.SERVER_INFO) + '\n\n' + err_str);
 		
 		// if catch is not enable, then simply terminate program
-		if (SR.Settings.SAFE_CALL === false) {
+		if (SR.Settings.SAFE_CALL === true || SR.Settings.Project.SAFE_CALL === true) {
+			return;
+		}
+		
 		// NOTE: do not throw exception as it'll process extra messages
 		//throw new Error('program terminated by error in script');
-			//process.exit();
-			// notify server crash
-			SR.Callback.notify('onCrash');	
-			SR.Callback.shutdown();
-		}
+		//process.exit();
+		// notify server crash
+		SR.Callback.notify('onCrash');	
+		SR.Callback.shutdown();
 	}
 
 	return return_value;
