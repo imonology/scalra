@@ -60,7 +60,7 @@
     "orm": "^5.0.5",
     "os-utils": "0.0.14",
     "parse-filepath": "1.0.1",
-    "pm2": "^2.8.0",
+    "pm2": "^4.4.0",
     "socket.io": "^2.3.0",
     "sockjs": "0.3.18",
     "sockjs-client": "1.1.1",
