@@ -3,9 +3,10 @@
   "version": "0.0.1",
   "description": "demo for the Scalra node.js framework",
   "scripts": {
-	"start": "node lobby/frontier.js",
-	"build": "cd ./node_modules/scalra-flexform && npm run build -- --dest $(pwd)/../../dist"
-
+    "start": "node lobby/frontier.js",
+    "build": "cd ./node_modules/scalra-flexform && npm run build -- --dest $(pwd)/../../dist",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "keywords": [
     "prototyping",
@@ -23,6 +24,8 @@
   "homepage": "https://github.com/imonology/scalra",
   "dependencies": {
     "scalra": "*",
-    "scalra-flexform": "*"
-  }
+    "scalra-flexform": "*",
+    "snyk": "^1.437.4"
+  },
+  "snyk": true
 }
