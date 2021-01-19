@@ -255,12 +255,16 @@ var readDB = exports.readDB = function (arg) {
 
 
 exports.daemon = function (arg) {
-	switch (arg.action) {
-	case 'startSetInterval':
+	// switch (arg.action) {
+	// case 'startSetInterval':
+	// 	setInterval(l_schedule, 5000);
+	// 	break;
+	// default:
+	// 	break;
+	// }
+
+	if (arg.action === 'startSetInterval') {
 		setInterval(l_schedule, 5000);
-		break;
-	default:
-		break;
 	}
 };
 
@@ -299,7 +303,7 @@ function toNumberWeekday (arg) {
 		number = 6;
 		break;
 	default:
-		number = false;
+		number = false;	// why Boolean??
 		break;
 	}
 
@@ -328,19 +332,18 @@ function isNumberRange (arg) {
 	var start = arg.start;
 	var end = arg.end;
 
-	if (current === start || current === end) {
+	if ((current === start || current === end)
+		|| ((start <= current) && (current <= end))
+		|| ((end <= start) && (start <= current))) {
 		return true;
-	} else if (start <= current && current <= end) {
-		return true;
-	} else if (end <= start && start <= current) {
-		return true;
-	} else {
-		return false;
 	}
 	return false;
 }
 
 exports.checkRange = function (arg) {
+	let date = new Date();
+	let result;
+
 	if (!arg) {
 		LOG.warn('no arg', l_cat);
 		return;
@@ -362,75 +365,74 @@ exports.checkRange = function (arg) {
 		switch (arg.start.cycle.toLowerCase()) {
 		case 'daily':
 			LOG.warn('============= in daily', l_cat);
-			var d = new Date();
 			if (isNumberRange({
 				start: arg.start.hour,
 				end: arg.end.hour,
-				current: d.getHours()
+				current: date.getHours()
 			})) {
 				if (isNumberRange({
 					start: arg.start.minute,
 					end: arg.end.minute,
-					current: d.getMinutes()
+					current: date.getMinutes()
 				})) {
 					return true;
 				}
 			}
-			return false;
+			result = false;
 			break;
 		case 'weekly':
 			LOG.warn('============= in weekly', l_cat);
-			var d = new Date();
 			if (isNumberRange({
 				start: arg.start.weekday_num,
 				end: arg.end.weekday_num,
-				current: d.getDay()
+				current: date.getDay()
 			})) {
 				if (isNumberRange({
 					start: arg.start.hour,
 					end: arg.end.hour,
-					current: d.getHours()
+					current: date.getHours()
 				})) {
 					if (isNumberRange({
 						start: arg.start.minute,
 						end: arg.end.minute,
-						current: d.getMinutes()
+						current: date.getMinutes()
 					})) {
 						return true;
 					}
 				}
 			}
-			return false;
+			result = false;
 			break;
 		case 'monthly':
 			LOG.warn('============= in monthly', l_cat);
-			var d = new Date();
 			if (isNumberRange({
 				start: arg.start.monthday,
 				end: arg.end.monthday,
-				current: d.getDate()
+				current: date.getDate()
 			})) {
 				if (isNumberRange({
 					start: arg.start.hour,
 					end: arg.end.hour,
-					current: d.getHours()
+					current: date.getHours()
 				})) {
 					if (isNumberRange({
 						start: arg.start.minute,
 						end: arg.end.minute,
-						current: d.getMinutes()
+						current: date.getMinutes()
 					})) {
 						return true;
 					}
 				}
 			}
-			return false;
+			result = false;
 			break;
 		default:
-			return false;
+			result = false;
 			break;
 		}
 	}
+
+	return result;
 };
 
 exports.triggerTask = function (arg) {
@@ -486,7 +488,7 @@ exports.triggerTask = function (arg) {
 // 每單位時間(目前為 5 秒) 檢查是否有符合條件的 task
 //
 ////////////////////////////////////////
-var l_schedule = function () {
+function l_schedule () {
 	if (status.enabled !== true) {
 		return;
 	}
@@ -611,12 +613,17 @@ var l_schedule = function () {
 			//~ console.log("trigger is false ---------");
 		}
 	}
-};
+}
 
 
-var getDateTime = function (d) {
+function getDateTime (d) {
 	// var eventName = 'getDateTime';
-	if (d) {var date = new Date(d);} else {var date = new Date();}
+	let date = new Date();
+
+	if (d) {
+		date = new Date(d);
+	}
+
 	var hour = date.getHours();
 	hour = (hour < 10 ? '0' : '') + hour;
 	var min = date.getMinutes();
@@ -665,4 +672,4 @@ var getDateTime = function (d) {
 		break;
 	}
 	return timeObj;
-};
+}

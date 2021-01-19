@@ -1,3 +1,5 @@
+// file deepcode ignore HttpToHttps: <Traefik will do this for us>
+
 //
 // global.js
 //

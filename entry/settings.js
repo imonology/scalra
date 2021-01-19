@@ -1,3 +1,5 @@
+/* global SR, LOG, UTIL */
+
 //
 //
 // settings.js
@@ -15,6 +17,6 @@ settings.keys = {
 	privatekey:  './keys/privatekey.pem',
 	certificate:  './keys/certificate.pem',
 	ca:  './keys/ca.pem'
-}
+};
 
-settings.mongoAccess = {"DB_name":"scalra-Scalra","username":"scalra-Scalra","password":"720688"};
+settings.mongoAccess = {'DB_name':'scalra-Scalra','username':'scalra-Scalra','password':'720688'};
