@@ -67,6 +67,7 @@
     "swagger-ui": "^3.38.0"
   },
   "devDependencies": {
+    "babel-eslint": "^10.1.0",
     "eslint": "^5.16.0"
   }
 }
