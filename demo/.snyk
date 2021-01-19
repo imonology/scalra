@@ -5,7 +5,7 @@ ignore: {}
 patch:
   'npm:debug:20170905':
     - scalra-flexform > @vue/cli-plugin-e2e-nightwatch > nightwatch > mocha-nightwatch > debug:
-        patched: '2021-01-19T01:33:19.221Z'
+        patched: '2021-01-19T01:36:51.156Z'
   'npm:ms:20170412':
     - scalra-flexform > @vue/cli-plugin-e2e-nightwatch > nightwatch > mocha-nightwatch > debug > ms:
-        patched: '2021-01-19T01:33:19.221Z'
+        patched: '2021-01-19T01:36:51.156Z'
