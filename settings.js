@@ -1,8 +1,10 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 //
 // settings.js
 //
 // global definitions of common settings
-// 2012-07-02 initial version 
+// 2012-07-02 initial version
 // 2013-07-25 add all src/dev/test/prod settings
 // 2014-01-13 add version number starting from 0.0.4.1
 // 2014-02-20 move version to global.js
@@ -184,7 +186,7 @@ var settings = exports.settings = {
 };
 
 // OS Specific
-console.log('process.platform: ' + process.platform);
+console.info('process.platform: ' + process.platform);
 settings.SLASH = SR.path.sep;
 
 //if (process.platform === 'linux') {
