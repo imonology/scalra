@@ -1,0 +1,11 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.19.0
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:debug:20170905':
+    - scalra-flexform > @vue/cli-plugin-e2e-nightwatch > nightwatch > mocha-nightwatch > debug:
+        patched: '2021-01-19T01:36:51.156Z'
+  'npm:ms:20170412':
+    - scalra-flexform > @vue/cli-plugin-e2e-nightwatch > nightwatch > mocha-nightwatch > debug > ms:
+        patched: '2021-01-19T01:36:51.156Z'
