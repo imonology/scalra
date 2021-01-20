@@ -61,7 +61,7 @@
     "os-utils": "0.0.14",
     "parse-filepath": "1.0.1",
     "pm2": "^4.4.0",
-    "socket.io": "^3.0.0",
+    "socket.io": "^3.0.4",
     "sockjs": "0.3.20",
     "sockjs-client": "1.1.1",
     "swagger-ui": "^3.38.0"
