@@ -13,7 +13,7 @@ module.exports = function (version) {
 	var fs = require('fs');
 	var ver = version || 'curr';
 
-	console.log('execution mode: ' + ver);
+	console.info('execution mode: ' + ver);
 
 	// NOTE: starting from 0.0.5.0, global.js is not under /common
 	var path = __dirname + '/' + ver + '/common/global.js';

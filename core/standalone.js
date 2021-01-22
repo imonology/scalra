@@ -25,7 +25,8 @@ var cleanArray = exports.cleanArray = function (actual){
 
 
 //compare two arrays
-exports.compare2arrays = function compare2arrays (array1, array2) {
+exports.compare2arrays = compare2arrays;
+function compare2arrays (array1, array2) {
 	//console.log("array1.length" + array1.length + " array2.length" + array2.length);
 	if (array1.length !== array2.length) {
 		return false;
@@ -202,7 +203,8 @@ var whichPartition = exports.whichPartition = function (arg) {
 };
 
 
-exports.isEnoughDiskSpace = function isEnoughDiskSpace (arg) {
+exports.isEnoughDiskSpace = isEnoughDiskSpace;
+function isEnoughDiskSpace (arg) {
 	//console.log(arg);
 	if (!arg) {
 		// FIXME: If there is no arg, how could we have arg.onDone()?
@@ -336,7 +338,8 @@ function walk (dir, done) {
 	});
 }
 
-exports.findFile = function findFile (arg) {
+exports.findFile = findFile;
+function findFile (arg) {
 	walk(arg.path, (err, results) => {
 		if (err) {
 			//throw err;
@@ -445,7 +448,8 @@ exports.findFile = function findFile (arg) {
 
 
 // FIXME: Security issues here... RCE (Remote Command Execution)
-exports.pingIPv4 = function pingIPv4 (arg) {
+exports.pingIPv4 = pingIPv4;
+function pingIPv4 (arg) {
 	switch (process.platform) {
 	case 'linux':
 	case 'darwin':
