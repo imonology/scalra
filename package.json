@@ -41,6 +41,7 @@
     "ejs-locals": "^1.0.2",
     "ejs-mate": "3.0.0",
     "emailjs": "^2.2.0",
+    "escape-html": "^1.0.3",
     "expect": "1.20.1",
     "express": "^4.17.1",
     "formidable": "1.1.1",
@@ -68,6 +69,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
-    "eslint": "^5.16.0"
+    "eslint": "^5.16.0",
+    "flow-bin": "^0.143.0"
   }
 }
