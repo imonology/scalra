@@ -1,17 +1,18 @@
-
+/* global SR, LOG, UTIL */
 /*
 	A router to execute actual commands
 */
 
 var urlParser = require('url');
+const escapeHTML = require('escape-html');
 
 var l_handlers = {};
 var l_name = 'SR.REST';
 
-l_default_page = '<html><body>hello</body></html>';
+var l_default_page = '<html><body>hello</body></html>';
 
 // load default webpage, if available
-UTIL.readFile('../lib/default.html', function (page) {
+UTIL.readFile('../lib/default.html', (page) => {
 	//LOG.warn('page is: ' + page);
 	if (page) {
 		l_default_page = page;
@@ -21,11 +22,11 @@ UTIL.readFile('../lib/default.html', function (page) {
 exports.addHandler = function (handler) {
 	var count = 0;
 	var names = '';
-	var redundent = '';
-	for (key in handler) {
+	var redundant = '';
+	for (let key in handler) {
 		if (typeof handler[key] === 'function') {
 			if (l_handlers.hasOwnProperty(key)) {
-				redundent += (key + ', ');
+				redundant += (key + ', ');
 			}
 			l_handlers[key] = handler[key];
 			count++;
@@ -34,10 +35,10 @@ exports.addHandler = function (handler) {
 	}
 	LOG.warn(count + ' handler(s) added: ' + names, 'SR.REST');
 
-	// provide redundent loading warning
-	if (redundent) {
-		LOG.warn('redundent loading: (may be redundent loading of HTTP/HTTPS version)', 'SR.REST');
-		LOG.warn(redundent, 'SR.REST');
+	// provide redundant loading warning
+	if (redundant) {
+		LOG.warn('redundant loading: (may be redundant loading of HTTP/HTTPS version)', 'SR.REST');
+		LOG.warn(redundant, 'SR.REST');
 	}
 };
 
@@ -74,12 +75,15 @@ exports.route = function (req, res, JSONobj) {
 
 				data = UTIL.convertJSON(data);
 				LOG.sys(typeof data, 'SR.REST');
-				LOG.debug('_data=', 'SR.REST');				
+				LOG.debug('_data=', 'SR.REST');
 				LOG.debug(data, 'SR.REST');
 
 				JSONobj = UTIL.mixin(JSONobj, data);
 			} else {
-				JSONobj[key] = query[key];
+				// JSONobj[key] = query[key];
+				if (query.hasOwnProperty(key)) {
+					JSONobj[key] = query[key];
+				}
 			}
 		}
 	}
@@ -109,7 +113,7 @@ exports.route = function (req, res, JSONobj) {
 		} else {
 			LOG.warn('no request handle for: ' + pathname, 'SR.REST');
 			res.writeHead(404, {'Content-Type': 'text/plain'});
-			res.end('404 Not Found: ' + pathname);
+			res.end('404 Not Found: ' + escapeHTML(pathname));
 		}
 	}
 };

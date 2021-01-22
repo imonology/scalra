@@ -1,4 +1,4 @@
-// 
+//
 // tested: nodejs v0.10.25
 
 /* todo:
@@ -9,12 +9,12 @@ var os = require('os');
 var exec = require('child_process').exec;
 var fs = require('fs');
 var path = require('path');
-var sys = require('util');
+// var sys = require('util');
 
 // clean empty elements in an array
 var cleanArray = exports.cleanArray = function (actual){
-	if (!actual) return false;
-	var newArray = new Array();
+	if (!actual) {return false;}
+	var newArray = [];
 	for(var i = 0; i<actual.length; i++){
 		if (actual[i]){
 			newArray.push(actual[i]);
@@ -25,13 +25,14 @@ var cleanArray = exports.cleanArray = function (actual){
 
 
 //compare two arrays
-var compare2arrays = exports.compare2arrays = function (array1, array2) {
+exports.compare2arrays = function compare2arrays (array1, array2) {
 	//console.log("array1.length" + array1.length + " array2.length" + array2.length);
-	if (array1.length !== array2.length) return false;
-	else {
-	    return array1.every(function (element, index) {
-    	    return element === array2[index]; 
-	    });
+	if (array1.length !== array2.length) {
+		return false;
+	} else {
+		return array1.every((element, index) => {
+			return element === array2[index];
+		});
 	}
 };
 
@@ -41,18 +42,22 @@ var diskSpace = exports.diskSpace = function (arg) {
 	var disk = {};
 	switch (process.platform) {
 	case 'linux':
-		exec('df -k',function (err, stdout, stderr){
+		exec('df -k',(err, stdout, stderr) => {
 			var x = stdout.toString();
-			for (var i = 0; i <10000; i++) {
+			for (let i = 0; i <10000; i++) {
 				x = x.replace('  ', ' ');
-				if (x.indexOf('  ') === -1) break;
+				if (x.indexOf('  ') === -1) {
+					break;
+				}
 			}
 			x = x.split('\n');
-			for (var i in x) {
+			for (let i in x) {
 				var id = x[i].split(' ');
 				id = id[id.length -1];
-				if (id === '' || id === 'on') continue;
-				disk[id] = {detial:x[i]};
+				if (id === '' || id === 'on') {
+					continue;
+				}
+				disk[id] = {detail:x[i]};
 				disk[id].sizeK = parseInt(x[i].split(' ')[1]);
 				disk[id].usedK = parseInt(x[i].split(' ')[2]);
 				disk[id].freeK = parseInt(x[i].split(' ')[3]);
@@ -71,23 +76,27 @@ var diskSpace = exports.diskSpace = function (arg) {
 		break;
 
 	case 'darwin':
-		exec('df -k',function (err, stdout, stderr){
+		exec('df -k',(err, stdout, stderr) => {
 			var x = stdout.toString();
 			//console.log(x);
-			for (var i = 0; i <10000; i++) {
+			for (let i = 0; i <10000; i++) {
 				x = x.replace('  ', ' ');
-				if (x.indexOf('  ') === -1) break;
+				if (x.indexOf('  ') === -1) {
+					break;
+				}
 			}
 			x = x.split('\n');
-			for (var i in x) {
+			for (let i in x) {
 				var id = x[i].split(' ');
 				id = id[id.length -1];
-				if ( id === '' || id === 'on' ) continue;
-				disk[id] = {detial:x[i]};
+				if ( id === '' || id === 'on' ) {
+					continue;
+				}
+				disk[id] = {detail:x[i]};
 				disk[id].sizeK = parseInt(x[i].split(' ')[1]);
 				disk[id].usedK = parseInt(x[i].split(' ')[2]);
 				disk[id].freeK = parseInt(x[i].split(' ')[3]);
-				if (isNaN(disk[id].sizeK)) {
+				if (Number.isNaN(disk[id].sizeK)) {
 					disk[id].sizeK = parseInt(x[i].split(' ')[2]);
 					disk[id].usedK = parseInt(x[i].split(' ')[3]);
 					disk[id].freeK = parseInt(x[i].split(' ')[4]);
@@ -107,20 +116,22 @@ var diskSpace = exports.diskSpace = function (arg) {
 		break;
 
 	case 'win32':
-		exec('wmic logicaldisk get', function (err, stdout, stderr) {
+		exec('wmic logicaldisk get', (err, stdout, stderr) => {
 			var x = stdout.toString();
-			for (var i = 0; i <10000; i++) {
+			for (let i = 0; i <10000; i++) {
 				x = x.replace('  ', ' ');
-				if (x.indexOf('  ') === -1) break;
+				if (x.indexOf('  ') === -1) {
+					break;
+				}
 			}
 			x = x.split('\n');
-			for (var i in x) {
+			for (let i in x) {
 				if (x[i].indexOf('0') === 0) {
 					var id = x[i].substring(2,3);
-					//console.log(id); 
-					var tmpx = x[i].split(/ [A-Z]: /);
+					//console.log(id);
+					let tmpx = x[i].split(/ [A-Z]: /);
 					//console.log(x[i]);
-					disk[id] = {detial:tmpx};
+					disk[id] = {detail:tmpx};
 					disk[id].filesystem = tmpx[2].split(' ')[1];
 					disk[id].size = parseInt(tmpx[3].split(' ')[0]);
 					disk[id].free = parseInt(tmpx[2].split(' ')[2]);
@@ -145,61 +156,60 @@ var diskSpace = exports.diskSpace = function (arg) {
 
 // to return a partition or drive for a given path
 var whichPartition = exports.whichPartition = function (arg) {
-	if (!arg) return false;
-	if (!arg.path) return false;
-	if (!arg.onDone) return false;
+	if (!arg || !arg.path || !arg.onDone) {
+		return false;
+	}
 	var input_path = path.normalize(arg.path);
-	fs.stat(input_path, function (err, stats) {
 
+	fs.stat(input_path, (err, stats) => {
 		if (err) {
-			arg.onDone(err, {} );
-			return;
-		} else {
-			fs.realpath(input_path, function (err, resolvedPath) {
-				if (err) {
-					arg.onDone(err, {});
-					return;
-				} else {
-					switch (process.platform) {
-					case 'linux':
-					case 'darwin':
-						exec('df ' + resolvedPath, function (err, stdout, stderr){
-							var x = stdout.toString();
-							for (var i = 0; i <10000; i++) {
-								x = x.replace('  ', ' ');
-								if (x.indexOf('  ') === -1) break;
-							}
-							x = x.split('\n');
-							x = x[1].split(' ');
-							//console.log(x);
-							arg.onDone(null, {resolvedPath: resolvedPath, mount: x[x.length -1]});
-						});
-						break;
-
-					case 'win32':
-						arg.onDone(null, {resolvedPath: resolvedPath, drive: resolvedPath.substring(0,1).toUpperCase()});
-						break;
-
-					default:
-						arg.onDone('not support process.platform', {});
-						break;
-					}
-				}
-			});
-
+			return arg.onDone(err, {} );
 		}
-	});
 
+		fs.realpath(input_path, (err, resolvedPath) => {
+			if (err) {
+				arg.onDone(err, {});
+				return;
+			}
+
+			switch (process.platform) {
+			case 'linux':
+			case 'darwin':
+				exec('df ' + resolvedPath, (err, stdout, stderr) => {
+					var x = stdout.toString();
+					for (var i = 0; i <10000; i++) {
+						x = x.replace('  ', ' ');
+						if (x.indexOf('  ') === -1) {break;}
+					}
+					x = x.split('\n');
+					x = x[1].split(' ');
+					//console.log(x);
+					arg.onDone(null, {resolvedPath: resolvedPath, mount: x[x.length -1]});
+				});
+				break;
+
+			case 'win32':
+				arg.onDone(null, {resolvedPath: resolvedPath, drive: resolvedPath.substring(0,1).toUpperCase()});
+				break;
+
+			default:
+				arg.onDone('not support process.platform', {});
+				break;
+			}
+
+		});
+	});
 };
 
 
-var isEnoughDiskSpace = exports.isEnoughDiskSpace = function (arg) {
+exports.isEnoughDiskSpace = function isEnoughDiskSpace (arg) {
 	//console.log(arg);
 	if (!arg) {
+		// FIXME: If there is no arg, how could we have arg.onDone()?
 		arg.onDone('no given value', 0 , 0);
 		return false;
 	}
-	
+
 	if (arg.B < 1) {
 		arg.onDone('The given value is too small.', 0 , 0);
 		return false;
@@ -263,14 +273,15 @@ var isEnoughDiskSpace = exports.isEnoughDiskSpace = function (arg) {
 };
 
 
+// FIXME: this function is not exported, nor been used internally.
 // to list network interfaces
-var ifaces = os.networkInterfaces();
-var findNetworkInterfaces = function (d) {
+function findNetworkInterfaces (d) {
+	var ifaces = os.networkInterfaces();
 	var ifs = {};
-	Object.keys(ifaces).forEach(function (ifname) {
+	Object.keys(ifaces).forEach((ifname) => {
 		var alias = 0 ;
 
-		ifaces[ifname].forEach(function (iface) {
+		ifaces[ifname].forEach((iface) => {
 			if ('IPv4' !== iface.family || iface.internal !== false) {
 				// skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
 				return;
@@ -288,49 +299,57 @@ var findNetworkInterfaces = function (d) {
 		});
 	});
 	d.onDone(null, ifs);
-};
+}
 
 
+// recursive file list
+// FIXME:
+//	Why count `pending` instead of done() at the end of this function?
+//	Due to the asynchronous nature of fs.readdir()?
+//	Maybe we can use Promise.all().
+function walk (dir, done) {
+	let results = [];
+	fs.readdir(dir, (err, list) => {
+		if (err || list.length === 0) {
+			return done(err, []);
+		}
 
-
-// recursive file list 
-var walk = function (dir, done) {
-	var results = [];
-	fs.readdir(dir, function (err, list) {
-		if (err) return done(err, []);
-		var pending = list.length;
-		if (!pending) return done(null, results);
-		list.forEach(function (file) {
+		let pending = list.length;
+		list.forEach((file) => {
 			file = path.resolve(dir, file);
-			fs.stat(file, function (err, stat) {
+			fs.stat(file, (err, stat) => {
 				if (stat && stat.isDirectory()) {
-					walk(file, function (err, res) {
+					walk(file, (err, res) => {
 						results = results.concat(res);
-						if (!--pending) done(null, results);
+						if (!--pending) {
+							done(null, results);
+						}
 					});
 				} else {
 					results.push({filename: file, stat: stat});
-					if (!--pending) done(null, results);
+					if (!--pending) {
+						done(null, results);
+					}
 				}
 			});
 		});
 	});
-};
+}
 
-var findFile = exports.findFile = function (arg) {
-	walk(arg.path, function (err, results) {
+exports.findFile = function findFile (arg) {
+	walk(arg.path, (err, results) => {
 		if (err) {
 			//throw err;
-			console.log('error: path exists?');
+			console.warn('error: path exists?');
 			arg.onDone(['error: path exists?']);
 			return;
 		}
 		//console.log(results);
-		
+
 		var r = undefined;
 
 		if (arg.sortOption) {
-			r = results.sort(function (a, b){
+			r = results.sort((a, b) => {
 				switch ( arg.sortOption ) {
 				case 'filenameLocale':
 					return a.file.localeCompare(b.file);
@@ -365,8 +384,8 @@ var findFile = exports.findFile = function (arg) {
 			console.log('no sortOption');
 		}
 		//console.log(r);
-		
-		for (var i in r) {
+
+		for (let i in r) {
 			if ( arg.rexmatch ) {
 				if ( r[i].file.match(arg.rexmatch)) {
 				} else {
@@ -375,7 +394,7 @@ var findFile = exports.findFile = function (arg) {
 					delete r[i];
 				}
 			}
-			
+
 			if ( r[i] && r[i].stat && arg.ctime && arg.ctime.start && arg.ctime.end ) {
 				if ( r[i].stat.ctime.getTime() >= arg.ctime.start.getTime() && r[i].stat.ctime.getTime() <= arg.ctime.end.getTime() ) {
 				} else {
@@ -402,8 +421,8 @@ var findFile = exports.findFile = function (arg) {
 		}
 
 		if ( arg.limit && typeof arg.limit === 'number' ) {
-			var re = [];
-			for (var i in r) {
+			let re = [];
+			for (let i in r) {
 				if ( i > arg.limit -1 ) {
 					break;
 				}
@@ -413,9 +432,9 @@ var findFile = exports.findFile = function (arg) {
 		}
 
 		if ( arg.outputFilenameOnly && arg.outputFilenameOnly === true ) {
-			var re = [];
-			for (var i in r) {
-				re.push(r[i].file); 
+			let re = [];
+			for (let i in r) {
+				re.push(r[i].file);
 			}
 			r = re;
 		}
@@ -425,23 +444,25 @@ var findFile = exports.findFile = function (arg) {
 };
 
 
-
-var pingIPv4 = exports.pingIPv4 = function (arg) {
+// FIXME: Security issues here... RCE (Remote Command Execution)
+exports.pingIPv4 = function pingIPv4 (arg) {
 	switch (process.platform) {
 	case 'linux':
 	case 'darwin':
-		var cmd = 'ping -c 3 localhost'; 
-		exec(cmd, function (error, stdout, stderr) { 
-			if (error) throw error;
+		var cmd = 'ping -c 3 localhost';
+		exec(cmd, (error, stdout, stderr) => {
+			if (error) {
+				throw error;
+			}
 			//sys.puts(stdout);
-			var x = stdout.split('\n'); 
+			var x = stdout.split('\n');
 			x = cleanArray(x);
-			console.log(x);
+			console.info(x);
 		});
 		break;
 	case 'win32':
 		throw 'not supported';
-			
+
 		break;
 	default:
 		throw 'not supported';
