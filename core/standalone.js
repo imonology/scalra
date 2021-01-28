@@ -35,7 +35,7 @@ function compare2arrays (array1, array2) {
 			return element === array2[index];
 		});
 	}
-};
+}
 
 
 // check disk space
@@ -272,7 +272,7 @@ function isEnoughDiskSpace (arg) {
 			}
 		}});
 	}});
-};
+}
 
 
 // FIXME: this function is not exported, nor been used internally.
@@ -444,7 +444,7 @@ function findFile (arg) {
 
 		arg.onDone(r);
 	});
-};
+}
 
 
 // FIXME: Security issues here... RCE (Remote Command Execution)
@@ -472,7 +472,7 @@ function pingIPv4 (arg) {
 		throw 'not supported';
 		break;
 	}
-};
+}
 
 
 //pingIPv4("google.com");

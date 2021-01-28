@@ -103,7 +103,7 @@ exports.createUUID = function () {
 // ref: http://stackoverflow.com/questions/8532406/create-a-random-token-in-javascript-based-on-user-details
 function rand () {
 	return Math.random().toString(36).substr(2); // remove `0.`
-};
+}
 
 // generate random token
 exports.createToken = function () {
@@ -117,7 +117,7 @@ function l_rand () {
 	var f = (arguments[1]) ? arguments[0] : 0;
 	var t = (arguments[1]) ? arguments[1] : arguments[0];
 	return Math.floor((Math.random() * (t - f)) + f);
-};
+}
 
 // create a numerical ID number between 0 and 10,000
 exports.createID = function (limit) {
@@ -269,7 +269,7 @@ exports.timeoutCall = function (callback, timeout, msg) {
 
 		// call original callback
 		UTIL.safeCall(callback);
-	};
+	}
 
 	// force calling timeout after some time (in ms)
 	var timeout_trigger = setTimeout(() => {
@@ -594,7 +594,7 @@ exports.emailText = function (msg, onSuccess, onFail) {
 		// if no admin mail then return
 		var adminMail = UTIL.userSettings('adminMail');
 		if (adminMail === undefined || adminMail === '') {
-			var errmsg = 'No receiver for sending e-mail:\n' + 'subject: ' + msg.subject;
+			let errmsg = 'No receiver for sending e-mail:\n' + 'subject: ' + msg.subject;
 			LOG.warn(errmsg, l_name);
 			return l_safeCall(onFail, errmsg);
 		}
@@ -620,7 +620,7 @@ exports.emailText = function (msg, onSuccess, onFail) {
 	if (SR.Settings.EMAIL_CONFIG === undefined
 		|| SR.Settings.EMAIL_CONFIG.user === ''
 		|| SR.Settings.EMAIL_CONFIG.password === '') {
-		var errmsg = 'no EMAIL_CONFIG specified for system or project, cannot send emails';
+		let errmsg = 'no EMAIL_CONFIG specified for system or project, cannot send emails';
 		LOG.error(errmsg, l_name);
 		return l_safeCall(onFail, errmsg);
 	}
@@ -686,7 +686,7 @@ function ISODateString (d) {
 		+ pad(d.getMinutes())
 		+ pad(d.getSeconds())
 		+ pad1000(d.getMilliseconds());
-};
+}
 
 // return a unique date time string
 exports.getDateTimeString = function () {
@@ -789,7 +789,7 @@ exports.findValidFile = function (list, path, onDone) {
 				}
 			});
 		};
-	};
+	}
 
 	var tasks = [];
 	for (var i in list) {
@@ -944,7 +944,7 @@ function l_cpu_realtime_info (arg) {
 		'5': cpu.loadavg(5),
 		'15': cpu.loadavg(15),
 	};
-};
+}
 
 //var njds = require('nodejs-disks');
 var node_df = require('node-df');
@@ -1076,15 +1076,14 @@ function l_njds (arg) {
 			realtimeInfo.previousTX = value;
 		});
 	}
-};
+}
 
 // get a current snapshot of system's hardware
 var l_getSystemInfo = exports.getSystemInfo = function () {
 
 
-	if (process.platform === 'linux') {
-
-	}
+	// if (process.platform === 'linux') {
+	// }
 
 	return {
 		//title:  process.title,
@@ -1354,7 +1353,8 @@ exports.writeSystemConfig = function (file, onDone) {
 ///////////////////////////////////
 // get a JSON with date and time
 var l_getDateTimeJson = exports.getDateTimeJson = function (d) {
-	if (d) {var date = new Date(d);} else {var date = new Date();}
+	let date = d ? new Date(d) : new Date();
+	// if (d) {var date = new Date(d);} else {var date = new Date();}
 	var hour = date.getHours();
 	hour = (hour < 10 ? '0' : '') + hour;
 	var min = date.getMinutes();
@@ -1537,50 +1537,54 @@ exports.findFiles = function (arg) {
 
 		if (arg.sortOption) {
 			r = results.sort((a, b) => {
-				if (!a) {return 0;}
-				if (!b) {return 0;}
+				let ret;
+				if (!a || !b) {
+					return 0;
+				}
+
 				switch (arg.sortOption) {
 				case 'filenameLocale':
-					return a.file.localeCompare(b.file);
+					ret = a.file.localeCompare(b.file);
 					break;
 				case 'filename':
-					return a.file - b.file; // length of filename
+					ret = a.file - b.file; // length of filename
 					break;
 				case 'lengthOfFilename':
-					return a.file.length - b.file.length; // length of filename
+					ret = a.file.length - b.file.length; // length of filename
 					break;
 				case 'atime':
-					return a.stat.atime - b.stat.atime; // access time of file
+					ret = a.stat.atime - b.stat.atime; // access time of file
 					break;
 				case 'mtime':
-					if (!a.stat) {return 0;}
-					if (!b.stat) {return 0;}
-					if (!a.stat.mtime) {return 0;}
-					if (!b.stat.mtime) {return 0;}
-					return a.stat.mtime - b.stat.mtime; // modification time of file
+					if (!a.stat || !b.stat) {return 0;}
+					if (!a.stat.mtime || !b.stat.mtime) {return 0;}
+
+					ret = a.stat.mtime - b.stat.mtime; // modification time of file
 					break;
 					// http://www.linux-faqs.info/general/difference-between-mtime-ctime-and-atime
 					// ctime: ctime is the inode or file change time. The ctime gets updated when the file attributes are changed, like changing the owner, changing the permission or moving the file to an other filesystem but will also be updated when you modify a file.
 					// mtime: mtime is the file modify time. The mtime gets updated when you modify a file. Whenever you update content of a file or save a file the mtime gets updated.
 					// atime: atime is the file access time. The atime gets updated when you open a file but also when a file is used for other operations like grep, sort, cat, head, tail and so on.
 				case 'ctime':
-					return a.stat.ctime - b.stat.ctime; // creation time of file
+					ret = a.stat.ctime - b.stat.ctime; // creation time of file
 					break;
 				case 'filesize':
-					return a.stat.size - b.stat.size; // size of file
+					ret = a.stat.size - b.stat.size; // size of file
 					break;
 				default:
 					break;
 				}
+
+				return ret;
 			});
 		} else {
 			console.log('no sortOption');
 		}
 		//console.log(r);
 
-		for (var i in r) {
+		for (let i in r) {
 			if (arg.rexmatch) {
-				if (r[i].file.match(arg.rexmatch)) {} else {
+				if ( !(r[i].file.match(arg.rexmatch)) ) {
 					//console.log("delete: ");
 					//console.log(r[i]);
 					delete r[i];
@@ -1588,7 +1592,8 @@ exports.findFiles = function (arg) {
 			}
 
 			if (r[i] && r[i].stat && arg.ctime && arg.ctime.start && arg.ctime.end) {
-				if (r[i].stat.ctime.getTime() >= arg.ctime.start.getTime() && r[i].stat.ctime.getTime() <= arg.ctime.end.getTime()) {} else {
+				if ( r[i].stat.ctime.getTime() < arg.ctime.start.getTime()
+				    || r[i].stat.ctime.getTime() > arg.ctime.end.getTime() ) {
 					//console.log("delete: ");
 					//console.log(r[i]);
 					delete r[i];
@@ -1596,7 +1601,8 @@ exports.findFiles = function (arg) {
 			}
 
 			if (r[i] && r[i].stat && arg.mtime && arg.mtime.start && arg.mtime.end) {
-				if (r[i].stat.mtime.getTime() >= arg.mtime.start.getTime() && r[i].stat.mtime.getTime() <= arg.mtime.end.getTime()) {} else {
+				if (r[i].stat.mtime.getTime() < arg.mtime.start.getTime()
+				    || r[i].stat.mtime.getTime() > arg.mtime.end.getTime()) {
 					//console.log("delete: ");
 					//console.log(r[i]);
 					delete r[i];
