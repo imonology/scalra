@@ -1,3 +1,4 @@
+/* cSpell:disable */
 /* global SR, LOG, UTIL */
 //
 // icUtility.js
@@ -63,15 +64,18 @@ parsePath(path)										// convert a path into an object for easier handling
 
 */
 
+// deepcode ignore HttpToHttps: it's safe behind a proxy (traefik)
 const http = require('http');
 const https = require('https');
-const url = require('url');
+const urlparser = require('url');
 const querystring = require('querystring');
 const os = require('os');
 const cpu  = require('os-utils');
 const spawn = require('child_process').spawn;	// for starting servers
 const exec = require('child_process').exec;
 const fs = require('fs');
+const pathparser = require('path');
+const mailsender = require('emailjs/email');
 
 var l_name = 'UTIL';
 
@@ -356,9 +360,10 @@ exports.getLocalDomain = function () {
 //
 // helper to send HTTP post request to an URL with JSON parameters
 var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, content_type, encoding) {
+	let send_data = '';
 
 	// parse the url first to extract different fields
-	var parsed_url = url.parse(url_request);
+	var parsed_url = urlparser.parse(url_request);
 	var header = undefined;
 
 	// set default to empty object, if not specified
@@ -367,7 +372,6 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 	}
 
 	// Build the post string from an object to string format
-	var data = '';
 	if (typeof data_obj !== 'object') {
 		LOG.warn('data_obj of type: ' + typeof data_obj + ' POST now only accepts object as parameter. cannot do POST', l_name);
 		return l_safeCall(onDone, 'input not an object');
@@ -380,11 +384,11 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 		LOG.sys(header, l_name);
 	} else if (content_type === 'form') {
 		// check for form posting
-		data = querystring.stringify(data_obj);
+		send_data = querystring.stringify(data_obj);
 		content_type = 'application/x-www-form-urlencoded';
 	} else {
 		// NOTE: we default to 'application/json' type for the request parameters
-		data = encodeURIComponent(JSON.stringify(data_obj));
+		send_data = encodeURIComponent(JSON.stringify(data_obj));
 		content_type = 'application/json';
 	}
 
@@ -396,7 +400,7 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 		headers: header || {
 			//'Connection':	  'keep-alive',
 			'content-type': content_type,
-			'content-length': data.length
+			'content-length': send_data.length
 		}
 	};
 
@@ -417,6 +421,7 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 	// Set up the request
 	// TODO: combine response handling with GET request
 	var req = server.request(options, (res) => {
+		let recv_data = '';
 
 		//LOG.sys('HTTP POST request respond header:', l_name);
 		//LOG.sys(res.headers);
@@ -431,33 +436,31 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 			// try to determine proper encoding type automatically
 			// NOTE: for images / webpages we need to have 'binary' encoding,
 			// for JSON objects we need 'utf-8' for proper Chinese display
-			if (type.indexOf('application/json') >= 0) {encoding = 'utf-8';}
+			if (type.indexOf('application/json') >= 0) {encoding = 'utf8';}
 		}
-
-		var data = '';
 
 		// set encoding, which can be passed in, default (binary), or determined (for application/json it's 'utf-8')
 		LOG.sys('encoding: ' + encoding + ' url: ' + url_request, l_name);
 		res.setEncoding(encoding);
 
 		res.on('data', (chunk) => {
-			data += chunk;
+			recv_data += chunk;
 		});
 
 		res.on('end', () => {
-			var res_obj = data;
+			var res_obj = recv_data;
 
 			try {
-				if (data !== '') {
+				if (recv_data !== '') {
 
 					// convert JSON data (otherwise assume we can return data directly)
 					if (type.indexOf('application/json') >= 0) {
 						LOG.sys('converting data (string type) to JSON...', l_name);
-						res_obj = JSON.parse(data);
+						res_obj = JSON.parse(recv_data);
 					}
 				}
 			} catch (e) {
-				LOG.error('JSON parsing error for data: ' + data, l_name);
+				LOG.error('JSON parsing error for data: ' + recv_data, l_name);
 				return l_safeCall(onDone, e);
 			}
 
@@ -479,7 +482,7 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 	});
 
 	// post the data
-	req.write(data);
+	req.write(send_data);
 	req.end();
 };
 
@@ -565,7 +568,6 @@ function l_extractEmails (text) {
 }
 
 
-var email = require('emailjs/email');
 /*
 format of msg:
 
@@ -625,7 +627,7 @@ exports.emailText = function (msg, onSuccess, onFail) {
 		return l_safeCall(onFail, errmsg);
 	}
 
-	var server = email.server.connect(SR.Settings.EMAIL_CONFIG);
+	var server = mailsender.server.connect(SR.Settings.EMAIL_CONFIG);
 
 	// send the message and get a callback with an error or details of the message that was sent
 	server.send(msg, (err, message) => {
@@ -727,7 +729,7 @@ exports.validatePathAsync = function (path, onDone) {
 	SR.fs.exists(path, (exists) => {
 		if (exists) {return l_safeCall(onDone, true);}
 
-		console.log(SR.Tags.WARN + 'creating new directory: ' + path + SR.Tags.ERREND, l_name);
+		console.info(SR.Tags.WARN + 'creating new directory: ' + path + SR.Tags.ERREND, l_name);
 		SR.fs.mkdir(path, () => {
 			l_safeCall(onDone, false);
 		});
@@ -738,7 +740,7 @@ exports.validatePathAsync = function (path, onDone) {
 exports.getDirectoriesSync = function (srcpath) {
 	try {
 		return SR.fs.readdirSync(srcpath).filter((file) => {
-			return SR.fs.statSync(path.join(srcpath, file)).isDirectory();
+			return SR.fs.statSync(pathparser.join(srcpath, file)).isDirectory();
 		});
 	} catch (e) {
 		LOG.warn('cannot list dir: ' + srcpath, l_name);
@@ -792,7 +794,7 @@ exports.findValidFile = function (list, path, onDone) {
 	}
 
 	var tasks = [];
-	for (var i in list) {
+	for (let i in list) {
 		tasks.push(build_task(list[i]));
 	}
 
@@ -861,10 +863,7 @@ var l_notifyAdmin = exports.notifyAdmin = function (title, msg, email) {
 var l_isPortOpen = exports.isPortOpen = function (port, onResponse) {
 
 	// client approach
-	var client = SR.net.connect({
-		port: port
-	},
-	(result) => { //'connect' listener
+	var client = SR.net.connect({port: port}, (result) => { //'connect' listener
 		if (typeof onResponse === 'function') {onResponse(false);}
 		client.end();
 	});
@@ -918,14 +917,18 @@ exports.daemon = function (arg) {
 		return;
 	}
 
-	switch (arg.action) {
-	case 'startSetInterval':
+	if (arg.action === 'startSetInterval') {
 		setInterval(l_njds, 5000);
 		setInterval(l_cpu_realtime_info, 2000);
-		break;
-	default:
-		break;
 	}
+	// switch (arg.action) {
+	// case 'startSetInterval':
+	// 	setInterval(l_njds, 5000);
+	// 	setInterval(l_cpu_realtime_info, 2000);
+	// 	break;
+	// default:
+	// 	break;
+	// }
 };
 
 
@@ -967,7 +970,7 @@ function l_njds (arg) {
 				LOG.error(err, l_name);
 				return;
 			}
-			for (var i in result) {
+			for (let i in result) {
 				result[i].mountpoint = result[i].mount;
 				result[i].total = result[i].size;
 				result[i].drive = result[i].filesystem;
@@ -1003,14 +1006,14 @@ function l_njds (arg) {
 		var wmic = spawn('wmic', ['logicaldisk', 'get', property_list.join()]);
 		var disk_info = '';
 		wmic.stdout.on('data', (data) => {
-			for (var i = 0; i < data.length; i++) {
+			for (let i = 0; i < data.length; i++) {
 				disk_info += String.fromCharCode(data[i]);
 			}
 		});
 		wmic.on('exit', (code, signal) => {
 			realtimeInfo.disks = [];
 			var disks = disk_info.split('\r\r\n');
-			for (var i = 1; i < disks.length - 2; i++) {
+			for (let i = 1; i < disks.length - 2; i++) {
 				var disk = disks[i].replace(/\s+/g, ' ').split(' ');
 				var drive = disk[0];
 
@@ -1040,7 +1043,7 @@ function l_njds (arg) {
 		var netstat = spawn('netstat', ['-e']);
 		var traffinfo = '';
 		netstat.stdout.on('data', (data) => {
-			for (var i = 0; i < data.length; i++) {
+			for (let i = 0; i < data.length; i++) {
 				traffinfo += String.fromCharCode(data[i]);
 			}
 		});
@@ -1060,7 +1063,7 @@ function l_njds (arg) {
 		//fs.readFile('/sys/class/net/p5p1/statistics/rx_bytes', 'utf8', function (err, data) {
 			var value = parseInt(data);
 			if (err) {
-				return console.log(err);
+				return console.warn(err);
 			}
 			realtimeInfo.currentRXBPS = Math.round((value - realtimeInfo.previousRX) / 2);
 			realtimeInfo.previousRX = value;
@@ -1070,7 +1073,7 @@ function l_njds (arg) {
 		//fs.readFile('/sys/class/net/p5p1/statistics/tx_bytes', 'utf8', function (err, data) {
 			var value = parseInt(data);
 			if (err) {
-				return console.log(err);
+				return console.warn(err);
 			}
 			realtimeInfo.currentTXBPS = Math.round((value - realtimeInfo.previousTX) / 2);
 			realtimeInfo.previousTX = value;
@@ -1171,7 +1174,7 @@ var l_getLocalPort = exports.getLocalPort = function (onDone, size) {
 			if (typeof port === 'number')
 				l_assignedPorts.push(port);
 			else {
-				for (var i=0; i < port.length; i++)
+				for (let i =0; i < port.length; i++)
 					l_assignedPorts.push(port[i]);
 			}
 
@@ -1226,7 +1229,7 @@ var l_getLocalPort = exports.getLocalPort = function (onDone, size) {
 					LOG.warn('open port [' + port + '] found!', l_name);
 
 					// TODO: probably can remove this now as no need for monitor to keep track of assigned ports
-					for (var i=0; i < size; i++) {l_assignedPorts.push(port + i);}
+					for (let i =0; i < size; i++) {l_assignedPorts.push(port + i);}
 
 					return UTIL.safeCall(onDone, port);
 				}
@@ -1261,7 +1264,7 @@ exports.mixin = exports.merge = require('merge');
 // ref: https://stackoverflow.com/questions/4025893/how-to-check-identical-array-in-most-efficient-way
 var l_arraysEqual = exports.arraysEqual = function (arr1, arr2) {
 	if (arr1.length !== arr2.length) {return false;}
-	for (var i = arr1.length; i--;) {
+	for (let i = arr1.length; i--;) {
 		if (arr1[i] !== arr2[i]) {return false;}
 	}
 
@@ -1270,7 +1273,6 @@ var l_arraysEqual = exports.arraysEqual = function (arr1, arr2) {
 
 // read a JSON file as js object
 exports.readJSON = function (path, onDone) {
-	var fs = require('fs');
 	var file = SR.path.join(__dirname, path);
 
 	if (typeof onDone !== 'function') {onDone = undefined;}
@@ -1309,7 +1311,7 @@ var l_readFile = exports.readFile = function (path, onDone) {
 
 	path = SR.path.join(__dirname, path);
 	LOG.sys('reading file: ' + path, l_name);
-	SR.fs.readFile(path, 'utf-8', (err, data) => {
+	SR.fs.readFile(path, 'utf8', (err, data) => {
 		if (err) {
 			LOG.error(err, l_name);
 			UTIL.safeCall(onDone);
@@ -1399,7 +1401,7 @@ var l_getDateTimeJson = exports.getDateTimeJson = function (d) {
 		timeObj.weekDay = 'saturday';
 		break;
 	default:
-		console.log('error code: xxxxxxxx');
+		console.warn('error code: xxxxxxxx');
 		break;
 	}
 	return timeObj;
@@ -1441,8 +1443,8 @@ var cleanArray = exports.cleanArray = function (actual) {
 		return false;
 	}
 
-	var newArray = new Array();
-	for (var i = 0; i < actual.length; i++) {
+	var newArray = [];
+	for (let i = 0; i < actual.length; i++) {
 		if (actual[i]) {
 			newArray.push(actual[i]);
 		}
@@ -1460,8 +1462,6 @@ var cleanArray = exports.cleanArray = function (actual) {
 // output: []
 //////////////////////////////
 // recursive file list
-
-var path = require('path');
 
 function walk (dir, done) {
 	var results = [];
@@ -1617,8 +1617,8 @@ exports.findFiles = function (arg) {
 		}
 
 		if (arg.limit && typeof arg.limit === 'number') {
-			var re = [];
-			for (var i in r) {
+			let re = [];
+			for (let i in r) {
 				if (i > arg.limit - 1) {
 					break;
 				}
@@ -1628,8 +1628,8 @@ exports.findFiles = function (arg) {
 		}
 
 		if (arg.outputFilenameOnly && arg.outputFilenameOnly === true) {
-			var re = [];
-			for (var i in r) {
+			let re = [];
+			for (let i in r) {
 				re.push(r[i].file);
 			}
 			r = re;
@@ -1643,7 +1643,7 @@ exports.findFiles = function (arg) {
 
 /* Array.prototype.getUnique = function (){
    var u = {}, a = [];
-   for(var i = 0, l = this.length; i < l; ++i){
+   for(let i = 0, l = this.length; i < l; ++i){
       if(u.hasOwnProperty(this[i])) {
          continue;
       }
@@ -1665,7 +1665,7 @@ exports.mkdirParent = function (dirPath, mode, callback) {
 			//When it fail in this way, do the custom steps
 			if (error && error.errno === 34) {
 				//Create all the parents recursively
-				fs.mkdirParent(path.dirname(dirPath), mode, callback);
+				fs.mkdirParent(pathparser.dirname(dirPath), mode, callback);
 				//And then the directory
 				fs.mkdirParent(dirPath, mode, callback);
 			}
@@ -1704,7 +1704,7 @@ exports.whichPartition = function (arg) {
 	}
 
 	var paths = ' ';
-	for (var i in arg) {
+	for (let i in arg) {
 		if (typeof(arg[i]) === 'string') {paths = paths + arg[i] + ' ';}
 	}
 	//console.log("paths");
@@ -1719,13 +1719,13 @@ exports.whichPartition = function (arg) {
 				var partitions = [];
 				var partitionTemp1 = stdout.split(' ');
 				var partitionTemp2 = [];
-				for (var i in partitionTemp1) {
+				for (let i in partitionTemp1) {
 					partitionTemp2[i] = partitionTemp1[i].split('\n');
 				}
 				//console.log("partitionTemp");
-				for (var i in partitionTemp2) {
+				for (let i in partitionTemp2) {
 					for (var j in partitionTemp2[i]) {
-						if (partitionTemp2[i][j].match(/\//) > -1) {} else {
+						if (partitionTemp2[i][j].match(/\//) < 0) {
 							if (partitions.indexOf(partitionTemp2[i][j]) === -1) {
 								partitions.push(partitionTemp2[i][j]);
 							}
@@ -1748,7 +1748,7 @@ exports.contactMonitor = function (type, para, onDone, is_broadcast) {
 	// choose one monitor server (randomly choose one if more than one)
 	if (SR.Settings.IP_MONITOR instanceof Array) {
 		if (is_broadcast) {
-			for (var i=0; i < SR.Settings.IP_MONITOR.length; i++) {monitors.push(SR.Settings.IP_MONITOR[i]);}
+			for (let i =0; i < SR.Settings.IP_MONITOR.length; i++) {monitors.push(SR.Settings.IP_MONITOR[i]);}
 		} else {
 			var index = UTIL.randInteger(SR.Settings.IP_MONITOR.length);
 			monitors.push(SR.Settings.IP_MONITOR[index]);
@@ -1757,7 +1757,7 @@ exports.contactMonitor = function (type, para, onDone, is_broadcast) {
 		monitors.push(SR.Settings.IP_MONITOR);
 	}
 
-	for (var i=0; i < monitors.length; i++) {
+	for (let i =0; i < monitors.length; i++) {
 
 		var monitor = monitors[i] + ':' + SR.Settings.PORT_MONITOR;
 		LOG.sys('contact monitor: ' + monitor, l_name);
@@ -1788,8 +1788,8 @@ exports.contactMonitor = function (type, para, onDone, is_broadcast) {
 };
 
 // build objects as part of UTIL
-var files = SR.fs.readdirSync(__dirname + '/UTIL');
-for (var i=0; i < files.length; i++) {
-	var name = files[i].split('.')[0];
+var util_files = SR.fs.readdirSync(__dirname + '/UTIL');
+for (let i =0; i < util_files.length; i++) {
+	let name = util_files[i].split('.')[0];
 	exports[name] = require(__dirname + '/UTIL/' + name)[name];
 }
