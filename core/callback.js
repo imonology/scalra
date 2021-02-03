@@ -1,17 +1,19 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 //
 //  callback.js
 //
 //  registeration to receive system-wide callback (such as user connect/disconnect, server start/stop)
 //
 //  methods:
-//		register(type, callback, to_front)			// add a new callback of a certain 'type' 
+//		register(type, callback, to_front)			// add a new callback of a certain 'type'
 //		unregister(type, callback)							// remove a callback of a given 'type'
 //		get(type)																// get all callbacks of a certain type
 //		clear(type)															// clear all callbacks of a certain type
 //		notify(type, para)											// notify call callbacks of a certain type of a parameter object
 //		onConnect(func)
 //		onDisconnect(func)
-// 
+//
 //	relies on:
 //		SR.Utility
 
@@ -46,7 +48,7 @@ var l_crashDelay = undefined;
 //		'onAppServerStart'		an app server has started
 //		'onAppServerStop'			an app server has disconnected/stopped
 //		'onUpload'						when a file is uploaded
-//	
+//
 // below are kept for backward compability but not recommend to use:
 //		'onAppUserLogin'			a user at the app server attempts to login to authenticate
 //		'onAppUserLogout'			a user at the app server attempts to logout
@@ -55,17 +57,17 @@ var l_crashDelay = undefined;
 
 // register callback for a certain type of event
 var l_register = exports.register = function (type, callback, to_front) {
-	
+
 	if (typeof callback !== 'function') {
 		LOG.error('callback passed is not function of type [' + type + ']', 'SR.Callback');
 		return false;
 	}
-	
+
 	// check if type exists
 	if (l_callbacks.hasOwnProperty(type) === false) {
 		l_callbacks[type] = [];
 	}
-	
+
 	// check if we store the new callback in front (for example suitable for shutdown procedure)
 	if (to_front === true) {
 		l_callbacks[type].unshift(callback);
@@ -78,18 +80,18 @@ var l_register = exports.register = function (type, callback, to_front) {
 
 // remove a callback of a given 'type'
 var l_unregister = exports.unregister = function (type, callback) {
-	
+
 	if (typeof callback !== 'function') {
 		LOG.error('callback passed is not function of type [' + type + ']', 'SR.Callback');
 		return false;
 	}
-	
+
 	// check if type exists
 	if (l_callbacks.hasOwnProperty(type) === false) {
 		LOG.error('callback of type [' + type + '] has not been registered', 'SR.Callback');
 		return false;
 	}
-	
+
 	var callbacks = l_callbacks[type];
 	for (var i=0; i < callbacks.length; i++) {
 		if (callbacks[i] === callback) {
@@ -104,7 +106,7 @@ var l_unregister = exports.unregister = function (type, callback) {
 // call the callbacks registered previously, in order
 // get all callbacks of a certain type
 var l_get = exports.get = function (type) {
-	
+
 	// check if type exists
 	if (l_callbacks.hasOwnProperty(type) === false) {
 		return [];
@@ -115,12 +117,12 @@ var l_get = exports.get = function (type) {
 
 // clear a certain type of callbacks
 var l_clear = exports.clear = function (type) {
-	
+
 	// check if type exists
 	if (l_callbacks.hasOwnProperty(type) === false) {
 		return false;
 	}
-	
+
 	l_callbacks[type] = [];
 	return true;
 };
@@ -132,7 +134,7 @@ var l_notify = exports.notify = function (type, para1, para2, para3) {
 	// prepare access of multiple parameters
 	//var args = Array.prototype.slice.call(arguments).slice(1);
 	//return_value = callback.apply(this, args.slice(1));
-	
+
 	// prevent infinite looping in onCrash
 	if (type === 'onCrash') {
 		if (!l_isCrashing) {
@@ -142,13 +144,13 @@ var l_notify = exports.notify = function (type, para1, para2, para3) {
 			process.exit();
 		}
 	}
-	
+
 	// call registered callbacks of a given type
 	var callbacks = l_get(type);
 	for (var i=0; i < callbacks.length; i++) {
 		UTIL.safeCall(callbacks[i], para1, para2, para3);
 	}
-	
+
 	// return number of calls made
 	return callbacks.length;
 };
@@ -189,7 +191,7 @@ var l_onStop = exports.onStop = function (callback) {
 //
 // callbacks called when lobby server crashes
 var l_onCrash = exports.onCrash = function (callback, delay) {
-	
+
 	if (typeof delay === 'number') {
 		if (!l_crashDelay || delay > l_crashDelay) {
 			l_crashDelay = delay;
@@ -279,20 +281,20 @@ var l_shutdown = exports.shutdown = function () {
 	LOG.stack();
 	console.log('shutdown called, delay for: ' + (l_crashDelay ? l_crashDelay : 0) + ' ms');
 	SR.Settings.FRONTIER.dispose();
-	setTimeout(function () {
+	setTimeout(() => {
 		if (l_crashDelay) {
-			setTimeout(function () {
+			setTimeout(() => {
 				process.exit();
 			}, l_crashDelay);
 		}	else {
-			process.exit();	
+			process.exit();
 		}
 	}, 2000);
 };
 
 // forward crash or Ctrl-C events to onCrash callback
 // for Ctrl-C
-process.on('SIGINT', function () {
+process.on('SIGINT', () => {
 	SR.Callback.notify('onCrash', 'SIGINT');
 	console.log('Caught interrupt signal, calling shutdown');
 	l_shutdown();

@@ -1,3 +1,5 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 /*
 	Cookie handling code (borrowed from express framework)
 	ref: https://github.com/visionmedia/express/blob/master/lib/response.js
@@ -17,28 +19,28 @@ res.get = function(field){
 	return this.getHeader(field);
 };
 
-res.set =
-res.header = 
-function header(field, val) {
-	if (arguments.length === 2) {
-		var value = Array.isArray(val)
-			? val.map(String)
-			: String(val);
+res.set
+= res.header
+= function header(field, val) {
+			if (arguments.length === 2) {
+				var value = Array.isArray(val)
+					? val.map(String)
+					: String(val);
 
-		// add charset to content-type
-		if (field.toLowerCase() === 'content-type' && !charsetRegExp.test(value)) {
-			var charset = mime.charsets.lookup(value.split(';')[0]);
-			if (charset) value += '; charset=' + charset.toLowerCase();
-		}
+				// add charset to content-type
+				if (field.toLowerCase() === 'content-type' && !charsetRegExp.test(value)) {
+					var charset = mime.charsets.lookup(value.split(';')[0]);
+					if (charset) {value += '; charset=' + charset.toLowerCase();}
+				}
 
-		this.setHeader(field, value);
-	} else {
-		for (var key in field) {
-			this.set(key, field[key]);
-		}
-	}
-	return this;
-};
+				this.setHeader(field, value);
+			} else {
+				for (var key in field) {
+					this.set(key, field[key]);
+				}
+			}
+			return this;
+		};
 
 res.append = function append(field, val) {
 	var prev = this.get(field);

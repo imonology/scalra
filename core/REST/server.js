@@ -1,6 +1,8 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 /*
 	server.js
-	
+
 	2012.09.18	  init
 	2012.10.25		adopted from VSS to icREST
 
@@ -24,11 +26,11 @@ var HTTPSserver = undefined;
 
 // start server
 exports.start = function (type, route, port) {
-	
+
 	// check to override default port
 	var serverPort = port || 39900;
 	var hostname = SR.Settings.DOMAIN_LOBBY;
-	var myHost = (type === 'HTTPS' ? 'https' : 'http') + '://' + hostname + ':' + serverPort + '/'; 
+	var myHost = (type === 'HTTPS' ? 'https' : 'http') + '://' + hostname + ':' + serverPort + '/';
 
 	// main place to receive HTTP-related requests
 	var handle_request = function (req, res) {
@@ -39,34 +41,34 @@ exports.start = function (type, route, port) {
 
 		LOG.sys('HTTP req received, header', 'SR.REST');
 		LOG.sys(req.headers, 'SR.REST');
-		
+
 		var content_type = req.headers['content-type'];
 
 		// NOTE: multi-part needs to be handled first, because req.on('data') will not be able to process correctly
-		if (typeof content_type === 'string' && content_type.startsWith('multipart/form-data; boundary=')) { 
+		if (typeof content_type === 'string' && content_type.startsWith('multipart/form-data; boundary=')) {
 			LOG.warn('parsing form request...', 'SR.REST');
 			route(req, res);
 			return;
 		}
-		
+
 		// temp buffer for incoming request
 		var data = '';
 		var JSONobj = undefined;
-		
 
-		req.on('data', function (chunk) {
+
+		req.on('data', (chunk) => {
 			data += chunk;
-			console.log("on [data]", data)
+			console.log('on [data]', data);
 		});
-		
-		req.on('end', function () {
-			
+
+		req.on('end', () => {
+
 			var JSONobj = undefined;
 
 			try {
 				if (data != '') {
 					// [ERROR] method startsWith is undefined.
-					// if (content_type.startsWith('application/x-www-form-urlencoded')) { 
+					// if (content_type.startsWith('application/x-www-form-urlencoded')) {
 					if (content_type == 'application/x-www-form-urlencoded') {
 						JSONobj = qs.parse(data);
 					// } else if (content_type.startsWith('application/json')) {
@@ -76,7 +78,7 @@ exports.start = function (type, route, port) {
 					} else if (content_type == 'application/sdp') {
 						JSONobj = data;
 					} else {
-						var msg = 'content type not known: ' + content_type;
+						let msg = 'content type not known: ' + content_type;
 						LOG.warn(msg, 'SR.REST');
 						SR.REST.reply(res, msg);
 						//res.writeHead(200, {'Content-Type': 'text/plain'});
@@ -85,7 +87,7 @@ exports.start = function (type, route, port) {
 					}
 				}
 			} catch (e) {
-				var msg = 'JSON parsing error for data: ' + data + '\n content_type: ' + content_type;
+				let msg = 'JSON parsing error for data: ' + data + '\n content_type: ' + content_type;
 				LOG.error(msg, 'SR.REST');
 				//res.writeHead(200, {'Content-Type': 'text/plain'});
 				//res.end(msg);
@@ -112,9 +114,9 @@ exports.start = function (type, route, port) {
 
 		// add CA info if available
 		if (SR.Keys.ca) {
-			options.ca = SR.Keys.ca;			
-		}		
-				
+			options.ca = SR.Keys.ca;
+		}
+
 		server = HTTPSserver = https.createServer(options, handle_request);
 	} else {
 		server = HTTPserver = http.createServer(handle_request);
@@ -122,20 +124,17 @@ exports.start = function (type, route, port) {
 
 	// TODO: check HTTP_URL is used?
 	LOG.warn('creating ' + type + ' server at port: ' + serverPort, 'SR.REST');
-	server.listen(serverPort, function () {
+	server.listen(serverPort, () => {
 		LOG.warn(type + ' Server running at ' + myHost, 'SR.REST');
-		if (type === 'HTTPS')
-			SR.REST.HTTPS_URL = myHost;
-		else
-			SR.REST.HTTP_URL = myHost;		
+		if (type === 'HTTPS') {SR.REST.HTTPS_URL = myHost;} else {SR.REST.HTTP_URL = myHost;}
 	});
-	
+
 	/*
 	server.on('connection', function (socket) {
 		socket.setNoDelay(true);
 	});
-	*/	
-	
+	*/
+
 	return server;
 };
 
@@ -148,10 +147,10 @@ exports.stop = function (type) {
 			delete SR.REST.HTTPS_URL;
 		}
 	}
-	
+
 	if (type === 'HTTP' || type === undefined) {
 		if (HTTPserver !== undefined) {
-			HTTPserver.close();			
+			HTTPserver.close();
 			HTTPserver = undefined;
 			delete SR.REST.HTTP_URL;
 		}

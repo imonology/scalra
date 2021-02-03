@@ -1,4 +1,5 @@
-
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 /*
 //
 //	load.js
@@ -48,20 +49,19 @@ exports.check = function (type, increment, onDone) {
 		UTIL.safeCall(onDone, 'type not found or increment not a number');
 		return false;
 	}
-	
+
 	if (increment > 0 && l_loading[type].count >= l_loading[type].max) {
 		UTIL.safeCall(onDone, null, {result: false, msg: 'already too many loaded streams'});
 		return false;
 	}
-	
+
 	l_loading[type].count += increment;
-	
+
 	// safety check: should not happen
-	if (l_loading[type].count < 0)
-		l_loading[type].count = 0;
-	
+	if (l_loading[type].count < 0) {l_loading[type].count = 0;}
+
 	UTIL.safeCall(onDone, null, {result: true});
-	return true;	
+	return true;
 };
 
 

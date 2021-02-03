@@ -1,21 +1,23 @@
-/* 
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
+/*
 	original version by Marvin Jeng
 */
 
 var sys = require('util'),
-	kit   = require('./_basekit'),
-	mongo = SR.mongo;
+				kit   = require('./_basekit'),
+				mongo = SR.mongo;
 
 var codename = 'bc',
-	funcname = 'storage',
-	version  = 1,
-	svcname  = codename+'-'+funcname+'-'+version,
-	say = kit.Say.curry(svcname),
-	see = kit.See.curry(svcname);
+				funcname = 'storage',
+				version  = 1,
+				svcname  = codename+'-'+funcname+'-'+version,
+				say = kit.Say.curry(svcname),
+				see = kit.See.curry(svcname);
 
 // 2013-09-23: set default write concern to {safe: true}
-// see: 
-// http://www.mongodb.org/display/DOCS/getLastError+Command 
+// see:
+// http://www.mongodb.org/display/DOCS/getLastError+Command
 var openDB = exports.openDB = function (dbName, host, port) {
 	var conn = new mongo.Db(dbName, new mongo.Server(host, port, {}, {strict:true, native_parser:true}), {safe: true});
 	return conn;
@@ -27,7 +29,7 @@ var DBSyncer = exports.DBSyncer = function (){
 	var _th = 4;
 
 	// write immediately
-	var _sync = function (obj){              
+	var _sync = function (obj){
 		if (!obj) {
 			say('sync obj is undefined ' + typeof obj );
 			return;
@@ -36,12 +38,12 @@ var DBSyncer = exports.DBSyncer = function (){
 
 		var clt = obj.clt;
 		var data = obj.data;
-      
+
 		// object with the same id will be over-written
-		clt.save(data, function (err, doc){
+		clt.save(data, (err, doc) => {
 			if (err) {
 				say('1aazzzzzzzzzzzzzzzzz');
-				if (obj.cbf) obj.cbf(kit.ex('DBERR', err));
+				if (obj.cbf) {obj.cbf(kit.ex('DBERR', err));}
 			} else {
 				if (doc===undefined){
 					say('Doc not found, do insertion: ' + data._id);
@@ -69,26 +71,24 @@ var DBSyncer = exports.DBSyncer = function (){
 	return {
 		proc: _proc,
 		flush: function (){                   // 寫出剩餘的raw, 清空 queue
-			while(_que.count()>0)
-				_sync(_que.shift());
+			while(_que.count()>0) {_sync(_que.shift());}
 			say('pending '+_que.count());
 		},
 		push: function (clt, data, cb, cbf){  // 推入一個syncer
 			if (_que.count() > 5*_th){
-				if (cbf) cbf(kit.ex('FULL', Math.ceil(_que.count()/_th)));
+				if (cbf) {cbf(kit.ex('FULL', Math.ceil(_que.count()/_th)));}
 				return ;
 			}
 			_que.push({'clt':clt, 'data':data, 'cb':cb, 'cbf':cbf});
 			say('2ssssssszzzzzzzzzzzzzzzzz'+ typeof cb);
 		},
 		go: function (){                      // 開始一切自動功能
-			if (_go===undefined) _go = setInterval(_proc, 10*1000);
+			if (_go===undefined) {_go = setInterval(_proc, 10*1000);}
 		},
 		stop: function (){                    // 停止一切自動功能
 			clearInterval(_go);
 			_go = undefined;
-			while(_que.count()>0)
-				_sync(_que.shift());
+			while(_que.count()>0) {_sync(_que.shift());}
 		}
 	};
 };
@@ -191,8 +191,7 @@ var Grouping = function (){
 	var group = {};
 
 	this.glist = function (tag){
-		if (group.hasOwnProperty(tag))
-			return group[tag];
+		if (group.hasOwnProperty(tag)) {return group[tag];}
 		return undefined;
 	};
 	this.gjoin = function (tag, oid){
@@ -204,8 +203,7 @@ var Grouping = function (){
 	this.gquit = function (tag, oid){
 		if (group.hasOwnProperty(tag)){
 			delete group[tag][oid];
-			if (group[tag].count() < 1)
-				delete group[tag];
+			if (group[tag].count() < 1) {delete group[tag];}
 		}
 	};
 	this.gdump = function (){
@@ -276,17 +274,17 @@ var Entity = exports.Entity = function (){
 
 	var _rsync = undefined;
 	u.rsync = function (th){
-		if (th < 1 && _rsync)
+		if (th < 1 && _rsync) {
 			clearTimeout(_rsync);
-		else
-		//say('check th='+th+' mod='+u.modified);
-			_rsync = setTimeout(function (){
+		} else {
+			_rsync = setTimeout(() => {
 				if (u.modified >= th){
 					u.sync();
 					u.modified = 0;
 				}
 				u.rsync(th);
 			}, 1000);
+		}
 	};
 	u.setDataSource = function (c, s){
 		clt = c;
@@ -294,14 +292,13 @@ var Entity = exports.Entity = function (){
 	};
 
 	u.load = function (oid, callback, callbackFail){
-		if (!oid) oid = u._id();
-		clt.findOne({_id:oid}, function (err, doc){
+		if (!oid) {oid = u._id();}
+		clt.findOne({_id:oid}, (err, doc) => {
 			if (err || doc===undefined) {
-				if (callbackFail) callbackFail();
+				if (callbackFail) {callbackFail();}
 			}else{
-				for (var k in doc)
-					u.set(k, doc[k]);
-				if (callback) callback();
+				for (var k in doc) {u.set(k, doc[k]);}
+				if (callback) {callback();}
 			}
 		});
 	};
@@ -309,20 +306,20 @@ var Entity = exports.Entity = function (){
 		var data = u.raw();
 		var oid = data._id;
 		//clt.findAndModify({_id:oid}, [], {}, true, true, function (err, doc){
-		clt.findAndModify({_id:oid}, [], {'$set':data}, function (err, doc){
-			if (cb) cb(err);
-		});  
+		clt.findAndModify({_id:oid}, [], {'$set':data}, (err, doc) => {
+			if (cb) {cb(err);}
+		});
 	};
 	u.save = function (cb){
-		clt.save(u.raw(), function (err, raw){
-			if (cb) cb(raw);
-		});    
+		clt.save(u.raw(), (err, raw) => {
+			if (cb) {cb(raw);}
+		});
 	};
 	u.clone = function (cb, cbf){   // will produce new doc
 		var data = u.raw();
 		see(data._id, 'CLONECLONE');
 		//clt.update({_id:data._id}, {'$set':data}, function (err, doc){
-		clt.save(data, function (err, doc){ // object with the same id will be overwrite
+		clt.save(data, (err, doc) => { // object with the same id will be overwrite
 			if (err){
 				cbf(err);
 			}else{
@@ -330,7 +327,7 @@ var Entity = exports.Entity = function (){
 					say('Doc not found, do insertion: ' + data._id);
 					clt.insert(data);
 				}
-				if(cb) cb();
+				if(cb) {cb();}
 			}
 		});
 
@@ -348,26 +345,26 @@ var Entity = exports.Entity = function (){
     */
 	};
 	u.sot = function (t){
-		if (t < 1 && _sot)
-			clearTimeout(_sot);
-		else
-			_sot = setTimeout(function (){
+		if (t < 1 && _sot) {clearTimeout(_sot);} else {
+			_sot = setTimeout(() => {
 				u.sync();
 				u.sot(t);
 			}, t);
+		}
 	};
 	u.psync = function (t){
 		say('do psync @ ' + new Date());
-		setTimeout(function (){
+		setTimeout(() => {
 			u.sync();
 		}, t);
 	};
 	u.gsync = function (tag){  // pseudo function
-		say('do gsync @ ' + new Date()); return;
-		var id = u.glist(tag);
-		ents.foreach(function (e){
-			clts[e].sync();
-		});
+		say('do gsync @ ' + new Date());
+		return;
+		// var id = u.glist(tag);
+		// ents.foreach((e) => {
+		// 	clts[e].sync();
+		// });
 	};
 	u.modified = 0;
 	return u;

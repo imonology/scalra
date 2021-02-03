@@ -1,4 +1,7 @@
-﻿//
+﻿/* cSpell:disable */
+/* global SR, LOG, UTIL */
+
+//
 //
 // icTF.js
 //
@@ -37,8 +40,7 @@ exports.createObj = function() {
 };
 
 exports.addTF = function(pObj, pFunc) {
-	if (l_objPool.hasOwnProperty(pObj) === false)
-		return;
+	if (l_objPool.hasOwnProperty(pObj) === false) {return;}
 
 	//console.log('[icTF]::addTF::adding pObj: ' + pObj + ' and pFunc: ' + pFunc);
 
@@ -67,8 +69,7 @@ exports.runTF = function(pObj) {
 };
 
 exports.setCompleted = function(pObj, pFunc) {
-	if (l_objPool.hasOwnProperty(pObj) === false)
-		return;
+	if (l_objPool.hasOwnProperty(pObj) === false) {return;}
 
 	// find the completed event and remove it
 	for (var i = 0; i < l_objPool[pObj].funcTable.length; ++i) {
@@ -86,10 +87,9 @@ exports.setCompleted = function(pObj, pFunc) {
 	if (l_objPool[pObj].funcCounter === l_objPool[pObj].funcTable.length) {
 		//delete object
 		delete l_objPool[pObj];
-	} else
-		l_objPool[pObj].funcTable[l_objPool[pObj].funcCounter].funcKey();
+	} else {l_objPool[pObj].funcTable[l_objPool[pObj].funcCounter].funcKey();}
 
 };
-    
-    
-    
+
+
+

@@ -253,9 +253,10 @@ var l_getCollection = exports.getCollection = function (clt_name, onFail) {
 	return l_clts[DB_name][clt_name];
 };
 
+// FIXME: FTBFS in original version
 var l_getCollectionAsync = exports.getCollectionAsync = function(clt_name) {
-	return new promise(function(resolve, reject) {
-		l_getCollection(clt_namem, reject);
+	return new promise((resolve, reject) => {
+		l_getCollection(clt_name, reject);
 		// var result = l_getCollection(clt_namem, reject);
 		// resolve(result);
 	});
@@ -286,7 +287,7 @@ var l_notifyError = function (clt_name, op, err, onFail, is_exception) {
 };
 
 var l_notifyErrorAsync = function(clt_name, op, err, is_exception) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_notifyError(clt_name, op, err, reject, is_exception);
 	});
 };
@@ -318,7 +319,7 @@ var l_initCollection = function (DB_name, name, onDone, prefix) {
 	//var collection_name = name;
 
 	l_DBclient[DB_name].collection(collection_name,
-		function (err, collection) {
+		(err, collection) => {
 			if (err) {
 				LOG.error(err, 'SR.DB');
 				LOG.error('init DB [' + DB_name + ' ] collection [' + collection_name + '] error', 'SR.DB');
@@ -345,7 +346,7 @@ var l_initCollection = function (DB_name, name, onDone, prefix) {
 };
 
 var l_initCollectionAsync = function(DB_name, name, prefix) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_initCollection(DB_name, name, resolve, prefix);
 	});
 };
@@ -371,7 +372,7 @@ exports.useCollections = function (names, onDone) {
 	if (Object.keys(l_DBclient).length === 0) {
 
 		// simply store
-		for (var i in names) {
+		for (let i in names) {
 			l_names.push(names[i]);
 		}
 
@@ -381,7 +382,7 @@ exports.useCollections = function (names, onDone) {
 
 	// call addCollection (dynamically loading)
 	var jq = SR.JobQueue.createQueue();
-	for (var i=0; i < names.length; i++) {
+	for (let i=0; i < names.length; i++) {
 		var name = names[i];
 		LOG.sys('init collection [' + name + '] dynamically...', 'SR.DB');
 		jq.add(l_add(name));
@@ -389,10 +390,11 @@ exports.useCollections = function (names, onDone) {
 	jq.run(onDone);
 };
 
+// FIXME: FTBFS in original version
 // FIXME: onDone for resolve or reject?
 exports.useCollectionsAsync = function(names) {
-	return new promise(function(resolve, reject) {
-		useCollections(names, resolve);
+	return new promise((resolve, reject) => {
+		this.useCollections(names, resolve);
 	});
 };
 
@@ -410,14 +412,14 @@ var l_addCollection = exports.addCollection = function (name, onDone) {
 
 	LOG.sys('adding a new collection [' + name + ']', 'SR.DB');
 
-	l_initCollection(l_DBname, name, function (result) {
+	l_initCollection(l_DBname, name, (result) => {
 		UTIL.safeCall(onDone, result);
 	});
 };
 
 // FIXME: onDone for resolve or reject?
 var l_addCollectionAsync = exports.addCollectionAsync = function (name) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_addCollection(name, resolve);
 	});
 };
@@ -485,7 +487,7 @@ var l_setData = exports.setData = function (clt_name, data_obj, onSuccess, onFai
 		// NOTE: it seems like there's recursive DB write occur when performing
 		collection.save(
 			data,
-			function (err, passed_data) {
+			(err, passed_data) => {
 				if (err) {
 					l_notifyError(clt_name, 'setData', err, onFail);
 				} else {
@@ -501,7 +503,7 @@ var l_setData = exports.setData = function (clt_name, data_obj, onSuccess, onFai
 };
 
 var l_setDataAsync = exports.setDataAsync = function (clt_name, data_obj) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_setData(clt_name, data_obj, resolve, reject);
 	});
 };
@@ -528,15 +530,15 @@ exports.getData = function (clt_name, query, onSuccess, onFail) {
 	try {
 		// TODO: change to find()
 		collection.findOne(query, options,
-			function (err, cursor) {
+			(err, cursor) => {
 
 				if (err) {
 					return l_notifyError(clt_name, 'getData', err, onFail);
 				}
 
 				// check if the returned cursor is empty
-				if (cursor === null ||
-					cursor === '') {
+				if (cursor === null
+					|| cursor === '') {
 
 					LOG.debug('[' + clt_name + '] null returned for query: ' + JSON.stringify(query), 'SR.DB');
 					UTIL.safeCall(onSuccess, null);
@@ -551,8 +553,9 @@ exports.getData = function (clt_name, query, onSuccess, onFail) {
 	}
 };
 
+// FIXME: FTBFS in original version
 exports.getDataAsync = function(clt_name, query) {
-	return new pormise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_getData(clt_name, query, resolve, reject);
 	});
 };
@@ -591,7 +594,7 @@ var l_updateData = exports.updateData = function (clt_name, query, data_obj, onS
 				query,
 				data.bare,
 				{multi: true, upsert: true},
-				function (err) {
+				(err) => {
 					if (err) {
 						l_notifyError(clt_name, 'updateData', err, onFail);
 					} else {
@@ -604,7 +607,7 @@ var l_updateData = exports.updateData = function (clt_name, query, data_obj, onS
 				query,
 				{$set: data},
 				{multi: true, upsert: true},
-				function (err) {
+				(err) => {
 					if (err) {
 						l_notifyError(clt_name, 'updateData', err, onFail);
 					} else {
@@ -619,7 +622,7 @@ var l_updateData = exports.updateData = function (clt_name, query, data_obj, onS
 };
 
 var l_updateDataAsync = exports.updateDataAsync = function (clt_name, query, data_obj) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_updateData(clt_name, query, data_obj, resolve, reject);
 	});
 };
@@ -648,7 +651,7 @@ var l_deleteData = exports.deleteData = function (clt_name, onSuccess, onFail, q
 
 	try {
 		collection.remove(query,
-			function (err, res) {
+			(err, res) => {
 				if (err) {
 					l_notifyError(clt_name, 'deleteData', err, onFail);
 				} else {
@@ -663,7 +666,7 @@ var l_deleteData = exports.deleteData = function (clt_name, onSuccess, onFail, q
 };
 
 var l_deleteDataAsync = exports.deleteDataAsync = function (clt_name, query_or_id) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_deleteData(clt_name, resolve, reject, query_or_id);
 	});
 };
@@ -683,7 +686,7 @@ var l_removeField = exports.removeField = function (clt_name, query, field, onSu
 		action[field] = 1;
 
 		collection.update(query, {$unset: action},
-			function (err, res) {
+			(err, res) => {
 				if (err) {
 					l_notifyError(clt_name, 'removeField', err, onFail);
 				} else {
@@ -698,7 +701,7 @@ var l_removeField = exports.removeField = function (clt_name, query, field, onSu
 };
 
 var l_removeFieldAsync = exports.removeFieldAsync = function (clt_name, query, field) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_removeField(clt_name, query, field, resolve, reject);
 	});
 };
@@ -719,7 +722,7 @@ var l_incrementData = exports.incrementData = function (clt_name, query, change,
 		// make this update an 'upsert' (insert if not exist)
 		// also 'multi' (if multiple records match, then they will all be modified)
 		collection.update(query, {'$inc': change},
-			function (err) {
+			(err) => {
 
 				if (err) {
 					l_notifyError(clt_name, 'incrementData', err, onFail);
@@ -734,7 +737,7 @@ var l_incrementData = exports.incrementData = function (clt_name, query, change,
 };
 
 var l_incrementDataAsync = exports.incrementDataAsync = function (clt_name, query, change) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_incrementData(clt_name, query, change, resolve, reject);
 	});
 };
@@ -749,13 +752,14 @@ exports.count = function (clt_name, onSuccess, onFail) {
 		return;
 	}
 
-	var count = collection.find({}).count(function (e, count) {
+	var count = collection.find({}).count((e, count) => {
 		UTIL.safeCall(onSuccess, count);
 	});
 };
 
+// FIXME: FTBFS in original version
 exports.countAsync = function (clt_name) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_count(clt_name, resolve, reject);
 	});
 };
@@ -780,7 +784,7 @@ exports.getArray = function (clt_name, onSuccess, onFail, query, condition, star
 	try {
 
 		collection.find (query, condition,
-			function (err, cursor) {
+			(err, cursor) => {
 
 				if (err) {
 					l_notifyError(clt_name, 'getArray.find', err, onFail);
@@ -804,7 +808,7 @@ exports.getArray = function (clt_name, onSuccess, onFail, query, condition, star
 
 				// convert result to an array
 				cursor.toArray(
-					function (err, array) {
+					(err, array) => {
 
 						//LOG.sys('calling cursor.toArray success', 'SR.DB');
 
@@ -830,8 +834,9 @@ exports.getArray = function (clt_name, onSuccess, onFail, query, condition, star
 	}
 };
 
+// FIXME: FTBFS in original version
 exports.getArrayAsync = function (clt_name, query, condition, start, end) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_getArray(clt_name, resolve, reject, query, condition, start, end);
 	});
 };
@@ -885,9 +890,10 @@ exports.getPageBySkippingDocs = function (clt_name, query, opts, page_num, cb) {
 	collection.find(_query, _opts, cb_find);
 };
 
+// FIXME: FTBFS in original version
 exports.getPageBySkippingDocsAsync = function (clt_name, query, opts, page_num) {
-	return new promise(function(resolve, reject) {
-		l_getPageBySkippingDocs(clt_namem, query, opts, page_num, reject);
+	return new promise((resolve, reject) => {
+		l_getPageBySkippingDocs(clt_name, query, opts, page_num, reject);
 	});
 };
 
@@ -936,8 +942,9 @@ exports.getPageByReferDoc = function (clt_name, query, opts, refer_doc, cb) {
 	collection.find(_query, _opts, cb_find);
 };
 
+// FIXME: FTBFS in original version
 exports.getPageByReferDocAsync = function (clt_name, query, opts, refer_doc) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_getPageByReferDoc(clt_name, query, opts, refer_doc, reject);
 	});
 };
@@ -972,8 +979,9 @@ exports.paginate = function (name, clt_name, query, opts, cb) {
 	exports.getPageByReferDoc(clt_name, query, opts, null, initReferDocs);
 };
 
+// FIXME: FTBFS in original version
 exports.paginateAsync = function (name, clt_name, query, opts) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_paginate(name, clt_name, query, opts, reject);
 	});
 };
@@ -984,8 +992,9 @@ exports.getPage = function (name, page_num, cb) {
 	exports.getPageByReferDoc(page.clt_name, page.query, page.opts, page.refer_docs[page_num], cb);
 };
 
+// FIXME: FTBFS in original version
 exports.getPageAsync = function(name, page_num) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_getPage(name, page_num, reject);
 	});
 };
@@ -1026,7 +1035,7 @@ exports.updateArray = function (clt_name, query, data, onSuccess, onFail) {
 		// NOTE: to push mulitple array elements at once, add $each
 		// see: http://docs.mongodb.org/manual/reference/operator/update/push/
 		collection.update(query, operation,
-			function (err) {
+			(err) => {
 
 				if (err) {
 					l_notifyError(clt_name, 'updateArray', err, onFail);
@@ -1040,8 +1049,9 @@ exports.updateArray = function (clt_name, query, data, onSuccess, onFail) {
 	}
 };
 
+// FIXME: FTBFS in original version
 exports.updateArrayAsync = function (clt_name, query, data) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_updateArray(clt_name, query, data, resolve, reject);
 	});
 };
@@ -1066,8 +1076,8 @@ var l_cacheData = function (clt_name, onSuccess, onFail, query_obj) {
 		return;
 	}
 
-	var is_empty = (query_obj === undefined ||
-					l_isEmpty(query_obj));
+	var is_empty = (query_obj === undefined
+					|| l_isEmpty(query_obj));
 	var query = {};
 
 	// check if there's a specific query
@@ -1082,15 +1092,15 @@ var l_cacheData = function (clt_name, onSuccess, onFail, query_obj) {
 
 		// load all documents from the DB
 		collection.findOne(query,
-			function (err, data) {
+			(err, data) => {
 				if (err) {
 					return l_notifyError(clt_name, 'cacheData', err, onFail);
 				}
 
 				// something returned but is empty
-				if (data === undefined ||
-					data === null ||
-					data === '') {
+				if (data === undefined
+					|| data === null
+					|| data === '') {
 
 					LOG.warn('data not found for [' + clt_name + '] query: ' + JSON.stringify(query), 'SR.DB');
 					return UTIL.safeCall(onSuccess, null);
@@ -1115,7 +1125,7 @@ var l_cacheData = function (clt_name, onSuccess, onFail, query_obj) {
 };
 
 var l_cacheDataAsync = function (clt_name, query_obj) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_cacheData(clt_name, resolve, reject, query_obj);
 	});
 };
@@ -1176,7 +1186,7 @@ var l_getCachedData = exports.getCachedData = function (clt_name, onSuccess, onF
 };
 
 var l_getCachedDataAsync = exports.getCachedDataAsync = function (clt_name, query_item) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_getCachedData(clt_name, resolve, reject, query_item);
 	});
 };
@@ -1224,8 +1234,9 @@ exports.deleteCachedDataByID = function (clt_name, id, onSuccess, onFail) {
 	}
 };
 
+// FIXME: FTBFS in original version
 exports.deleteCachedDataByIDAsync = function (clt_name, id) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_deleteCachedDataByID(clt_name, id, resolve, reject);
 	});
 };
@@ -1246,7 +1257,7 @@ exports.updateCachedDataByID = function (clt_name, id, new_values, onSuccess, on
 	l_getCachedData(clt_name,
 
 		// data obtained
-		function (data) {
+		(data) => {
 
 			//LOG.sys('got cached data for id: ' + id, 'SR.DB');
 
@@ -1261,7 +1272,7 @@ exports.updateCachedDataByID = function (clt_name, id, new_values, onSuccess, on
 			l_syncCachedDataByID(clt_name, id, onSuccess,
 
 				// sync fail
-				function () {
+				() => {
 					LOG.error('l_syncCachedDataByID() fails for collection [' + clt_name + '] id: ' + id, 'SR.DB');
 					UTIL.safeCall(onFail, 'sync fail');
 				}
@@ -1269,7 +1280,7 @@ exports.updateCachedDataByID = function (clt_name, id, new_values, onSuccess, on
 		},
 
 		// did not get cached data
-		function () {
+		() => {
 			LOG.error('did not get cached data for collection [' + clt_name + '] id: ' + id, 'SR.DB');
 			UTIL.safeCall(onFail, 'did not get cached data');
 		},
@@ -1279,8 +1290,9 @@ exports.updateCachedDataByID = function (clt_name, id, new_values, onSuccess, on
 	);
 };
 
+// FIXME: FTBFS in original version
 exports.updateCachedDataByIDAsync = function (clt_name, id, new_values) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_updateCachedDataByID(clt_name, id, new_values, resolve, reject);
 	});
 };
@@ -1330,7 +1342,7 @@ var l_getSettings = exports.getSettings = function () {
 		var DBauth = '\nsettings.DB_AUTH = ' + JSON.stringify({DB_name: DB_name, username: settings.account, password: settings.password}) + ';\n';
 		LOG.warn('Creating a new credential ' + DBauth, 'SR.DB');
 		LOG.warn('append at: ' + SR.Settings.PATH_SETTINGS, 'SR.DB');
-		SR.fs.appendFile(SR.Settings.PATH_SETTINGS, DBauth, function (err) {
+		SR.fs.appendFile(SR.Settings.PATH_SETTINGS, DBauth, (err) => {
 			if (err) {
 				LOG.error(err);
 			}
@@ -1359,9 +1371,9 @@ exports.initDB = function (dbSetting, collections, onDone) {
 	}
 
 	// check if DB setting is correct
-	if (dbSetting.hasOwnProperty('DB_name') === false ||
-		dbSetting.hasOwnProperty('serverIP') === false ||
-		dbSetting.hasOwnProperty('serverPort') === false) {
+	if (dbSetting.hasOwnProperty('DB_name') === false
+		|| dbSetting.hasOwnProperty('serverIP') === false
+		|| dbSetting.hasOwnProperty('serverPort') === false) {
 		LOG.error('DB_name or DB IP/port not found', 'SR.DB');
 		return UTIL.safeCall(onDone, false);
 	}
@@ -1375,16 +1387,17 @@ exports.initDB = function (dbSetting, collections, onDone) {
 	// store names of collections to be init
 	// NOTE: some names could already exist if SR.DB.useCollection was called
 	if (collections && collections instanceof Array) {
-		for (var i=0; i < collections.length; i++) {
+		for (let i=0; i < collections.length; i++) {
 
 			// check if collection name is valid (cannot overlap with system names)
 			var name = collections[i];
 
-			for (var j=0; j < l_SRnames.length; j++)
+			for (var j=0; j < l_SRnames.length; j++) {
 				if (l_SRnames[j] === name) {
 					LOG.error('collection name [' + name + '] is reserved, cannot be created or used', 'SR.DB');
 					break;
 				}
+			}
 
 			if (j === l_SRnames.length) {
 				l_names.push(name);
@@ -1413,7 +1426,7 @@ exports.initDB = function (dbSetting, collections, onDone) {
 		}
 
 		// open DB & load the collection data from DB
-		conn.open(function (err, client) {
+		conn.open((err, client) => {
 
 			// check if error
 			if (err) {
@@ -1431,7 +1444,7 @@ exports.initDB = function (dbSetting, collections, onDone) {
 				// NOTE: use client.admin().authenticate will force using admin account
 				//	   but in general we should not do that
 
-				client.authenticate(account, pass, function (err, replies) {
+				client.authenticate(account, pass, (err, replies) => {
 
 					if (err) {
 
@@ -1449,14 +1462,14 @@ exports.initDB = function (dbSetting, collections, onDone) {
 						//	   might be a bug in MongoDB
 						user_created = true;
 
-						client.admin().authenticate(SR.Settings.DB_ADMIN.account, SR.Settings.DB_ADMIN.pass, function (err, replies) {
+						client.admin().authenticate(SR.Settings.DB_ADMIN.account, SR.Settings.DB_ADMIN.pass, (err, replies) => {
 							if (err) {
 								LOG.error(err, 'SR.DB');
 								LOG.error('DB admin auth failure, please make sure DB_ADMIN is setup correctly either in system or project setting', 'SR.DB');
 								return UTIL.safeCall(onOpenDone, false);
 							}
 
-							client.addUser(account, pass, function (err, result) {
+							client.addUser(account, pass, (err, result) => {
 
 								if (err) {
 									LOG.error(err, 'SR.DB');
@@ -1493,7 +1506,7 @@ exports.initDB = function (dbSetting, collections, onDone) {
 		// open the DB specified
 		openDB(l_DBname, l_DBsetting.account, l_DBsetting.password,
 			// onOpenDone
-			function (result) {
+			(result) => {
 				LOG.sys('openDB result for [' + l_DBname + ']: ' + result, 'SR.DB');
 
 				// notify project & operation admin
@@ -1525,7 +1538,7 @@ exports.initDB = function (dbSetting, collections, onDone) {
 
 		var func = function (onDone) {
 
-			l_initCollection(DB_name, name, function (result) {
+			l_initCollection(DB_name, name, (result) => {
 				if (result === false) {
 					openDBResult = false;
 				}
@@ -1538,7 +1551,7 @@ exports.initDB = function (dbSetting, collections, onDone) {
 
 	// NOTE: loading of collections will not execute (2nd parameter) if previous init has failed
 	// create & store different steps to load a given collection
-	for (var i=0; i < l_names.length; i++) {
+	for (let i=0; i < l_names.length; i++) {
 		jobqueue.add(load_step(l_DBname, l_names[i]), false, l_names[i]);
 
 		// incorrect usage
@@ -1554,13 +1567,14 @@ exports.initDB = function (dbSetting, collections, onDone) {
 		jobqueue.add(load_step(l_DBname, l_SRnames[i], 'system'), false, l_SRnames[i]);
 	}
 
-	jobqueue.run(function (result) {
+	jobqueue.run((result) => {
 		UTIL.safeCall(onDone, openDBResult);
 	});
 };
 
+// FIXME: FTBFS in original version
 exports.initDBAsync = function(dbSetting, collections) {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_initDB(dbSetting, collections, reject);
 	});
 };
@@ -1582,8 +1596,9 @@ exports.disposeDB = function (onDone) {
 	UTIL.safeCall(onDone, true);
 };
 
+// FIXME: FTBFS in original version
 exports.disposeDBAsync = function() {
-	return new promise(function(resolve, reject) {
+	return new promise((resolve, reject) => {
 		l_disposeDB(resolve);
 	});
 };
@@ -1600,7 +1615,7 @@ exports.init = function (config, onDone) {
 	var collection_names = config.collections || [];
 
 	SR.DB.initDB(settings, collection_names,
-		function (result) {
+		(result) => {
 			LOG.warn('init DB [' + settings.DB_name + '] result: ' + result, 'SR.DB');
 			UTIL.safeCall(onDone, result);
 		}
@@ -1612,7 +1627,7 @@ exports.dispose = function (onDone) {
 
 	// wait a little, for callbacks to finish (if any), for example, DB write/read..
 	// TODO: can we detect if DB activities exist?
-	setTimeout(function () {
+	setTimeout(() => {
 
 		// all events should be finished now, so this action should be fine
 		SR.DB.disposeDB(onDone);

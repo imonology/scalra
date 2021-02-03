@@ -1,3 +1,5 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 /*
 //
 //  event_manager.js
@@ -20,9 +22,9 @@ event.session usage:
 	// get value 取值
 	event.session['abc'];			// undefined
 	event.session;					// {}
-	
+
 	// set value 設值
-	event.session['abc'] = 'def';	
+	event.session['abc'] = 'def';
 	event.session.abc = 'def';
 	event.session['abc'];			// 'def'
 	event.session.abc; 				// 'def'
@@ -33,7 +35,7 @@ event.session usage:
 		abc: 'abc',
 		def: 'def'
 	};
-	
+
 	event.session['abc'];			// 'abc'
 	event.session;					// {abc: 'abc', def: 'def'}
 
@@ -53,7 +55,7 @@ event._session usage:
 		abc: 'abc',
 		def: 'abc'
 	});
-	
+
 	event._session('abc'); 		// abc
 	event._session(); 			// { "abc": "abc", "def": "abc" }
 
@@ -94,15 +96,13 @@ var l_queueEvent = function (event) {
 
 	// if event is not from socket, no need to queue
 	// TODO: remove connection-specific code from here
-	if (event.conn.type !== 'socket')
-		return true;
+	if (event.conn.type !== 'socket') {return true;}
 
 	var socket = event.conn.connector;
 
 	// if no mechanism to store (such as from a bot), just ignore
 	// TODO: this is not clean
-	if (typeof socket.queuedEvents === 'undefined')
-		socket.queuedEvents = {};
+	if (typeof socket.queuedEvents === 'undefined') {socket.queuedEvents = {};}
 
 	var queue_size = Object.keys(socket.queuedEvents).length;
 	if (queue_size > l_queuedEventsPerSocket) {
@@ -110,8 +110,7 @@ var l_queueEvent = function (event) {
 		LOG.warn('queued event size: ' + queue_size + ' limit exceeded (' + l_queuedEventsPerSocket + ')', l_name);
 
 		// DEBUG purpose (print out events queued)
-		for (var i in socket.queuedEvents)
-			LOG.sys('queuedEvents[' + i + '] =' + UTIL.stringify(socket.queuedEvents[i].data), l_name);
+		for (var i in socket.queuedEvents) {LOG.sys('queuedEvents[' + i + '] =' + UTIL.stringify(socket.queuedEvents[i].data), l_name);}
 
 		return false;
 	}
@@ -133,8 +132,7 @@ var l_unqueueEvent = function (event) {
 
 	// if no mechanism to store (such as from a bot), just ignore
 	// TODO: cleaner approach?
-	if (event.conn.type !== 'socket' ||
-    	event.conn.connector.queuedEvents === undefined) {
+	if (event.conn.type !== 'socket' || event.conn.connector.queuedEvents === undefined) {
 		return true;
 	}
 
@@ -164,12 +162,12 @@ var l_unqueueEvent = function (event) {
 */
 // build an event to process
 exports.createEvent = function (name, para, onResponse, from) {
-	
-	var conn = SR.Conn.createConnObject(from.type, onResponse, from);	
+
+	var conn = SR.Conn.createConnObject(from.type, onResponse, from);
 	var data = {};
 	data[SR.Tags.EVENT] = name;
-	data[SR.Tags.PARA] = para;	
-	
+	data[SR.Tags.PARA] = para;
+
 	return l_unpack(data, conn, from.cookie);
 };
 
@@ -206,15 +204,13 @@ exports.checkin = function (event, dispatcher) {
 
 	// if socket is available, then store to socket current event & check if exceed limit
 	// refuse checkin if this socket has too many queued events
-	if (l_queueEvent(event) === false)
- 		return false;
+	if (l_queueEvent(event) === false) {return false;}
 
 	// in process of executing event
 	event.checkin = true;
 
 	var msgsize = Object.keys(l_eventPool).length;
-	if (msgsize > 0 && msgsize % l_pendingMessageLimit === 0)
- 		LOG.warn('eventPool size: ' + msgsize + ' exceeds limit: ' + l_pendingMessageLimit, l_name);
+	if (msgsize > 0 && msgsize % l_pendingMessageLimit === 0) {LOG.warn('eventPool size: ' + msgsize + ' exceeds limit: ' + l_pendingMessageLimit, l_name);}
 
 	// emit the event
 	// process event regardless of whether there are pending events not yet done
@@ -232,8 +228,7 @@ exports.checkin = function (event, dispatcher) {
 var l_checkout = exports.checkout = function (event, res_obj) {
 
 	// if this event should be returned by socket, but socket does not queue this event
-	if (l_unqueueEvent(event) === false)
-		return;
+	if (l_unqueueEvent(event) === false) {return;}
 
 	// remove this event from pool to be processed
 	delete l_eventPool[event.id];
@@ -263,18 +258,17 @@ var l_createUpdatePacket = exports.createUpdatePacket = function (type, data) {
 var l_send = exports.send = function (packet_type, para, connections, cid) {
 
 	// convert a single destination into an array
-	if (typeof connections === 'string')
-		connections = [connections];
-	
+	if (typeof connections === 'string') {connections = [connections];}
+
 	// check if target connections are valid
 	if (connections instanceof Array === false) {
 		LOG.error('connections undefined or is not an array, drop message', l_name);
 		LOG.stack();
 		return false;
 	}
-	
+
 	if (connections.length === 0) {
-    	LOG.sys('connection list is empty, drop message', l_name);
+		LOG.sys('connection list is empty, drop message', l_name);
 		return false;
 	}
 
@@ -297,12 +291,12 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 		LOG.error('packet type is undefined or incorrect format, drop message', l_name);
 		return false;
 	}
-	
+
 	// if nothing to be sent back to client, stop now
 	if (Object.keys(res_obj).length === 0) {
 
 		// need to go over all connections as HTTP requests still need to be terminated
-		for (var i = 0; i < connections.length; ++i) {
+		for (let i = 0; i < connections.length; ++i) {
 			// NOTE: make sure empty paremters indicate a 'no-send' for types besides 'HTTP'
 			if (typeof connections[i].connector === 'function') {
 				connections[i].connector();
@@ -315,79 +309,74 @@ var l_send = exports.send = function (packet_type, para, connections, cid) {
 
 		return false;
 	}
-	
+
 	// show if we're sending to more than one client
-	if (connections.length > 1)
-		LOG.sys(SR.Tags.SND + 'send to '+ connections.length + ' clients' + SR.Tags.END, l_name);
-	
+	if (connections.length > 1) {LOG.sys(SR.Tags.SND + 'send to '+ connections.length + ' clients' + SR.Tags.END, l_name);}
+
 	// attach client defined id if exist (sent by the client in the event)
 	// NOTE: client event ID (cid) is a requester-generated unique ID
 	// returned by the server processing the request, to identify the message
-	// TODO: combine with SR.RPC mechanism?	
+	// TODO: combine with SR.RPC mechanism?
 	if (cid) {
 		res_obj._cid = cid;
 	}
 
 	// serialize object to a string (to send over socket or HTTP)
-	// NOTE: we serialize here so this only needs to be done once for possibly 
+	// NOTE: we serialize here so this only needs to be done once for possibly
 	// different connection types
 	// NOTE: object may fail to serialize due to circular structure
 	var data = UTIL.stringify(res_obj);
 	if (!data) {
 		LOG.stack();
-		return false;		
+		return false;
 	}
 
 	// print message to send (partial up to 250 characters, adjustable in LENGTH_OUTMSG setting)
 	// NOTE: this is a 'debug' level message so developer can also see it
-	// avoid sending streaming data (skip it) 
+	// avoid sending streaming data (skip it)
 	// TODO: a better approach
-	if (SR.Settings.HIDDEN_EVENT_TYPES.hasOwnProperty(res_obj[SR.Tags.UPDATE]) === false)
-		LOG.debug(SR.Tags.SND + data.length + ' ' + data.substring(0, SR.Settings.LENGTH_OUTMSG) + SR.Tags.END, l_name);		
+	if (SR.Settings.HIDDEN_EVENT_TYPES.hasOwnProperty(res_obj[SR.Tags.UPDATE]) === false) {LOG.debug(SR.Tags.SND + data.length + ' ' + data.substring(0, SR.Settings.LENGTH_OUTMSG) + SR.Tags.END, l_name);}
 	//else
 	//	LOG.debug(SR.Tags.SND + data.length + ' ' + res_obj[SR.Tags.UPDATE] + SR.Tags.END, l_name);
-	
-				
+
+
 	// number of messages dropped due to invalid connection
 	var droppedMessage = 0;
 
 	// go through each connection and send
-	for (var i = 0; i < connections.length; ++i) {
+	for (let i = 0; i < connections.length; ++i) {
 
 		// get current connection
 		var conn = connections[i];
-		
+
 		// check if this is a connID, translate to a connection object
-		if (typeof conn === 'string')
-			conn = SR.Conn.getConnObject(conn);
+		if (typeof conn === 'string') {conn = SR.Conn.getConnObject(conn);}
 
 		if (typeof conn === 'undefined') {
 			LOG.error('connection object is invalid, cannot send', l_name);
 			continue;
 		}
-		
+
 		// check if it's purely a socket (should not happen)
 		if (typeof conn.connector === 'undefined') {
 			LOG.error('connector not found', l_name);
 			LOG.error(conn);
 			continue;
 		}
-					
+
 		// record size
 		SR.Stat.add('net_out', data.length);
 
-		LOG.sys('sending [' + conn.type + '] message...', l_name);		
-				
-		// NOTE: both object (res_obj) and string (data) formats are passed for flexibility			
+		LOG.sys('sending [' + conn.type + '] message...', l_name);
+
+		// NOTE: both object (res_obj) and string (data) formats are passed for flexibility
 		// NOTE: conn object is also passed because right now conn.pid (polling id) may be used by http response
-		if (conn.connector(res_obj, data, conn) === false)
-			droppedMessage++;
-	
+		if (conn.connector(res_obj, data, conn) === false) {droppedMessage++;}
+
 	} // for connection array
 
 	// print out dropped message
-	if (droppedMessage > 0)
-		LOG.error(droppedMessage + ' messages dropped.', l_name);
+	if (droppedMessage > 0) {LOG.error(droppedMessage + ' messages dropped.', l_name);}
 
 	return true;
 };
@@ -410,10 +399,9 @@ exports.waitSocketsEmpty = function (socket, onDone) {
 			socket: socket,
 			onComplete: onDone
 		},
-		function (item) {
+		(item) => {
 			// if conn still has pending item, re-queue and keep waiting
-			if (Object.keys(item.socket.queuedEvents).length > 0)
-        		return false;
+			if (Object.keys(item.socket.queuedEvents).length > 0) {return false;}
 
 			UTIL.safeCall(item.onComplete);
 			return true;
@@ -424,8 +412,8 @@ exports.waitSocketsEmpty = function (socket, onDone) {
 // get session content based on a token
 // returns empty collection if not found
 exports.getSession = function (token) {
-	var session_token = new Buffer(token).toString('base64').substring(0,150);	
- 	return SR.State.get(session_token);
+	var session_token = new Buffer(token).toString('base64').substring(0,150);
+	return SR.State.get(session_token);
 };
 
 //
@@ -440,7 +428,7 @@ function Event (data, conn, token) {
 
 	// store connection object
 	this.conn = conn;
-	
+
 	// incoming data
 	this.data = data;
 
@@ -451,23 +439,22 @@ function Event (data, conn, token) {
 	// NOTE: do not use 'port' as part of token generation, as port can change during repeated HTTP requests
 	// NOTE: if 'conn.host' is used, for some clients, their IP might change from request to request (due to load balancer)
 	// then session will break
-	//this.conn.session_token = new Buffer(token + conn.host).toString('base64').substring(0,150);	
+	//this.conn.session_token = new Buffer(token + conn.host).toString('base64').substring(0,150);
 	// TODO: review potential security vulunarabilility here
 	token = token || '';
 	this.conn.session_token = new Buffer(token).toString('base64').substring(0,150);
-	
+
 	// need to de-allocate the sessions when no longer used
 	// TODO: set expire time?
- 	this.session = SR.State.get(this.conn.session_token);
-	
+	this.session = SR.State.get(this.conn.session_token);
+
 	// record client id (if available)
 	// NOTE: this id will be sent back as a '_cid' attribute in the response for this event
 	//         when the event is checkout, this is to ensure that
 	//         there's a unique response to each unqiue event
 	// TODO: simplify this? combine with forwardEvent in SR.RPC?
 
-	if (data.hasOwnProperty('_cid'))
- 		this.cid = data._cid;
+	if (data.hasOwnProperty('_cid')) {this.cid = data._cid;}
 }
 
 // attach convenience functions
@@ -475,15 +462,15 @@ Event.prototype.done = function (packet_type, para, connections) {
 
 	// build response packet, if exist
 	var response = {};
-	
+
 	if (packet_type !== undefined) {
-			
+
 		// auto fill-in name if not provided
-		if (typeof packet_type === 'object') { 
+		if (typeof packet_type === 'object') {
 			para = packet_type;
 			packet_type = this.msgtype;
 		}
-		
+
 		// check if we should return back rid (request id) to allow requesting client to handle response uniquely
 		if (this.rid) {
 
@@ -494,19 +481,18 @@ Event.prototype.done = function (packet_type, para, connections) {
 				para['_rid'] = this.rid;
 			}
 		}
-		
+
 		response = l_createUpdatePacket(packet_type, para);
 	}
 
-  	// perform checkout first
+	// perform checkout first
 	//LOG.warn('checking out response:');
 	//LOG.warn(response);
-	
+
 	SR.EventManager.checkout(this, response);
 
-	// send packet to other client(s) if connections are provided	
-	if (typeof connections !== 'undefined')
-		this.send(packet_type, para, connections, false);
+	// send packet to other client(s) if connections are provided
+	if (typeof connections !== 'undefined') {this.send(packet_type, para, connections, false);}
 };
 
 // respond to a specific packet, or a number of other connections (if provided)
@@ -546,41 +532,39 @@ Event.prototype.printSource = function () {
 // session
 var l_sessionPool = {};
 Event.prototype._session = function (query, data) {
-	
+
 	var token = this.session_token;
-	
+
 	// store directly
 	if (typeof query === 'object') {
 		// total replacement
 		//l_sessionPool[token] = query;
-		
+
 		// incrementally add new keys
-		for (key in query)
+		for (let key in query) {
 			l_sessionPool[token][key] = query[key];
-	}
-	// store a key-value in string
-	else if (typeof query === 'string' && typeof data !== 'undefined') {
+		}
+	} else if (typeof query === 'string' && typeof data !== 'undefined') {
+		// store a key-value in string
 		if (!l_sessionPool[token]) {
 			l_sessionPool[token] = {};
 		}
 
 		l_sessionPool[token][query] = data;
-	} 
-	// get 
-	else if (typeof query === 'string' && typeof data === 'undefined') {
+	} else if (typeof query === 'string' && typeof data === 'undefined') {
+		// get
 		if (l_sessionPool[token] && l_sessionPool[token][query]) {
 			return l_sessionPool[token][query];
 		} else {
 			return null;
 		}
-	} 
-	// return all
-	else if (typeof query === 'undefined' && typeof data === 'undefined') {
+	} else if (typeof query === 'undefined' && typeof data === 'undefined') {
+		// return all
 		if (l_sessionPool[token]) {
 			return l_sessionPool[token];
 		} else {
 			return null;
-    	}
+		}
 	}
 };
 

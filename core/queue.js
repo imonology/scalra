@@ -1,19 +1,20 @@
-﻿
+﻿/* cSpell:disable */
+/* global SR, LOG, UTIL */
 //
 //  queue.js
 //
-// an advanced queue based on Stephen Morley's queue.js 
+// an advanced queue based on Stephen Morley's queue.js
 // to automatically handle event re-queueing
 //
 //    methods:
 //        enqueue(event, event_handler)        // store a event onto queue that will be handled by 'event_handler'
 //        activate()                        // allows the queue to keep execution
-//        
-// NOTE: 'event_handler' needs to process event and return 
+//
+// NOTE: 'event_handler' needs to process event and return
 //         'true'         for event completion
 //         'false'     for re-queueing the event to be executed next time
 //       'undefined' or no return for pausing
-// 
+//
 
 //require('./global');
 var FIFOqueue = require('./_queue');
@@ -22,7 +23,7 @@ exports.icQueue = function () {
 
 	// internal queue
 	var queue   = new FIFOqueue.Queue();
-    
+
 	// whether the queue is currently processing
 	var busy    = false;
 
@@ -52,7 +53,7 @@ exports.icQueue = function () {
 			// keep a reference to event handler
 			handler = event_handler;
 		}
-        
+
 		// store event item in internal FIFO queue
 		queue.enqueue(item);
 
@@ -62,10 +63,10 @@ exports.icQueue = function () {
 
 	// start processing
 	this.activate = function ()    {
-        
+
 		// activate queue processing if currently not busy
 		if (busy === false) {
-			busy = true;                
+			busy = true;
 			UTIL.asyncCall(processEvent);
 		}
 	};
@@ -86,45 +87,45 @@ exports.icQueue = function () {
 
 		// handle the event if handler is available
 		if (handler === null) {
-			console.log(SR.Tags.ERR + 'handler undefined, cannot process event' + ERREND);
+			console.log(SR.Tags.ERR + 'handler undefined, cannot process event' + SR.Tags.ERREND);
 			return;
 		}
-                        
+
 		switch (handler(tmdata)) {
 
 		// if the event is not handled, re-queue it
 		case false:
 			queue.enqueue(tmdata);
 			break;
-                
+
 			// return true, keep processing
 		case true:
 			break;
-            
+
 			/*
             // NOTE: we do not pause continuing execution, because it's possible for a event
-            //         to consider it finished, re-activate the queue (which it think it has paused), 
+            //         to consider it finished, re-activate the queue (which it think it has paused),
             //       but then the execution runs to the end of handler, and returning a undefine to pause icQueue
             //       this will thus cause a event to indefinitely pause without any on-going progress.
             //
-            //         Currently if the event has returned, we assume it's been processed. 
+            //         Currently if the event has returned, we assume it's been processed.
             //         If not yet, then it's up to the handler to re-enqueue the event (by returning 'false')
-            //       note that it's possible that the previous event is still being processed 
+            //       note that it's possible that the previous event is still being processed
             //       (for example, waiting for DB to return), while the next event starts processing
             //       so the ordering may not be preserved.
             //       The assumption we have is that events are relatively independent from each other
             //       so such out-of-sequence processing may be "okay," as long as handler will properly re-queue the event
             //       in case it needs to be processed again
-            // 
+            //
             */
 
 			// did not return anything, pause execution
 		default:
 			//console.log(SR.Tags.WARN + 'pause processing event, callee: ' + arguments.callee.name);
 			return;
-			break;                
-		}            
-        
+			// break;
+		}
+
 		// keep processing
 		busy = true;
 		UTIL.asyncCall(processEvent);

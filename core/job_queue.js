@@ -1,3 +1,5 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 //
 //
 // job_queue.js
@@ -50,13 +52,12 @@ var l_destroy = function (id, onDone) {
 };
 
 // add a new function / task to execute to the queue
-// optional parameter determines whether the function always will be executed, or will be skipped if 
+// optional parameter determines whether the function always will be executed, or will be skipped if
 // previous jobs have failed
 exports.add = function (id, func, always_execute) {
 	// if queue does not exist then don't add
-	if (l_pool.hasOwnProperty(id) === false)
-		return;
-	   
+	if (l_pool.hasOwnProperty(id) === false) {return;}
+
 	l_pool[id].table.push(
 		{
 			// NOTE: should we record which is successful and which is not?
@@ -65,36 +66,36 @@ exports.add = function (id, func, always_execute) {
 		}
 	);
 };
-   
+
 // execute next job for a given queue
 var l_run = exports.run = function (id) {
 	if (l_pool.hasOwnProperty(id) === false) {
 		console.log('[SR.JobQueue]::run::'+SR.Tags.ERR+' id: ' + id + ' not found.' + SR.Tags.ERREND);
 		return;
 	}
-	
+
 	// error checking, should not happen as counter is advanced internally
 	if (l_pool[id].counter >= l_pool[id].table.length) {
 		console.log('[SR.JobQueue]::run:: ' +SR.Tags.ERR + 'size not enough: ' + l_pool[id].table.length + ' accessing: ' + l_pool[id].counter + SR.Tags.ERREND);
 		return;
 	}
-	
+
 	// TODO: func may be replaced when function is called 2nd time? thus callback result will be incorrect?
 	// but possibly not, as there should be only one jobqueue executing at once
 	var func = l_pool[id].table[l_pool[id].counter].func;
-	
+
 	// check if we should skip this job
 	if (l_pool[id].failed === true && l_pool[id].table[ l_pool[id].counter ].always === false) {
 		// continue executing next job
 		return l_done(id, func);
 	}
-	
-	UTIL.safeCall(func, function (result) {
-	
-		// if not successful, remove whole job queue		
+
+	UTIL.safeCall(func, (result) => {
+
+		// if not successful, remove whole job queue
 		if (result === false) {
 			console.log('[SR.JobQueue]::run::' + SR.Tags.WARN + ' id: ' + id + ' job returns error, skip executing following depended jobs' + SR.Tags.ERREND);
-						
+
 			// mark fail for this queue
 			l_pool[id].failed = true;
 		}
@@ -105,8 +106,7 @@ var l_run = exports.run = function (id) {
 };
 
 var l_done = exports.done = function (id, func) {
-	if (l_pool.hasOwnProperty(id) === false)
-		return;
+	if (l_pool.hasOwnProperty(id) === false) {return;}
 
 	// trigger next function
 	l_pool[id].counter++;
@@ -114,10 +114,8 @@ var l_done = exports.done = function (id, func) {
 	// if no more job, delete the queue (all done)
 	if (l_pool[id].counter === l_pool[id].table.length) {
 		l_destroy(id);
-	}
-	// execute the next job
-	else {
-		l_run(id);	
+	} else {	// execute the next job
+		l_run(id);
 	}
 };
 
@@ -135,18 +133,15 @@ function JobQueue(para) {
 // if 'keep_execute' is false, then if this job fails, the rest of jobs won't execute
 // by default this is assumed to be 'true'
 JobQueue.prototype.add = function (step, keep_execute, name) {
-	
+
 	//LOG.sys('adding to queue... keep_execute: ' + keep_execute + ' name: ' + name, l_name);
 	/*
 	if (!name) {
 		LOG.stack();
 	}
 	*/
-	
-	if (typeof step !== 'function')
-		LOG.error('job is not a function', l_name);
-	else
-		this.queue.push({job: step, keep: keep_execute, name: name, done: false});
+
+	if (typeof step !== 'function') {LOG.error('job is not a function', l_name);} else {this.queue.push({job: step, keep: keep_execute, name: name, done: false});}
 };
 
 // execute all jobs in the queue sequentially
@@ -156,55 +151,53 @@ JobQueue.prototype.run = function (onDone) {
 	this.next();
 };
 
-// execute next job in queue 
+// execute next job in queue
 JobQueue.prototype.next = function () {
-	
+
 	var that = this;
-	
+
 	// all jobs are done
-	if (this.curr >= this.queue.length)
-		return this.done();
-	
+	if (this.curr >= this.queue.length) {return this.done();}
+
 	var item = this.queue[this.curr];
 	LOG.sys('running next job: ' + (item.name ? item.name : ''), l_name);
-	
+
 	var timeout_trigger = undefined;
-	
+
 	// if the job returns properly with success/fail result
 	var onJobDone = function (result) {
 		item.done = true;
-		
+
 		// clear timeout if any
 		if (timeout_trigger) {
 			clearTimeout(timeout_trigger);
 			timeout_trigger = undefined;
 		}
-		
+
 		if (result === false) {
 			that.all_passed = false;
-			
+
 			// ready to stop if this job is a showstopper
-			if (item.keep === false)
-				return that.done();
+			if (item.keep === false) {return that.done();}
 		}
 		that.curr++;
 		that.next();
 	};
-	
+
 	// if the job does not finish in time
 	var onTimeout = function () {
 		if (item.done === false) {
 			LOG.error('job timeout! please check if the job calls onDone eventually. ' + (item.name ? '[' + item.name + ']' : ''), l_name);
-			
+
 			// force this job be done
 			onJobDone(false);
 		}
 	};
-	
+
 	// NOTE: it's possible that this job won't return and call the onDone callback
 	// if a timeout value exists then we should force stop this job with a result of 'false'
 	UTIL.safeCall(item.job, onJobDone);
-	
+
 	// still timeout if timeout value exists
 	if (this.timeout > 0) {
 		timeout_trigger = setTimeout(onTimeout, this.timeout);
@@ -220,4 +213,4 @@ JobQueue.prototype.done = function () {
 exports.createQueue = function (para) {
 	return new JobQueue(para);
 };
-    
+

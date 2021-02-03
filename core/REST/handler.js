@@ -1,3 +1,5 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 /*
 
 current handlers:
@@ -69,7 +71,7 @@ var l_extList = {
 
 // file types where direct download behavior is desired (instead of being viewed inside browser)
 var l_directExt = {
-	'zip': true	
+	'zip': true
 };
 
 // client events
@@ -77,6 +79,7 @@ exports.event = function (path_array, res, JSONobj, req) {
 
 	var cookie = SR.REST.getCookie(req.headers.cookie);
 
+	// FIXME: this function always returns true
 	// callback to return response to client
 	var onResponse = function (res_obj, data, conn) {
 
@@ -99,15 +102,15 @@ exports.event = function (path_array, res, JSONobj, req) {
 			res.end();
 			*/
 
-			// redirect by page 
+			// redirect by page
 			// TODO: merge with same code in FB.js
-			var page =
-				'<html><body><script>\n' +
-				'if (navigator.appName.indexOf("Microsoft") != -1)\n' +
-				'    window.top.location.href="' + url + '";\n' +
-				'else\n' +
-				'	 top.location.href="' + url + '";\n' +
-				'</script></body></html>\n';
+			var page
+				= '<html><body><script>\n'
+				+ 'if (navigator.appName.indexOf("Microsoft") != -1)\n'
+				+ '    window.top.location.href="' + url + '";\n'
+				+ 'else\n'
+				+ '	 top.location.href="' + url + '";\n'
+				+ '</script></body></html>\n';
 
 			res.writeHead(200, {
 				'Content-Type': 'text/html'
@@ -116,7 +119,7 @@ exports.event = function (path_array, res, JSONobj, req) {
 
 			return true;
 		}
-		
+
 		// check for special case processing (SR_HTML)
 		if (res_obj[SR.Tags.UPDATE] === 'SR_HTML' && res_obj[SR.Tags.PARA].page) {
 			res.writeHead(200, {
@@ -132,7 +135,7 @@ exports.event = function (path_array, res, JSONobj, req) {
 			var filename = res_obj[SR.Tags.PARA].filename;
 			LOG.warn('allow client to download file: ' + filename, l_name);
 
-			var data = res_obj[SR.Tags.PARA].data;
+			let data = res_obj[SR.Tags.PARA].data;
 			res.writeHead(200, {
 				'Content-Type': 'application/octet-stream',
 				'Content-Disposition': 'attachment; filename=' + filename,
@@ -146,45 +149,44 @@ exports.event = function (path_array, res, JSONobj, req) {
 		if (res_obj[SR.Tags.UPDATE] === 'SR_RESOURCE' && res_obj[SR.Tags.PARA].address) {
 
 			var file = res_obj[SR.Tags.PARA].address;
-						
+
 			// check if resource exists & its states
-			SR.fs.stat(file, function (err, stats) {
-										
+			SR.fs.stat(file, (err, stats) => {
+
 				var resHeader = typeof res_obj[SR.Tags.PARA].header === 'object' ? res_obj[SR.Tags.PARA].header : {};
-				
-				if (err) {			
+
+				if (err) {
 					LOG.error(err, l_name);
 					res.writeHead(404, resHeader);
 					res.end();
 					return;
 				}
-				
+
 				var extFilename = file.match(/[\W\w]*\.([\W\w]*)/)[1];
-				if (typeof extFilename === 'string')
-					extFilename = extFilename.toLowerCase();
-				
+				if (typeof extFilename === 'string') {extFilename = extFilename.toLowerCase();}
+
 				// default to 200 status
 				var resStatus = 200;
 				resHeader['Accept-Ranges'] = 'bytes';
 				resHeader['Cache-Control'] = 'no-cache';
 				resHeader['Content-Length'] = stats.size;
-				
+
 				if (l_extList[extFilename]) {
 					resHeader['Content-Type'] = l_extList[extFilename];
 				}
-				
+
 				var start = undefined;
 				var end = undefined;
-				
+
 				// check if request range exists (e.g., streaming media such as webm/mp4) to return 206 status
-				// see: https://delog.wordpress.com/2011/04/25/stream-webm-file-to-chrome-using-node-js/						
+				// see: https://delog.wordpress.com/2011/04/25/stream-webm-file-to-chrome-using-node-js/
 				if (req.headers.range) {
 					var range = req.headers.range.split(/bytes=([0-9]*)-([0-9]*)/);
 					resStatus = 206;
-					
+
 					start = parseInt(range[1] || 0);
 					end = parseInt(range[2] || stats.size - 1);
-					
+
 					if (start > end) {
 						LOG.error('stream file start > end. start: ' + start + ' end: ' + end, l_name);
 						var resHeader = typeof res_obj[SR.Tags.PARA].header === 'object' ? res_obj[SR.Tags.PARA].header : {};
@@ -192,23 +194,22 @@ exports.event = function (path_array, res, JSONobj, req) {
 						res.end();
 						return;  // abnormal if we've reached here
 					}
-					
+
 					LOG.debug('requesting bytes ' + start + ' to ' + end + ' for file: ' + file, l_name);
-							 
+
 					resHeader['Connection'] = 'close';
 					resHeader['Content-Length'] = end - start + 1;
 					resHeader['Content-Range'] = 'bytes ' + start + '-' + end + '/' + stats.size;
 					resHeader['Transfer-Encoding'] = 'chunked';
-				} 
-				// otherwise assume it's a regular file
-				else if (l_directExt.hasOwnProperty(extFilename)) {
+				} else if (l_directExt.hasOwnProperty(extFilename)) {
+					// otherwise assume it's a regular file
 					// NOTE: code below will cause the file be downloaded in a "Save As.." format
-					// (instead of being displayed directly), we only want this behavior for certain file types (such as .zip)				
+					// (instead of being displayed directly), we only want this behavior for certain file types (such as .zip)
 					var filename = file.replace(/^.*[\\\/]/, '');
 					LOG.warn('requesting a file: ' + filename, l_name);
 					resHeader['Content-Disposition'] = 'attachment; filename=' + filename;
 				}
-				
+
 				LOG.sys('SR_RESOURCE header:', l_name);
 				LOG.sys(resHeader);
 				res.writeHead(resStatus, resHeader);
@@ -218,9 +219,9 @@ exports.event = function (path_array, res, JSONobj, req) {
 					flags: 'r',
 					start: start,
 					end: end
-				}).pipe(res);			
+				}).pipe(res);
 			});
-			
+
 			return true;
 		}
 
@@ -248,7 +249,7 @@ exports.event = function (path_array, res, JSONobj, req) {
 
 	var host = req.connection.remoteAddress.split(':');
 	host = host[host.length-1];
-	
+
 	var from = {
 		host: host,
 		port: req.connection.remotePort,
@@ -285,12 +286,10 @@ exports.SR = function(path_array, res, JSONobj, req) {
 
 		// if JSONobj is array
 		if (SR.sys.isArray(JSONobj)) {
-			for (var i = 0; JSONobj.length; i++)
-				args[i] = JSONobj[i];
+			for (var i = 0; JSONobj.length; i++) {args[i] = JSONobj[i];}
 		} else {
 			// otherwise it's an object
-			for (var key in JSONobj)
-				args.push((JSONobj[key] === '' ? undefined : JSONobj[key]));
+			for (var key in JSONobj) {args.push((JSONobj[key] === '' ? undefined : JSONobj[key]));}
 		}
 	}
 
@@ -389,7 +388,7 @@ exports.payment = function(path_array, res, JSONobj) {
 	// whether we're in debug mode
 	config.debug = UTIL.userSettings('Payment').debug || false;
 
-	SR.Payment[op_type](service_type, config, JSONobj, function(msg) {
+	SR.Payment[op_type](service_type, config, JSONobj, (msg) => {
 		if (typeof msg === 'object') {
 			// redirect to a given location
 			res.writeHead(302, {
@@ -410,8 +409,7 @@ exports.payment = function(path_array, res, JSONobj) {
 exports.SNS = function(path_array, res, para, req) {
 
 	// check if requester if valid
-	if (_checkRequester(req, res) === false)
-		return;
+	if (_checkRequester(req, res) === false) {return;}
 
 	// check if SNS type exists
 	var SNS_type = path_array[2];
@@ -453,7 +451,7 @@ exports.login = function(path_array, res, para, req) {
 	}
 };
 
-SR.Callback.onStart(function () {
+SR.Callback.onStart(() => {
 	// validate upload path
 	SR.Settings.UPLOAD_PATH = SR.path.resolve(SR.Settings.FRONTIER_PATH, '..', 'upload');
 	LOG.warn('validating upload path: ' + SR.Settings.UPLOAD_PATH, l_name);
@@ -468,7 +466,7 @@ exports.do_upload = function (path_array, res, para, req) {
 	uploadHandler.configure(function() {
 	  this.uploadDir = SR.Settings.UPLOAD_PATH ;
 	});
-	
+
 	// uploadHandler.upload(req, res);
 
 
@@ -481,7 +479,7 @@ exports.do_progress = function (path_array, res, para, req) {
 	uploadHandler.configure(function() {
 	  this.uploadDir = SR.Settings.UPLOAD_PATH ;
 	});
-	
+
 	// uploadHandler.upload(req, res);
 
 
@@ -503,13 +501,13 @@ exports.new_upload = function (path_array, res, para, req) {
 	LOG.warn(form.uploadDir);
 	// every time a file has been uploaded successfully,
 	// rename it to it's orignal name
-	form.on('file', function(field, file) {
+	form.on('file', (field, file) => {
 		// fs.rename(file.path, path.join(form.uploadDir, file.name));
 		LOG.warn('on file');
 	});
 
 	// log any errors that occur
-	form.on('error', function(err) {
+	form.on('error', (err) => {
 		LOG.warn('on error');
 		SR.Callback.notify('onUpload', {result: false, msg: 'fail reason: error'});
 		var result = {
@@ -519,7 +517,7 @@ exports.new_upload = function (path_array, res, para, req) {
 	});
 
 	// once all the files have been uploaded, send a response to the client
-	form.on('end', function() {
+	form.on('end', () => {
 		LOG.warn('on end');
 		// res.end('success');
 		var uploaded = [];
@@ -533,8 +531,8 @@ exports.new_upload = function (path_array, res, para, req) {
 
 	// parse the incoming request containing the form data
 	form.parse(req);
-	
-	
+
+
 };
 
 // handle file upload requests
@@ -565,7 +563,7 @@ exports.upload = function (path_array, res, para, req) {
 	if (req.headers['content-type']) {
 		if (req.headers['content-type'].startsWith('multipart/form-data; boundary=')) {
 			var form = new formidable.IncomingForm();
-				
+
 			var onUploadDone = function(fields, files) {
 				LOG.warn('files uploaded');
 				// LOG.warn(files);
@@ -601,7 +599,7 @@ exports.upload = function (path_array, res, para, req) {
 						upload : uploaded,
 					};
 
-					return SR.REST.reply(res, result);						
+					return SR.REST.reply(res, result);
 				}
 
 				// default to preserve original name
@@ -618,9 +616,9 @@ exports.upload = function (path_array, res, para, req) {
 					// record basic file info
 					var arr = upload.path.split('/');
 					var upload_name = arr[arr.length-1];
-					var filename = (preserve_name ? upload.name : upload_name); 
+					var filename = (preserve_name ? upload.name : upload_name);
 					LOG.warn('The file ' + upload.name + ' was uploaded as: ' + filename + '. size: ' + upload.size, l_name);
-					uploaded.push({name: filename, size: upload.size, type: upload.type});						
+					uploaded.push({name: filename, size: upload.size, type: upload.type});
 
 					// check if we might need to re-name
 					// default is to rename (preserve upload file names)
@@ -629,15 +627,15 @@ exports.upload = function (path_array, res, para, req) {
 					}
 
 					var new_name = SR.path.resolve(form.uploadDir, upload.name);
-					SR.fs.rename(upload.path, new_name, function (err) {
+					SR.fs.rename(upload.path, new_name, (err) => {
 						if (err) {
 							return LOG.error('rename fail: ' + new_name, l_name);
 						}
-						LOG.warn('File ' + upload_name + ' renamed as: ' + upload.name + ' . size: ' + upload.size, l_name);							
+						LOG.warn('File ' + upload_name + ' renamed as: ' + upload.name + ' . size: ' + upload.size, l_name);
 					});
 				};
 
-				// check for single or multiple file processing							
+				// check for single or multiple file processing
 				// for single file upload
 				if (files.upload.name) {
 					LOG.warn('single file uploaded, rename upload obj:', l_name);
@@ -667,12 +665,12 @@ exports.upload = function (path_array, res, para, req) {
 
 				SR.REST.reply(res, result);
 			};
-				
-				
+
+
 			var file_names = {};
-			form.on('end', function (err, result) {
+			form.on('end', (err, result) => {
 				if (err) {
-					LOG.error(err, l_name);	
+					LOG.error(err, l_name);
 					return SR.Callback.notify('onUpload', {result: false, msg: err});
 				}
 				LOG.warn('file uploaded', l_name);
@@ -686,7 +684,7 @@ exports.upload = function (path_array, res, para, req) {
 
 			});
 
-			form.on('aborted', function () {
+			form.on('aborted', () => {
 				//console.log("on aborted");
 				SR.Callback.notify('onUpload', {result: false, msg: 'fail reason: abort'});
 				var result = {
@@ -695,41 +693,41 @@ exports.upload = function (path_array, res, para, req) {
 				SR.REST.reply(res, result);
 			});
 
-			form.on('error', function (err) { 
+			form.on('error', (err) => {
 				SR.Callback.notify('onUpload', {result: false, msg: 'fail reason: error'});
 				var result = {
 					message: 'error',
 				};
 				SR.REST.reply(res, result);
 			});
- 
-			form.on('fileBegin', function (name, file) {
+
+			form.on('fileBegin', (name, file) => {
 				LOG.warn('fileBegin: name ' + name + ', file ' + JSON.stringify(file));
 				file_names['original_name'] = JSON.stringify(file);
-					
+
 			});
 
-			form.on('file', function (fields, files) {
+			form.on('file', (fields, files) => {
 				LOG.warn('on file: name ' + fields + ', file ' + JSON.stringify(files));
 				// onUploadDone(fields, files);
-			});				
-				
-			form.on('field', function (name, value) {
+			});
+
+			form.on('field', (name, value) => {
 				//LOG.debug("on field: name " + name + ", value " + value);
 			});
 
-			// form.on('progress', function (bytesReceived, bytesExpected) { 
+			// form.on('progress', function (bytesReceived, bytesExpected) {
 			// 	SR.Callback.notify('onUploadProgress', {bytesReceived: bytesReceived, bytesExpected: bytesExpected, form: form, file_names: file_names});
 			// 	//LOG.debug("on progress: bytesReceived " + bytesReceived + ", bytesExpected " + bytesExpected);
 			// });
-				
+
 			form.uploadDir = SR.Settings.UPLOAD_PATH;
 			form.keepExtensions = true;
 			form.multiples = true;
 
 
-			form.parse(req, function (error, fields, files) {
-					
+			form.parse(req, (error, fields, files) => {
+
 				if (error) {
 					LOG.error(error, l_name);
 					return;
@@ -748,7 +746,7 @@ exports.shutdown = function (path_array, res, para, req) {
 
 	var token = path_array[2];
 	LOG.warn('token: [' + token + ']', l_name);
-	
+
 	// TODO: check for token correctness
 	if (token === 'self') {
 		LOG.warn('received self shutdown request', l_name);

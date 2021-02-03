@@ -1189,6 +1189,7 @@ var l_getLocalPort = exports.getLocalPort = function (onDone, size) {
 }
 */
 
+// FIXME: which "size"???
 // version 2: self-generated
 var l_getLocalPort = exports.getLocalPort = function (onDone, size) {
 

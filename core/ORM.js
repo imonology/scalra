@@ -1,4 +1,5 @@
-
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 /*
 //
 //
@@ -138,9 +139,8 @@ exports.init = function (args, onDone) {
 
 	LOG.warn('connecting: ' + conn_str, l_name);
 
-	orm.connect(conn_str, function (err, db) {
-		if (err)
-			return UTIL.safeCall(onDone, err);
+	orm.connect(conn_str, (err, db) => {
+		if (err) {return UTIL.safeCall(onDone, err);}
 
 		// if DB connects successfully, init objects
 		for (var name in args.names) {
@@ -157,7 +157,7 @@ exports.init = function (args, onDone) {
 			//LOG.warn('validations:');
 			//LOG.warn(validate);
 			if (DB_type === 'mysql') {
-				db.settings.set("properties.primary_key", "_id");
+				db.settings.set('properties.primary_key', '_id');
 			}
 
 			l_obj[name] = db.define(table_name, def.attributes, {
@@ -185,7 +185,7 @@ exports.create = function (args, onDone) {
 	LOG.warn('creating', l_name);
 	LOG.warn(args.data, l_name);
 
-	obj.create(args.data, function (err, result) {
+	obj.create(args.data, (err, result) => {
 		//SR.Load.check(l_loadtype, -1);
 		UTIL.safeCall(onDone, err, result);
 	});
@@ -205,10 +205,7 @@ var l_print = function (data) {
 		if (typeof data[key] === 'object') {
 			LOG.warn('[' + key + ']');
 			l_print(data[key]);
-		} else if (typeof data[key] !== 'function')
-			LOG.warn('[' + key + ']: ' + data[key]);
-		else
-			LOG.warn('[' + key + ']: is function');
+		} else if (typeof data[key] !== 'function') {LOG.warn('[' + key + ']: ' + data[key]);} else {LOG.warn('[' + key + ']: is function');}
 	}
 };
 
@@ -219,7 +216,7 @@ exports.update = function (args, onDone) {
 	}
 
 	var obj = l_obj[args.name];
-	obj.find(args.query, function (err, result) {
+	obj.find(args.query, (err, result) => {
 		if (err) {
 			return UTIL.safeCall(onDone, err);
 		}
@@ -247,12 +244,12 @@ exports.update = function (args, onDone) {
 		//}
 
 		// save result
-		result[0].save(function (err, result) {
+		result[0].save((err, result) => {
 			//SR.Load.check(l_loadtype, -1);
 			UTIL.safeCall(onDone, err, result);
 		});
 	});
-}
+};
 
 // delete a given data record to a collection
 //	args: {
@@ -273,9 +270,8 @@ exports.delete = function (args, onDone) {
 
 	var obj = l_obj[args.name];
 
-	obj.find(args.query, function (err, result) {
-		if (err)
-			return UTIL.safeCall(onDone, err);
+	obj.find(args.query, (err, result) => {
+		if (err) {return UTIL.safeCall(onDone, err);}
 
 		LOG.warn('result found:', l_name);
 		LOG.warn(result, l_name);
@@ -285,7 +281,7 @@ exports.delete = function (args, onDone) {
 		//}
 
 		// remove this item
-		result[0].remove(function (err, result) {
+		result[0].remove((err, result) => {
 			//SR.Load.check(l_loadtype, -1);
 			UTIL.safeCall(onDone, err, result);
 		});
@@ -293,7 +289,7 @@ exports.delete = function (args, onDone) {
 };
 
 // setup load checker
-SR.Callback.onStart(function () {
+SR.Callback.onStart(() => {
 	SR.Load.init({
 		type: l_loadtype,
 		max: 100
