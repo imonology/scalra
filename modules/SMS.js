@@ -1,22 +1,25 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
+
 /*
 	SMS module - send SMS via supported 3rd party providers
-	
+
 	supported service:
 
 
 	Install:
 		none
-		
+
 	Usage:
-		
-	to load (in project's "lobby/frontier.js")	
+
+	to load (in project's "lobby/frontier.js")
 		modules: {
 			'SMS': {provider: '<VENDOR_NAME>'}		// ex. PROVIDER_NAME can be ["twilio", "mitake", "kotsms"]
-		}	
-	
+		}
+
 	to send:
 		SR.API['SEND_SMS']({
-			message: <CONTENT>, 
+			message: <CONTENT>,
 			targets: <TARGET_NUMBER>,
 			vendor: <VENDOR>
 		}, function (err, response) {
@@ -57,19 +60,20 @@ const axios = require('axios');
 // to support Object.fromEntrie
 // see: https://stackoverflow.com/questions/43858714/typeerror-object-entries-is-not-a-function
 if (!Object.fromEntries) {
-   Object.fromEntries = function( obj ){
-      var ownProps = Object.keys( obj ),
-         i = ownProps.length,
-         resArray = new Array(i); // preallocate the Array
+	Object.fromEntries = function( obj ){
+		var ownProps = Object.keys( obj ),
+						i = ownProps.length,
+						resArray = new Array(i); // preallocate the Array
 
-      while (i--)
-         resArray[i] = [ownProps[i], obj[ownProps[i]]];
-      return resArray;
-   };	
+		while (i--) {
+			resArray[i] = [ownProps[i], obj[ownProps[i]]];
+		}
+		return resArray;
+	};
 }
 
 
-const _sendMitakeSMS = function(mobile, text) {
+function _sendMitakeSMS (mobile, text) {
 	return new Promise((resolve, reject) => {
 
 		let apiURL = 'http://smsapi.mitake.com.tw/api/mtk/SmSend?';
@@ -80,21 +84,21 @@ const _sendMitakeSMS = function(mobile, text) {
 		let CharsetURL = 'UTF8';
 		let params = { username, password, dstaddr, CharsetURL, smbody };
 		let requestURL = apiURL;
-		requestURL += Object.keys(params).map(key => key + '=' + params[key]).join('&');
+		requestURL += Object.keys(params).map((key) => {return key + '=' + params[key];}).join('&');
 		return axios.get(requestURL)
-			.then(response => {
-			
+			.then((response) => {
+
 				//LOG.warn('response:');
 				//LOG.warn(response);
-						
+
 				if (response.hasOwnProperty('data') === false || typeof response.data !== 'string') {
 					LOG.error('no data sent as SMS result', l_name);
-					return resolve()
+					return resolve();
 				}
-			
+
 				LOG.warn('response:');
 				LOG.warn(response);
-			
+
 				// API doc: https://sms.mitake.com.tw/common/index.jsp?t=1571898741106
 				// statuscode:
 				// 0 預約傳送中
@@ -102,21 +106,21 @@ const _sendMitakeSMS = function(mobile, text) {
 				// 2 已送達業者
 				// 4 已送達⼿機
 				let results = Object.fromEntries(response.data.split('\r\n')
-					.filter(k=>k.includes('='))
-					.map(e=>e.split('=')));
+					.filter((k) => k.includes('='))
+					.map((e) => e.split('=')));
 				LOG.error(results);
-			
+
 				//let results = {statusCode: response.statusCode, statusMessage: response.statusMessage};
 				//LOG.warn(results);
-			
+
 				return resolve(results);
 			})
-			.catch(error => {
+			.catch((error) => {
 				LOG.error(error);
 				return reject(error);
 			});
 	});
-};
+}
 
 
 //-----------------------------------------
@@ -130,106 +134,106 @@ SR.API.add('SEND_SMS', {
 	message:	'+string',
 	targets:	'+string',
 	vendor:		'+string'
-}, function (args, onDone, extra) {
-	    
+}, (args, onDone, extra) => {
+
 	// TODO: verify correctness
 	if (!args.targets) {
 		return onDone('No SMS Targets specified!');
 	}
-	
+
 	if (!args.message) {
 		return onDone('No SMS message specified!');
 	}
-			
+
 	var msg = encodeURIComponent(args.message);
-	
+
 	// time to send the SMS
-	let now = Math.floor(Date.now() / 1000).toString();	
-	
+	let now = Math.floor(Date.now() / 1000).toString();
+
 	// set default vendor if not specified
 	if (typeof args.vendor === undefined) {
 		args.vendor = l_provider;
 	}
-	
+
 	// check if config exists
 	if (l_lib.hasOwnProperty(args.vendor) === false) {
-		return onDone('No config for SMS vencor [' + args.vendor + ']');		
+		return onDone('No config for SMS vencor [' + args.vendor + ']');
 	}
-	
+
 	// print some message
 	LOG.warn('SEND_SMS has been called', l_name);
 	LOG.warn('args:', l_name);
 	LOG.warn(args, l_name);
-		
+
 	switch (args.vendor) {
-		case 'twilio':
-			// Send message using callback
-			l_twilio.messages.create({
+	case 'twilio':
+		// Send message using callback
+		l_twilio.messages.create({
 			  from: args.from,
 			  to: args.targets,
 			  body: args.message
-			}, function(err, result) {
-				if (err) {
-					LOG.error(err);
-					return onDone(err);
-				}
+		}, function(err, result) {
+			if (err) {
+				LOG.error(err);
+				return onDone(err);
+			}
 
-				LOG.warn('Created message using callback', l_name);
-				LOG.warn(result, l_name);
+			LOG.warn('Created message using callback', l_name);
+			LOG.warn(result, l_name);
 
-				// send back response
-				onDone(err, result);		
-			});			
-			break;
-		
-		case 'kotsms':
+			// send back response
+			onDone(err, result);
+		});
+		break;
 
-			var kotsms = l_lib[l_provider].config; 
-							
-			// Convert from js string to an encoded buffer.
-			//const iconv = require('iconv-lite');
-			//var buf = iconv.encode(msg, 'big5');
-			
-			// real-time send
-			var url = 'https://api2.kotsms.com.tw/kotsmsapi-1.php?username=' +
+	case 'kotsms':
+
+		var kotsms = l_lib[l_provider].config;
+
+		// Convert from js string to an encoded buffer.
+		//const iconv = require('iconv-lite');
+		//var buf = iconv.encode(msg, 'big5');
+
+		// real-time send
+		var url = 'https://api2.kotsms.com.tw/kotsmsapi-1.php?username=' +
 				kotsms.username + '&password=' + kotsms.password + '&dstaddr=' +
 				args.targets + '&smbody=' +
 				encodeURIComponent(msg);
 
-			LOG.warn('URL to rerquest:');
-			LOG.warn(url);
+		LOG.warn('URL to rerquest:');
+		LOG.warn(url);
 
-			request.get({
-				uri:url,
-				//encoding: null
-			}, function(err, resp, body){
-				if (err) { 
-					LOG.error(err);
-					return onDone(err);
-				}
-				LOG.warn(body.url);
-				LOG.warn(body.explanation);
+		request.get({
+			uri:url,
+			//encoding: null
+		}, function(err, resp, body){
+			if (err) {
+				LOG.error(err);
+				return onDone(err);
+			}
+			LOG.warn(body.url);
+			LOG.warn(body.explanation);
 
-				var bodyWithCorrectEncoding = iconv.decode(body, 'iso-8859-1');
-				console.log(bodyWithCorrectEncoding);
-				onDone(null, "request success");		
-			});			
-			break;
-		
-		case 'mitake':
-			_sendMitakeSMS(args.targets, msg)
-				.then(response => {
-					return onDone(null, {target: args.targets, time: now, response});										
-				});
-		
-			break;
-		
-		default:
-			var err = 'unsupported SMS vendor: ' + args.vendor;
-			LOG.error(err, l_name);
-			return onDone(err);		
+			var bodyWithCorrectEncoding = iconv.decode(body, 'iso-8859-1');
+			console.log(bodyWithCorrectEncoding);
+			onDone(null, "request success");
+		});
+		break;
+
+	case 'mitake':
+		_sendMitakeSMS(args.targets, msg)
+			.then((response) => {
+				return onDone(null, {target: args.targets, time: now, response});
+			});
+
+		break;
+
+	default:
+		var err = 'unsupported SMS vendor: ' + args.vendor;
+		LOG.error(err, l_name);
+		return onDone(err);
 	}
-		
+
 });
 
 
@@ -242,52 +246,52 @@ SR.API.add('SEND_SMS', {
 
 // module init
 l_module.start = function (config, onDone) {
-		
+
 	// process config & verify correctness here
 	if (SR.Settings.Project.hasOwnProperty('SMS_CONFIG') === false ||
 		SR.Settings.Project.SMS_CONFIG.hasOwnProperty(config.provider) === false) {
 		LOG.error('SMS provider [' + config.provider + ' setting cannot be found, cannot initialize!', l_name);
 		return UTIL.safeCall(onDone);
 	}
-	
+
 	// store default provider, if any
 	l_provider = config.provider;
-	
+
 	LOG.warn('loading support for SMS provider [' + l_provider + ']...', l_name);
 	l_lib[l_provider] = {
 		config: SR.Settings.Project.SMS_CONFIG[l_provider]
 	};
-		
+
 	// perform vendor-specific init
 	switch (l_provider) {
-		case 'twilio': {
-			
-			// twilio SMS
-			var Twilio = require('twilio'); 
+	case 'twilio': {
 
-			var accountSid = l_lib[l_provider]['TWILIO_ACCOUNT_SID']; 
-			var token = l_lib[l_provider]['TWILIO_AUTH_TOKEN'];
+		// twilio SMS
+		var Twilio = require('twilio');
 
-			// Uncomment the following line to specify a custom CA bundle for HTTPS requests:
-			// process.env.TWILIO_CA_BUNDLE = '/path/to/cert.pem';
-			// You can also set this as a regular environment variable outside of the code
+		var accountSid = l_lib[l_provider]['TWILIO_ACCOUNT_SID'];
+		var token = l_lib[l_provider]['TWILIO_AUTH_TOKEN'];
 
-			l_twilio = new Twilio(accountSid, token);
+		// Uncomment the following line to specify a custom CA bundle for HTTPS requests:
+		// process.env.TWILIO_CA_BUNDLE = '/path/to/cert.pem';
+		// You can also set this as a regular environment variable outside of the code
 
-			// Callback as first parameter
-			l_twilio.calls.each(function(call) {
-				LOG.warn('twilio callback: ', l_name);
-				LOG.warn(call.sid, l_name);
-			});
-		}
-		break;			
+		l_twilio = new Twilio(accountSid, token);
+
+		// Callback as first parameter
+		l_twilio.calls.each((call) => {
+			LOG.warn('twilio callback: ', l_name);
+			LOG.warn(call.sid, l_name);
+		});
 	}
-	
+		break;
+	}
+
 	UTIL.safeCall(onDone);
-}
+};
 
 // module shutdown
 l_module.stop = function (onDone) {
 	// close / release resources used
-	UTIL.safeCall(onDone);	
-}
+	UTIL.safeCall(onDone);
+};
