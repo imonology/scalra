@@ -70,7 +70,7 @@ exports.start = function (type, route, port) {
 					if (content_type == 'application/x-www-form-urlencoded') {
 						JSONobj = qs.parse(data);
 					// } else if (content_type.startsWith('application/json')) {
-					} else if (content_type == 'application/json') {
+					} else if (content_type.indexOf('application/json') >= 0) {
 						JSONobj = UTIL.convertJSON(decodeURIComponent(data));
 					// } else if (content_type.startsWith('application/sdp')) {
 					} else if (content_type == 'application/sdp') {
