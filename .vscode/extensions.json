@@ -2,8 +2,7 @@
         "recommendations": [
                 "sonarsource.sonarlint-vscode",
                 "dbaeumer.vscode-eslint",
-                "deepcode.deepcode",
                 "flowtype.flow-for-vscode",
-                "snyk-security.vscode-vuln-cost"
+                "snyk-security.snyk-vulnerability-scanner"
         ]
 }
