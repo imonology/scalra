@@ -109,7 +109,7 @@ l_module.start = function (config, onDone) {
 
 	// var engine = require('./ejs-wrapper.js');
 	// app.engine('ejs', engine);
-	app.engine('ejs', require('ejs-locals'));
+	// app.engine('ejs', require('ejs-locals'));
 	app.set('view engine', 'ejs');
 
 	// set directory to serve static files

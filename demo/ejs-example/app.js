@@ -1,9 +1,9 @@
 var express = require('express'),
-  app = express(),
-    ejs = require('../../modules/ejs-wrapper.js');
+  app = express();
+    // ejs = require('../../modules/ejs-wrapper.js');
 
 let ejsOptions = {delimiter: '?'};
-app.engine('ejs', ejs);
+// app.engine('ejs', ejs);
 app.set('views',__dirname + '/views');
 app.set('view engine', 'ejs'); // so you can render('index')
 
