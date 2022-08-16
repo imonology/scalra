@@ -45,6 +45,7 @@
     "express": "^4.17.1",
     "formidable": "1.1.1",
     "fs-extra": "0.30.0",
+    "gmail-api-sync": "github:fedecia/gmail-api-sync",
     "gmail-sender-oauth": "1.0.5",
     "http-proxy": "1.18.1",
     "humanize": "0.0.9",
