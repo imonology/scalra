@@ -1,3 +1,5 @@
+// file deepcode ignore HttpToHttps: <Traefik will do this for us>
+
 //
 // global.js
 //
@@ -26,6 +28,7 @@ var VAST_DIR   = EXT_DIR + 'VAST/';
 
 global.SR = {};
 
+// FIXME: use chalk or colors module instead
 SR.Tags = {
 	EVENT:			'E',
 	UPDATE:			'U',
@@ -164,9 +167,9 @@ LOG.setLevel(3);
 var SR_version = 'unknown';
 
 try {
-	var data = SR.fs.readFileSync(BASE_DIR + '/package.json', 'utf-8');
-	var package = JSON.parse(data);	
-	SR_version = package.version;
+	var data = SR.fs.readFileSync(BASE_DIR + '/package.json', 'utf8');
+	var pkg = JSON.parse(data);	
+	SR_version = pkg.version;
 } catch (e) {
 	LOG.error(e);
 }

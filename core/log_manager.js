@@ -1,4 +1,6 @@
-//   
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
+//
 // log_manager.js - LOG related functions
 //
 //
@@ -29,7 +31,7 @@ var l_logBufferIdxByID = {};
 
 var l_logLock = false;
 
-// NOTE: by default we show & track unnamed callers ('default') 
+// NOTE: by default we show & track unnamed callers ('default')
 var l_showList = ['default'];
 var l_trackList = [];
 
@@ -56,8 +58,8 @@ exports.createLog = function (path, filename, onSuccess, onFail) {
 	var log_path = SR.path.join(path, filename);
 
 	LOG.sys(log_path, 'SR.LOG');
-	SR.fs.open(log_path, 'a+', 0666,
-		function (err, fd) {
+	SR.fs.open(log_path, 'a+',
+		(err, fd) => {
 			if (err) {
 				console.log(l_name + '::createLog::' + SR.Tags.ERR + 'SR.fs.open() exception-' + err + SR.Tags.ERREND);
 				onFail(undefined);
@@ -78,7 +80,7 @@ exports.createLog = function (path, filename, onSuccess, onFail) {
 			}
 		}
 	);
-}
+};
 
 //-----------------------------------------
 // createLog (sync version)
@@ -95,7 +97,7 @@ exports.createLogSync = function (log_path) {
 
 	var pFD = undefined;
 	try {
-		pFD = SR.fs.openSync(log_path, 'a+', 0666);
+		pFD = SR.fs.openSync(log_path, 'a+', 0o666);
 	} catch (e) {
 		console.log(l_name + '::createLogSync::' + SR.Tags.ERR + 'SR.fs.openSync() exception-' + e);
 		return undefined;
@@ -114,7 +116,7 @@ exports.createLogSync = function (log_path) {
 	l_logs[li] = logInst;
 
 	return li;
-}
+};
 
 // local helper to store one log message (to be written later)
 var l_logmsg = function (logInst) {
@@ -122,45 +124,45 @@ var l_logmsg = function (logInst) {
 	var log_id = logInst.id;
 
 	// create index to buffer map, if not exist
-	if (l_logBufferIdxByID.hasOwnProperty(log_id) === false)
+	if (l_logBufferIdxByID.hasOwnProperty(log_id) === false) {
 		l_logBufferIdxByID[log_id] = [];
+	}
 
 	l_logBufferIdxByID[log_id].push(logInst);
 
-	l_logBuffer.enqueue(logInst,
+	l_logBuffer.enqueue(logInst, (tmpLog) => { 	// callback to write log
 
-		// callback to write log
-		function (tmpLog) {
-
-			// show notice if queued log exceeds limit (once each time multiples of the limit is reached)
-			if ((l_logBuffer.getLength() > 0) && (l_logBuffer.getLength() % l_logBufferOverloadLimit === 0)) {
-				console.log(l_name + '::l_writeLog::' + SR.Tags.YELLOW + 'log len=' + l_logBuffer.getLength() + SR.Tags.ERREND);
-			}
-
-			// lock individual log instance            
-			if (l_logs.hasOwnProperty(tmpLog.id) === true) {
-				// if we're busy writing now, wait till next time
-				if (l_logs[tmpLog.id].writing === true)
-					return false;
-
-				// lock the writing for this id
-				l_logs[tmpLog.id].writing = true;
-
-				SR.fs.writeSync(tmpLog.fd, tmpLog.msg, undefined, undefined);
-
-				// remove a flag record from topmost
-				if (l_logBufferIdxByID.hasOwnProperty(tmpLog.id) === true)
-					l_logBufferIdxByID[tmpLog.id].shift();
-
-				l_logs[tmpLog.id].writing = false;
-			}
-
-			// NOTE: processing will pause here if id doesn't exist in l_logs
-			// TODO: right behavior?
-			return true;
+		// show notice if queued log exceeds limit (once each time multiples of the limit is reached)
+		if ((l_logBuffer.getLength() > 0) && (l_logBuffer.getLength() % l_logBufferOverloadLimit === 0)) {
+			console.log(l_name + '::l_writeLog::' + SR.Tags.YELLOW + 'log len=' + l_logBuffer.getLength() + SR.Tags.ERREND);
 		}
+
+		// lock individual log instance
+		if (l_logs.hasOwnProperty(tmpLog.id) === true) {
+			// if we're busy writing now, wait till next time
+			if (l_logs[tmpLog.id].writing === true) {
+				return false;
+			}
+
+			// lock the writing for this id
+			l_logs[tmpLog.id].writing = true;
+
+			SR.fs.writeSync(tmpLog.fd, tmpLog.msg, undefined, undefined);
+
+			// remove a flag record from topmost
+			if (l_logBufferIdxByID.hasOwnProperty(tmpLog.id) === true) {
+				l_logBufferIdxByID[tmpLog.id].shift();
+			}
+
+			l_logs[tmpLog.id].writing = false;
+		}
+
+		// NOTE: processing will pause here if id doesn't exist in l_logs
+		// TODO: right behavior?
+		return true;
+	}
 	);
-}
+};
 
 //-----------------------------------------
 // store a message after some checks
@@ -168,8 +170,7 @@ var l_logmsg = function (logInst) {
 var l_log = exports.log = function (msg, log_id) {
 
 	// if log not yet created, simply ignore
-	if (log_id === undefined)
-		return;
+	if (log_id === undefined) {return;}
 
 	// don't log if locked
 	if (l_logLock === true) {
@@ -200,7 +201,7 @@ var l_log = exports.log = function (msg, log_id) {
 		l_logs[log_id].tmpDay = tmpCurrDay;
 
 		var dayPrint = '-------------------------------------------------------------\r\n\0\r\n\0          ' + tmpTime.getFullYear().toString() + '-' + (tmpTime.getMonth() + 1).toString() + '-' + tmpTime.getDate().toString() + '\r\n\0\r\n\0';
-		var logInst = {
+		let logInst = {
 			id: log_id,
 			fd: l_logs[log_id].fd,
 			msg: dayPrint.toString()
@@ -212,14 +213,14 @@ var l_log = exports.log = function (msg, log_id) {
 	// log message
 	tmpMsg = tmpMsg + '\r\n\0';
 
-	var logInst = {
+	let logInst = {
 		id: log_id,
 		fd: l_logs[log_id].fd,
 		msg: tmpMsg.toString()
 	};
 
 	l_logmsg(logInst);
-}
+};
 
 //-----------------------------------------
 var l_checkEmptyPool = new SR.AdvQueue();
@@ -227,10 +228,9 @@ var l_checkEmptyPool = new SR.AdvQueue();
 var l_closeLog = exports.closeLog = function (log_id, onDone) {
 
 	// check if log doesn't exist or already closed
-	if (l_logs.hasOwnProperty(log_id) === false)
-		return onDone(log_id);
+	if (l_logs.hasOwnProperty(log_id) === false) {return onDone(log_id);}
 
-	// return if already closing        
+	// return if already closing
 	if (l_logs[log_id].closing === true) {
 		console.log(l_name + '::l_closeLog::' + SR.Tags.ERR + 'l_logs[' + log_id + '] already closing');
 		return;
@@ -243,46 +243,46 @@ var l_closeLog = exports.closeLog = function (log_id, onDone) {
 	var closeLog = function () {
 
 		SR.fs.close(l_logs[log_id].fd,
-			function () {
+			() => {
 				console.log(l_name + '::l_closeLog::' + SR.Tags.YELLOW + 'LogID=' + log_id + ' closed.' + SR.Tags.ERREND);
 				delete l_logs[log_id];
 				onDone(log_id);
 			}
 		);
-	}
+	};
 
 	// wait for all writing done...
 	//console.log(l_name + '::l_closeLog::close log file (' + log_id + ')');
 
 	l_checkEmptyPool.enqueue({
-			id: log_id,
-			onSuccess: closeLog
-		},
+		id: log_id,
+		onSuccess: closeLog
+	},
 
-		function (item) {
+	(item) => {
 
-			// if nothing more to write, indicate 'done'
-			if (l_logBufferIdxByID.hasOwnProperty(item.id) === false) {
-				console.log(l_name + '::l_checkwritingDone::no log content for [' + item.id + '] found.');
-				item.onSuccess();
-				return true;
-			}
-
-			// if still busy writing and still things to write for this ID
-			// check again later
-			if (l_logs[item.id].writing === true ||
-				l_logBufferIdxByID[item.id].length > 0) {
-
-				// re-queue
-				return false;
-			}
-
-			// if done, notify, but check queue again if there's more
+		// if nothing more to write, indicate 'done'
+		if (l_logBufferIdxByID.hasOwnProperty(item.id) === false) {
+			console.log(l_name + '::l_checkwritingDone::no log content for [' + item.id + '] found.');
 			item.onSuccess();
 			return true;
 		}
+
+		// if still busy writing and still things to write for this ID
+		// check again later
+		if (l_logs[item.id].writing === true
+				|| l_logBufferIdxByID[item.id].length > 0) {
+
+			// re-queue
+			return false;
+		}
+
+		// if done, notify, but check queue again if there's more
+		item.onSuccess();
+		return true;
+	}
 	);
-}
+};
 
 //-----------------------------------------
 var l_doneStatus = {};
@@ -292,24 +292,23 @@ var l_checkDone = function (onDone) {
 
 	var queue = new SR.AdvQueue();
 	queue.enqueue({
-			onDone: onDone
-		},
+		onDone: onDone
+	},
 
-		// item handler
-		function (obj) {
+	// item handler
+	(obj) => {
 
-			// check if any delete array item is not yet done
-			if (Object.keys(l_doneStatus).length > 0) {
+		// check if any delete array item is not yet done
+		if (Object.keys(l_doneStatus).length > 0) {
 
-				for (var key in l_doneStatus) {
-					if (l_doneStatus[key] === false)
-						return false;
-				}
+			for (var key in l_doneStatus) {
+				if (l_doneStatus[key] === false) {return false;}
 			}
-
-			obj.onDone();
-			return true;
 		}
+
+		obj.onDone();
+		return true;
+	}
 	);
 };
 
@@ -325,7 +324,7 @@ var l_checkLogClose = function () {
 
 	l_onAllClosed();
 	l_checkDoneBusy = false;
-}
+};
 
 // finish all existing logging and close log files
 exports.disposeAllLogs = function (onSuccess) {
@@ -347,65 +346,62 @@ exports.disposeAllLogs = function (onSuccess) {
 			l_checkDoneBusy = true;
 			l_checkLogClose();
 		}
-	}
+	};
 
 	var step0 = function (onDone) {
 		//console.log(l_name + '::disposeAllLogs::step0...');
 
-		if (Object.keys(l_logs).length === 0) 
-			return onDone();
-			
+		if (Object.keys(l_logs).length === 0) {return onDone();}
+
 		l_doneStatus = {};
 
-		for (var key in l_logs)
-			l_doneStatus[key] = false;
+		for (let key in l_logs) {l_doneStatus[key] = false;}
 
-		for (var key in l_logs) {
-			l_closeLog(key,	function (rid) {
+		for (let key in l_logs) {
+			l_closeLog(key,	(rid) => {
 				l_doneStatus[rid] = true;
 			});
 		}
 
 		// check if all logs are closed
 		l_checkDone(onDone);
-		
-		console.log(l_name + '::disposeAllLogs::' + SR.Tags.YELLOW + 'queued messages num=' + l_logBuffer.getLength() + SR.Tags.ERREND);
-	}
 
-	var step1 =
-		function (onDone) {
+		console.log(l_name + '::disposeAllLogs::' + SR.Tags.YELLOW + 'queued messages num=' + l_logBuffer.getLength() + SR.Tags.ERREND);
+	};
+
+	var step1
+		= function (onDone) {
 			l_logLock = false;
 			onSuccess();
 			onDone();
-		}
+		};
 
 	var jq = SR.JobQueue.createQueue();
 	jq.add(waitClosing);
 	jq.add(step0);
 	jq.add(step1);
-	jq.run(); 	
-}
+	jq.run();
+};
 
 var l_output = function (level, msg, func, fid_array, colortag) {
 
 	// if output message's error level is too high then don't show
-	if (l_error_level < level)
-		return;
-	
+	if (l_error_level < level) {return;}
+
 	// by default nothing's shown or logged
 	var to_show = false;
 	var to_log = false;
-	
-	// print to screen conditions: 
+
+	// print to screen conditions:
 	// 1. if caller's function name was previously specified via LOG.show()
 	// 2. if 'all' is specified in function list
 	// 3. if the message was not associated with a func name, but 'default' is specified
 	// NOTE: default to show nothing
 	if (l_showList.length > 0) {
-		if (l_showList.indexOf(func) >= 0 ||
-			l_showList.indexOf('all') >= 0 ||
-			(!func && l_showList.indexOf('default') >= 0)) {
-			to_show = true;	
+		if (l_showList.indexOf(func) >= 0
+			|| l_showList.indexOf('all') >= 0
+			|| (!func && l_showList.indexOf('default') >= 0)) {
+			to_show = true;
 		}
 	}
 
@@ -415,68 +411,63 @@ var l_output = function (level, msg, func, fid_array, colortag) {
 	// 2. if 'all' is specified
 	// 3. if 'default' is specified and the message was not categorized
 	if (l_trackList.length > 0) {
-		if (l_trackList.indexOf(func) >= 0 ||
-			l_trackList.indexOf('all') >= 0 ||
-			(!func && l_showList.indexOf('default') >= 0)) {
+		if (l_trackList.indexOf(func) >= 0
+			|| l_trackList.indexOf('all') >= 0
+			|| (!func && l_showList.indexOf('default') >= 0)) {
 			to_log = true;
 		}
 	}
-	
+
 	// NOTE: error is ALWAYS output to both screen & log files
 	if (level === 1) {
-		to_show = to_log = true;	
+		to_show = to_log = true;
 	}
-	
+
 	// do nothing is nothing should be shown or logged
-	if (!to_show && !to_log)
-		return;
+	if (!to_show && !to_log) {return;}
 
 	// convert msg & add color tags (if exist)
 	msg = l_convert(msg);
-	if (colortag)
-		msg = colortag + msg + SR.Tags.ERREND;
-	
+	if (colortag) {msg = colortag + msg + SR.Tags.ERREND;}
+
 	var curr = new Date();
 	var term = func || ' ';
-	
-	if (typeof term === 'object')
-    	term = JSON.stringify(term);
+
+	if (typeof term === 'object') {term = JSON.stringify(term);}
 
 	// generate output string
 	var str = '-' + curr.getHours() + ':' + curr.getMinutes() + '-' + term + '::' + msg;
-	
+
 	// output to screen
-	if (to_show)
-		console.log(str);
-	
+	if (to_show) {console.log(str);}
+
 	if (to_log && SR.Settings.LOG_PATH) {
 		// write function-specific log
 		// if func is empty but we're recording all, use 'default' as func name
 		func = func || 'default';
-		
+
 		var path = SR.path.resolve(SR.Settings.LOG_PATH, 'func_' + func + '.log');
-								   
+
 		// attach date to output string
 		// TODO: merge with write to log below?
 		msg = UTIL.getDateTimeString().substring(0, 8) + str + '\n';
-		SR.fs.appendFile(path, msg, function (err) {
+		SR.fs.appendFile(path, msg, (err) => {
 			if (err) {
-				console.error("LOG writes incorrectly.");
+				console.error('LOG writes incorrectly.');
 				console.error(err);
 			}
 		});
-	}	
+	}
 
 	// write general log
-	for (var i = 0; i < fid_array.length; i++)
-		l_log(str, fid_array[i]);		
-}
+	for (var i = 0; i < fid_array.length; i++) {l_log(str, fid_array[i]);}
+};
 
 // convert obj to msg
 var l_convert = function (obj) {
 	//return (typeof obj === 'object' ? JSON.stringify(obj, null, 4) : obj);
 	return (typeof obj === 'object' ? SR.sys.inspect(obj) : obj);
-}
+};
 
 // TODO: find a method to automatically determine caller
 // ref: http://stackoverflow.com/questions/6715571/how-to-get-result-of-console-trace-as-string-in-javascript-with-chrome-or-fire
@@ -489,67 +480,62 @@ var l_logger = exports.logger = function (msg, caller) {
 	// specify error level
 	this.setLevel = function (level) {
 		l_error_level = level;
-	}
+	};
 
 	// get error level
 	this.getLevel = function () {
 		return l_error_level;
-	}
+	};
 
 	// store file handle for the log files
 	this.setLogHandle = function (id, type) {
-		if (type === 'error')
-			_fid_error = id;
-		else
-			_fid_debug = id;
-	}
+		if (type === 'error') {_fid_error = id;} else {_fid_debug = id;}
+	};
 
 	// output system-level debug message
 	this.sys = function (msg, caller) {
 		l_output(4, msg, caller, [_fid_debug]);
-	}
+	};
 
-	// output application-level debug message	
+	// output application-level debug message
 	this.debug = function (msg, caller) {
 		l_output(3, msg, caller, [_fid_debug]);
-	}
+	};
 
 	// output warning messages
 	this.warn = function (msg, caller) {
 		l_output(2, msg, caller, [_fid_debug], SR.Tags.WARN);
-	}
+	};
 
 	// output error messages
 	this.error = function (msg, caller) {
 		l_output(1, msg, caller, [_fid_debug, _fid_error], SR.Tags.ERR);
-	}
+	};
 
 	// print stack trace of current execution
 	this.stack = function () {
 		var e = new Error('dummy');
-		var stack = e.stack.replace(/^[^\(]+?[\n$]/gm, '')
+		var stack = e.stack.replace(/^[^(]+?[\n$]/gm, '')
 			.replace(/^\s+at\s+/gm, '')
 			.replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@')
 			.split('\n');
 
 		this.error(stack);
-	}
+	};
 
 	// print status of log system
 	this.status = function (func) {
-		console.log("LOG.status");
+		console.log('LOG.status');
 		console.log(l_showList);
 		console.log(l_trackList);
-	}
+	};
 
 	// show specifical messages from a given function
 	this.show = function (list) {
-		if (typeof list === 'string')
-			l_showList = l_showList.concat([list]);
-		else if (Array.isArray(list)) {
+		if (typeof list === 'string') {l_showList = l_showList.concat([list]);} else if (Array.isArray(list)) {
 			l_showList = l_showList.concat(list);
 		}
-	}
+	};
 
 	// hide specifical messages from a given function
 	this.hide = function (list) {
@@ -560,29 +546,24 @@ var l_logger = exports.logger = function (msg, caller) {
 			return;
 		}
 
-		// convert string to array form		
-		if (typeof list === 'string')
-			list = [list];
+		// convert string to array form
+		if (typeof list === 'string') {list = [list];}
 
-		if (!Array.isArray(list))
-			return;
+		if (!Array.isArray(list)) {return;}
 
 		// remove the ones given in func list from show list 'l_showList'
 		for (var key in list) {
 			var index = l_showList.indexOf(list[key]);
-			if (index !== -1)
-				l_showList.splice(index, 1);
+			if (index !== -1) {l_showList.splice(index, 1);}
 		}
-	}
+	};
 
-	// start recording log to files		
+	// start recording log to files
 	this.track = function (list) {
-		if (typeof list === 'string')
-			l_trackList = l_trackList.concat([list]);
-		else if (list && Array.isArray(list)) {
+		if (typeof list === 'string') {l_trackList = l_trackList.concat([list]);} else if (list && Array.isArray(list)) {
 			l_trackList = l_trackList.concat(list);
 		}
-	}
+	};
 
 	// stop recording log to files
 	this.untrack = function (list) {
@@ -593,38 +574,35 @@ var l_logger = exports.logger = function (msg, caller) {
 			return;
 		}
 
-		// convert string to array form		
-		if (typeof list === 'string')
-			list = [list];
+		// convert string to array form
+		if (typeof list === 'string') {list = [list];}
 
-		if (!Array.isArray(list))
-			return;
+		if (!Array.isArray(list)) {return;}
 
 		// remove the ones given in func list from show list 'l_trackList'
 		for (var key in list) {
 			var index = l_trackList.indexOf(list[key]);
-			if (index !== -1)
-				l_trackList.splice(index, 1);
+			if (index !== -1) {l_trackList.splice(index, 1);}
 		}
-	}
+	};
 
 	// NOTE: depreciated usage
 	// wrappers for backward compability
 	this.enable_show = function (func) {
 		return this.show(func);
-	}
+	};
 
 	this.disable_show = function (func) {
 		return this.hide(func);
-	}
+	};
 
 	this.enable_logfile = function (func) {
 		return this.track(func);
-	}
+	};
 
 	this.disable_logfile = function (func) {
 		return this.untrack(func);
-	}
+	};
 
 
 	/*
@@ -672,20 +650,20 @@ var l_logger = exports.logger = function (msg, caller) {
 
 		// record timestamp event to DB
 		SR.DB.setData(SR.Settings.DB_NAME_SYS_EVENT, {
-				type: type,
-				time: new Date(),
-				data: data
-			},
-			function () {
-				LOG.sys('server event [' + type + '] record success', 'SR.LOG');
-				UTIL.safeCall(onDone);
-			},
-			function () {
-				LOG.error('server event [' + type + '] record fail', 'SR.LOG');
-				UTIL.safeCall(onDone, 'server event [' + type + '] record fail');
-			}
+			type: type,
+			time: new Date(),
+			data: data
+		},
+		() => {
+			LOG.sys('server event [' + type + '] record success', 'SR.LOG');
+			UTIL.safeCall(onDone);
+		},
+		() => {
+			LOG.error('server event [' + type + '] record fail', 'SR.LOG');
+			UTIL.safeCall(onDone, 'server event [' + type + '] record fail');
+		}
 		);
-	}
+	};
 
 	// query event logs
 	// condition: {
@@ -698,8 +676,7 @@ var l_logger = exports.logger = function (msg, caller) {
 		//console.log(condition);
 
 		// if no parameters are passed, assuming to query all
-		if (typeof condition === 'function')
-			onDone = condition;
+		if (typeof condition === 'function') {onDone = condition;}
 
 		// keep everything, modify time range if neccessary
 		// FIXME: Need a better way for DB obstraction.
@@ -716,13 +693,10 @@ var l_logger = exports.logger = function (msg, caller) {
 			if ('undefined' === typeof condition.time) {
 				var time = {};
 
-				if (condition.start)
-					time.$gt = condition.start;
-				if (condition.end)
-					time.$lt = condition.end;
+				if (condition.start) {time.$gt = condition.start;}
+				if (condition.end) {time.$lt = condition.end;}
 
-				if (Object.keys(time).length > 0)
-					condition.time = time;
+				if (Object.keys(time).length > 0) {condition.time = time;}
 			}
 
 			delete condition.start;
@@ -740,13 +714,13 @@ var l_logger = exports.logger = function (msg, caller) {
 		LOG.sys(condition, 'SR.LOG');
 
 		SR.DB.getArray(SR.Settings.DB_NAME_SYS_EVENT,
-			function (result) {
+			(result) => {
 				LOG.sys('query system event success', 'SR.LOG');
 				UTIL.safeCall(onDone, result);
 			},
-			function (result) {
+			(result) => {
 				LOG.error('query system event fail', 'SR.LOG');
 				UTIL.safeCall(onDone);
 			}, condition);
-	}
-}
+	};
+};

@@ -18,7 +18,7 @@ Dual licensed under the MIT and GPL licenses.
  *   // No arguments  - returns RFC4122, version 4 ID
  *   >>> Math.uuid()
  *   "92329D39-6F5C-4520-ABFC-AAB64544E172"
- * 
+ *
  *   // One argument - returns ID of the specified length
  *   >>> Math.uuid(15)     // 15 character ID (default base=62)
  *   "VcydxgltxrVZSTV"
@@ -33,7 +33,7 @@ Dual licensed under the MIT and GPL licenses.
  */
 (function () {
 	// Private array of chars to use
-	var CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''); 
+	var CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
 
 	Math.uuid = function (len, radix) {
 		var chars = CHARS, uuid = [];
@@ -41,7 +41,7 @@ Dual licensed under the MIT and GPL licenses.
 
 		if (len) {
 			// Compact form
-			for (var i = 0; i < len; i++) uuid[i] = chars[0 | Math.random()*radix];
+			for (var i = 0; i < len; i++) {uuid[i] = chars[0 | Math.random()*radix];}
 		} else {
 			// rfc4122, version 4 form
 			var r;
@@ -73,7 +73,7 @@ Dual licensed under the MIT and GPL licenses.
 			} else if (i==14) {
 				uuid[i] = '4';
 			} else {
-				if (rnd <= 0x02) rnd = 0x2000000 + (Math.random()*0x1000000)|0;
+				if (rnd <= 0x02) {rnd = 0x2000000 + (Math.random()*0x1000000)|0;}
 				r = rnd & 0xf;
 				rnd = rnd >> 4;
 				uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r];
@@ -84,7 +84,7 @@ Dual licensed under the MIT and GPL licenses.
 
 	// A more compact, but less performant, RFC4122v4 solution:
 	Math.uuidCompact = function () {
-		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
 			var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
 			return v.toString(16);
 		}).toUpperCase();

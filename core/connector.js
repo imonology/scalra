@@ -1,3 +1,5 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 //
 //  connector.js
 //
@@ -5,13 +7,13 @@
 //
 //  history:
 //  2013-09-14  adopted from frontier
-  
+
 
 
 /*
 
     functions:
-    
+
     addHandler(handlers)
     connect(ip_port, onDone)
     disconnect(onDone)
@@ -28,37 +30,35 @@
 */
 
 exports.icConnector = function (config) {
-	
+
 	// check required parameters
-	if (config === undefined)
-		config = {};
-	if (typeof config.onConnect !== 'function' && typeof config.onDisconnect !== 'function')
-		LOG.warn('no connection handlers specified in config, connect/disconnect event may not be notified', 'SR.Connector');
-		
+	if (config === undefined) {config = {};}
+	if (typeof config.onConnect !== 'function' && typeof config.onDisconnect !== 'function') {LOG.warn('no connection handlers specified in config, connect/disconnect event may not be notified', 'SR.Connector');}
+
 	//
 	// local variables
 	//
-    
-	// a node.js connection (socket) object 
+
+	// a node.js connection (socket) object
 	var l_socket = undefined;
-	
+
 	// a connection object encapsulating the socket (used for send messages)
 	var l_conn = undefined;
-    
+
 	// use a provided, existing event handler set (if name is provided in config), or a new one
 	var l_eventHandler = SR.Handler.get(config.name);
 
-	// init connection handler 
-	// external app to call when establishing new connection	
-	var l_connHandler = new SR.Conn.ConnHandler(config);    
+	// init connection handler
+	// external app to call when establishing new connection
+	var l_connHandler = new SR.Conn.ConnHandler(config);
 
 	// socket handler (handling new socket connections)
-	var l_socketHandler = new SR.Socket(l_connHandler, l_eventHandler);    
-           
+	var l_socketHandler = new SR.Socket(l_connHandler, l_eventHandler);
+
 	//
 	// public functions
 	//
-	
+
 	// store a handler for incoming events
 	// handlers should provide the following properties:
 	//    'handlers'
@@ -69,7 +69,7 @@ exports.icConnector = function (config) {
 	//    'getMessageHandlers'
 	// return # of handlers added
 	var l_addHandler = this.addHandler = function (handlers) {
-                             
+
 		// perform loading of checkers & handlers
 		var num = l_eventHandler.load(handlers);
 		LOG.sys('adding ' + num + ' handlers', 'SR.Connector.addHandler');
@@ -94,12 +94,12 @@ exports.icConnector = function (config) {
 
 		try {
 			LOG.warn('init a connection to: ' + ip_port.IP + ':' + ip_port.port + '...', 'SR.Connector');
-            
-			l_socket = SR.net.createConnection(ip_port.port, ip_port.IP, function () {
-				
-				// this callback is called when 'connection' event is fired   
+
+			l_socket = SR.net.createConnection(ip_port.port, ip_port.IP, () => {
+
+				// this callback is called when 'connection' event is fired
 				l_socket.connected = true;
-                
+
 				// store remote address & port
 				// NOTE: because l_socket.remoteAddress doesn't exist
 				l_socket.host = ip_port.IP;
@@ -108,16 +108,16 @@ exports.icConnector = function (config) {
 				// setup socket's various properties & handling methods
 				// NOTE: after setup the socket will receive a connID
 				l_socketHandler.setup(l_socket);
-				
+
 				// record connection object for later use
-				// TODO: can we simply record & use l_conn instead of l_socket? 
+				// TODO: can we simply record & use l_conn instead of l_socket?
 				l_conn = SR.Conn.getConnObject(l_socket.connID);
 
-		        LOG.sys('outgoing connection: ' + l_socket.host + ':' + l_socket.port, 'SR.Connector');  
+		        LOG.sys('outgoing connection: ' + l_socket.host + ':' + l_socket.port, 'SR.Connector');
 				UTIL.safeCall(onDone, undefined, l_socket);
 			});
-			
-			l_socket.on('error', function (e) {
+
+			l_socket.on('error', (e) => {
 				LOG.error('socket connection error: ', 'SR.Connector');
 				LOG.error(e);
 				UTIL.safeCall(onDone, e);
@@ -134,24 +134,22 @@ exports.icConnector = function (config) {
 	var l_disconnect = this.disconnect = function (onDone) {
 
 		// shutdown connector, if exist
-		if (l_socket === undefined) 
-			return UTIL.safeCall(onDone);
-				
+		if (l_socket === undefined) {return UTIL.safeCall(onDone);}
+
 		try {
-			l_socket.on('close', function (err) {
-				if (err)
-					LOG.warn('connection to [' + l_socket.host + ':' + l_socket.port + '] was closed with error');
-				// call callback when connection is fully closed     
+			l_socket.on('close', (err) => {
+				if (err) {LOG.warn('connection to [' + l_socket.host + ':' + l_socket.port + '] was closed with error');}
+				// call callback when connection is fully closed
 			});
-            
+
 			l_socket.end();
 			l_socket = undefined;
 		} catch (e) {
 			LOG.error('l_socket.end() exception-'+e, 'SR.Connector');
 			l_socket = undefined;
-		}			
-		UTIL.safeCall(onDone);        
-	}; 
+		}
+		UTIL.safeCall(onDone);
+	};
 
 	// check whether connector has successfully connected to remote server
 	this.isConnectorReady = function () {
@@ -161,21 +159,18 @@ exports.icConnector = function (config) {
 	//
 	// Connector methods
 	//
- 
+
 	// send something to remote host
 	this.send = function (packet_type, para, expected_response, onResponse) {
-        
+
 		// see if we need to register responder
 		// TODO: hide _cid attachment to EventManager
 		var cid = l_eventHandler.addResponder(expected_response, onResponse);
-            
-		// send out message 
-		if (l_conn)
-        	SR.EventManager.send(packet_type, para, [l_conn], cid);
-		else
-			LOG.error('no outgoing connection established, cannot send', 'SR.Connector');
+
+		// send out message
+		if (l_conn) {SR.EventManager.send(packet_type, para, [l_conn], cid);} else {LOG.error('no outgoing connection established, cannot send', 'SR.Connector');}
 	};
-	
+
 	// end this connector
 	this.dispose = function (onDone) {
 		LOG.warn('dispose called...', 'SR.Connector');

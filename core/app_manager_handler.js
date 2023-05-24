@@ -1,4 +1,5 @@
-
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 //
 //  icAppHandler.js
 //
@@ -36,7 +37,7 @@ l_checkers.SR_APP_READY = {
 l_handlers.SR_APP_READY = function (event) {
 
 	var para = event.data;
-    
+
 	// create app record
 	var appID = SR.AppConn.createApp(event.conn.connID, para);
 	var appInfo = SR.AppConn.getAppInfo(appID);
@@ -47,7 +48,7 @@ l_handlers.SR_APP_READY = function (event) {
 };
 
 //-----------------------------------------
-// request for a user login 
+// request for a user login
 // (transfer user to new app, block further login from user)
 // NOTE: after user request login and connect to game app
 // game app will notify manager to update user location
@@ -70,17 +71,17 @@ l_handlers.USER_LOGIN = function (event) {
 	SR.Location.setUser(event.data.acc, SR.AppConn.getAppLocationID(appID), appID);
 
 	SR.Callback.notify('onAppUserLogin', event.data.acc, event.conn.connID);
-	
+
 	// TODO: return user data if available?
 	// NOTE: right now it assumes when notify the user will provide such data
 	//event.done('USER_LOGIN_R', {op: true, user: user_data});
 	event.done('USER_LOGIN_R', {op: true});
-	
+
 
 };
 
 //-----------------------------------------
-// request for a user logout 
+// request for a user logout
 // (unblock user)
 
 l_checkers.USER_LOGOUT = {
@@ -91,9 +92,9 @@ l_handlers.USER_LOGOUT = function (event) {
 	var appID = SR.AppConn.getAppID(event.conn.connID);
 
 	SR.Location.delUser(event.data.acc);
-	
+
 	SR.Callback.notify('onAppUserLogout', event.data.acc, event.conn.connID);
-	event.done('USER_LOGOUT_R', {op: true});	
+	event.done('USER_LOGOUT_R', {op: true});
 };
 
 // record keeping for user connection/disconnection
@@ -102,10 +103,10 @@ l_checkers.USER_CONNECTED = {};
 l_handlers.USER_CONNECTED = function (event) {
 
 	var appID = SR.AppConn.getAppID(event.conn.connID);
-	
+
 	// increase user count
 	SR.AppConn.updateUserCount(appID, 1);
-    
+
 	// notify custom callback
 	SR.Callback.notify('onAppUserConnect', appID);
 
@@ -115,26 +116,36 @@ l_handlers.USER_CONNECTED = function (event) {
 l_checkers.USER_DISCONNECTED = {};
 
 l_handlers.USER_DISCONNECTED = function (event) {
-    
+
 	var appID = SR.AppConn.getAppID(event.conn.connID);
-	
+
 	// decrease user count
 	SR.AppConn.updateUserCount(appID, -1);
-	
+
 	if (SR.AppConn.checkUserThreshold(appID, 'underload') === true) {
-		
+
 		// if usercount is zero, check if we need to shutdown this app server
 		//SR.AppConn.stopAppServers([appID], function () {
-		SR.AppConn.deleteApp(appID, function () {
-			LOG.warn('successfully stop app server: ' + appID, 'SR.AppManager');	
-		},
-							 	function () {
-									 LOG.warn('fail to stop app server: ' + appID, 'SR.AppManager');	
-							 	});	
+		SR.AppConn.deleteApp(
+			appID,
+			() => {
+				LOG.warn(
+					'successfully stop app server: '
+						+ appID,
+					'SR.AppManager'
+				);
+			},
+			() => {
+				LOG.warn(
+					'fail to stop app server: ' + appID,
+					'SR.AppManager'
+				);
+			}
+		);
 	}
-    
+
 	// notify custom callback
-	SR.Callback.notify('onAppUserDisconnect', appID);    
+	SR.Callback.notify('onAppUserDisconnect', appID);
 
 	event.done();
 };
@@ -148,16 +159,16 @@ l_checkers.APP_SET_STAT = {};
 l_handlers.APP_SET_STAT = function (event) {
 
 	var appID = SR.AppConn.getAppID(event.conn.connID);
-                
-	// store stat object        
+
+	// store stat object
 	var stat = event.data;
 	SR.AppConn.setSingleAppStat(appID, stat);
-		
+
 	// notify registered callback handles for this event
-	SR.Callback.notify('onStatUpdate', appID, stat);		
-		
+	SR.Callback.notify('onStatUpdate', appID, stat);
+
 	// no need to respond to sending app
-	event.done();		
+	event.done();
 };
 
 /*

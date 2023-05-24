@@ -1,10 +1,12 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 //
 //
 // conn.js
 //
 // Connection Management
 //
-// 2012-05-10  inital version 
+// 2012-05-10  inital version
 //             (refactored code from aere_game_app, aere_lobby_user, aere_mjgame_user)
 //
 // Functions:
@@ -12,18 +14,18 @@
 //		getConnObject(connID)
 //		getConnections(conn || name)				// get all connections associated with a connection object or name
 //		getConnCount()
-//		createConnObject(type, conn_obj, from) 
+//		createConnObject(type, conn_obj, from)
 //		destroyConnObject(connID)
-//		setSessionName(conn, name)					// link a session_token with a login name					
+//		setSessionName(conn, name)					// link a session_token with a login name
 //		unsetSessionName(conn)						// unlink a session_token with a login name
-//		getSessionName(conn)						
+//		getSessionName(conn)
 
 // retired Functions:
 //		setConnName(connID, newName, oldName)
 //		getConnName(connID)
 
 // objects:
-// 		ConnHandler(conn_module) 
+// 		ConnHandler(conn_module)
 
 //-----------------------------------------
 
@@ -31,7 +33,7 @@
 //
 //       'onConnect'           (a new connection is made)
 //       'onDisconnect'		(an existing connection is disconnected)
-// 
+//
 
 var l_timeoutWaitDispose = 1000;
 
@@ -58,10 +60,7 @@ exports.isConnected = function (connID) {
 
 // get connection object
 exports.getConnObject = function (connID) {
-	if (l_conn.hasOwnProperty(connID))
-		return l_conn[connID];
-	else
-		return undefined;
+	if (l_conn.hasOwnProperty(connID)) {return l_conn[connID];} else {return undefined;}
 };
 
 // get all connections with the same session_token
@@ -73,33 +72,31 @@ exports.getConnections = function (conn) {
 		LOG.warn('no connection object or name specified', l_name);
 		return list;
 	}
-	
+
 	// if connection name's provided, lookup session token directly
 	if (typeof conn === 'string') {
 		if (l_names.hasOwnProperty(conn) === false) {
 			LOG.warn('no connection object associated with name: ' + conn, l_name);
 			return list;
 		}
-		
+
 		token = l_names[conn];
-	} else if (typeof conn === 'object' && typeof conn.session_token === 'string')
-		token = conn.session_token;
-		
+	} else if (typeof conn === 'object' && typeof conn.session_token === 'string') {token = conn.session_token;}
+
 	if (token) {
 		// get a list of all connections with the same session token
 		for (var connID in l_conn) {
-			if (l_conn[connID].session_token === token)
-				list.push(l_conn[connID]);
+			if (l_conn[connID].session_token === token) {list.push(l_conn[connID]);}
 		}
 	}
 	LOG.sys('returning ' + list.length + ' connections from same session', l_name);
-	
+
 	return list;
 };
 
 // get a connection name from connection ID
 //exports.getConnName = function (connID) {
-    
+
 //	var name = (l_conn.hasOwnProperty(connID) ? l_conn[connID].name : undefined);
 //    return name;
 //}
@@ -110,16 +107,16 @@ exports.getConnections = function (conn) {
 //    // first check if connection exists
 //    if (l_conn.hasOwnProperty(connID) === false)
 //        return false;
-    	
+
 //    // if old account is provided, check if it matches with the one on record
 //    if (oldName && l_conn[connID].name !== oldName)
 //        return false;
-	
+
 //	var conn = l_conn[connID];
-	
+
 //    // change is successful
 //    conn.name = newName;
-			
+
 //    return true;
 //}
 
@@ -127,9 +124,8 @@ exports.getConnections = function (conn) {
 // this is useful when the incoming request may not have a persistent connection (such as HTTP)
 exports.setSessionName = function (conn, name) {
 
-	if (!conn || typeof conn.session_token === 'undefined')
-		return false;
-	
+	if (!conn || typeof conn.session_token === 'undefined') {return false;}
+
 	l_names[name] = conn.session_token;
 	return true;
 };
@@ -137,12 +133,10 @@ exports.setSessionName = function (conn, name) {
 // opposite of setSessionName
 exports.unsetSessionName = function (conn) {
 
-	if (!conn || typeof conn.session_token === 'undefined')
-		return false;
-	
+	if (!conn || typeof conn.session_token === 'undefined') {return false;}
+
 	for (var name in l_names) {
-		if (l_names[name] === conn.session_token)
-			delete l_names[name];
+		if (l_names[name] === conn.session_token) {delete l_names[name];}
 	}
 
 	return true;
@@ -152,8 +146,7 @@ exports.unsetSessionName = function (conn) {
 // get the name for current session
 exports.getSessionName = function (conn) {
 	for (var name in l_names) {
-		if (l_name[name] === conn.session_token)
-			return name;
+		if (l_name[name] === conn.session_token) {return name;}
 	}
 	return undefined;
 };
@@ -165,39 +158,38 @@ exports.getConnCount = function () {
 
 // definition for a connection object
 function Connection (type, sender, from) {
-	
+
 	// provide default 'from' values
 	from = from || {};
-	
+
 	// connection-specific UUID
 	this.connID = UTIL.createUUID();
-	
+
 	// a project-specific / supplied name (can be account or app name)
 	this.name = '';
 
 	// sender function associated with this connection
 	this.connector = sender;
-	
+
 	// store pointers on how to respond
 	this.type = type;
-	
+
 	// where the connection comes from (default to nothing)
 	this.host = from.host || '';
 	this.port = from.port || 0;
 
 	// time when this connection is established
 	this.time =	new Date();
-	
+
 	// append cookie, if available (this is useful if the event will be relayed to another server to execute,
 	// cookie can then be preserved
-	if (from.cookie)
-		this.cookie = from.cookie;
+	if (from.cookie) {this.cookie = from.cookie;}
 }
 
 // for sockets only currently
 // TODO: make it more general?
 Connection.prototype.send = function (msg) {
-	
+
 	if (this.type === 'socket') {
 		LOG.sys('socket send direct triggered...', l_name);
 		this.connector.send(msg);
@@ -205,7 +197,7 @@ Connection.prototype.send = function (msg) {
 };
 
 Connection.prototype.close = function () {
-	
+
 	// TODO: should remove socket-specific tasks, or try to make it more general
 	if (this.type === 'socket') {
 		LOG.warn('socket close direct triggered...', l_name);
@@ -215,7 +207,7 @@ Connection.prototype.close = function () {
 
 // get duration of the connection since its start
 Connection.prototype.getDuration = function () {
-	
+
 	return (new Date).getTime() - this.time.getTime();
 };
 
@@ -224,7 +216,7 @@ var l_createConnObject = exports.createConnObject = function (type, sender_func,
 
 	// create info for the connection & create unique UUID
 	var conn = new Connection (type, sender_func, from);
-	
+
 	// perform socket-specific functions ('socket' or 'sockio', 'sockjs')
 	// TODO: find a better way to identify persistent connections
 	if (type.startsWith('sock')) {
@@ -240,19 +232,19 @@ var l_createConnObject = exports.createConnObject = function (type, sender_func,
 
 // remove a connection object
 var l_destroyConnObject = exports.destroyConnObject = function (connID) {
-	
+
 	if (l_conn.hasOwnProperty(connID)) {
-	
+
 		LOG.sys('connection destroyed: ' + connID + ' type: ' + l_conn[connID].type, l_name);
 		delete l_conn[connID];
-				
+
 		// remove session data for this connection
 		// NOTE: this is not symmetric (storing session should be here as well)
 		if (SR.State.get(connID) !== undefined) {
 			LOG.warn('removing session info for connID [' + connID + ']', l_name);
 			SR.State.delete(connID);
-		}	
-		
+		}
+
 		return true;
 	}
 	return false;
@@ -263,14 +255,14 @@ var l_conn_module = {
 	onConnect: function () {
 	},
 	onDisconnect: function () {
-	}	
+	}
 };
 
 exports.ConnHandler = function (conn_module) {
 
 	// use one or the default dummy
 	conn_module = conn_module || l_conn_module;
-	
+
 	// private record for all connections at this handler
 	var connections = {};
 
@@ -282,17 +274,17 @@ exports.ConnHandler = function (conn_module) {
 
 		// replace with new one
 		conn_module = {
-							
+
 			onConnect: function (conn) {
 				UTIL.safeCall(handler.onConnect, conn);
-			
+
 				// call original
 				old_module.onConnect(conn);
 			},
 
 			onDisconnect: function (conn, onDone) {
 				UTIL.safeCall(handler.onDisconnect, conn);
-				
+
 				// call original
 				old_module.onDisconnect(conn, onDone);
 			}
@@ -301,24 +293,24 @@ exports.ConnHandler = function (conn_module) {
 
 	// handle new connection
 	this.addConnection = function (send_func, type, from) {
-        
+
 		var conn = l_createConnObject(type, send_func, from);
-        
+
 		// record the connection info
 		connections[conn.connID] = true;
 
 		// notify project-specific app
 		UTIL.safeCall(conn_module.onConnect, conn);
-	
+
 		return conn;
 	};
 
-	// 
+	//
 	// handle when a disconnection occurs, does the following:
 	// 1. checks if there are pending messages at the socket to be sent,
 	// 2. call custom onDisconnect()
 	// 3. destroy the connection object on record
-	// 
+	//
 	this.removeConnection = function (socket, onDone) {
 
 		if (socket === undefined) {
@@ -326,9 +318,8 @@ exports.ConnHandler = function (conn_module) {
 			return UTIL.safeCall(onDone);
 		}
 
-		// close socket (may cause additional events be fired?)		
-		if (typeof socket.end === 'function')
-			socket.end();
+		// close socket (may cause additional events be fired?)
+		if (typeof socket.end === 'function') {socket.end();}
 
 		// if connection ID doesn't exist
 		if (socket.hasOwnProperty('connID') === false) {
@@ -337,26 +328,25 @@ exports.ConnHandler = function (conn_module) {
 		}
 
 		// wait for all event processing done on this socket
-		SR.EventManager.waitSocketsEmpty(socket, 
-			function () {
-                    
+		SR.EventManager.waitSocketsEmpty(socket,
+			() => {
+
 				LOG.sys('no pending events on socket: ' + socket.connID, l_name);
-                
+
 				// if connection record doesn't exist
 				if (l_conn.hasOwnProperty(socket.connID) === false) {
 					LOG.error('connID not found: ' + socket.connID, l_name);
 					return UTIL.safeCall(onDone);
 				}
 
-				LOG.sys('calling custom onDisconnect...', l_name);                
-                
+				LOG.sys('calling custom onDisconnect...', l_name);
+
 				// NOTE: we make a copy of the conn object parameters to pass to user-implemented onDisconnect
 				// TODO: remove this?
 				var conn = {};
 				var original = l_conn[socket.connID];
 				for (var key in original) {
-					if (typeof original[key] !== 'function')
-						conn[key] = original[key];
+					if (typeof original[key] !== 'function') {conn[key] = original[key];}
 				}
 
 				var callback = function () {
@@ -365,7 +355,7 @@ exports.ConnHandler = function (conn_module) {
 
 				// TODO: remove the usage of custom onDisconnect
 				UTIL.safeCall(conn_module.onDisconnect, conn, callback);
-								
+
 				// delete conn info
 				l_destroyConnObject(socket.connID);
 				delete connections[socket.connID];
@@ -391,13 +381,12 @@ exports.ConnHandler = function (conn_module) {
 			LOG.sys('removing connID: ' + connID, l_name);
 			if (l_conn.hasOwnProperty(connID) && l_conn[connID].type.startsWith('sock')) {
 				pending_count++;
-				this.removeConnection(l_conn[connID].connector, function () {
+				this.removeConnection(l_conn[connID].connector, () => {
 					pending_count--;
-					if (pending_count === 0)
-						UTIL.safeCall(onDone);
+					if (pending_count === 0) {UTIL.safeCall(onDone);}
 				});
 			}
 			// TODO: remove other types of connections?
-		}		
+		}
 	};
 };

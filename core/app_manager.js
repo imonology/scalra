@@ -1,4 +1,5 @@
-﻿
+﻿/* cSpell:disable */
+/* global SR, LOG, UTIL */
 //
 //
 // app.js
@@ -52,7 +53,7 @@ var l_appManagerHandler = require('./app_manager_handler');
 //       when user connect/disconnect to game apps
 // TODO: not a clean way to do this
 exports.init = function (manager_port, onDone) {
-    	
+
 	// create Listener object
 	// NOTE: we do not provide 'path', so there's not dynamic reload for AppManager's handlers
 	l_appManager = new SR.Listener({
@@ -63,7 +64,7 @@ exports.init = function (manager_port, onDone) {
 
 	// add default handler for app functions
 	SR.Handler.add(l_appManagerHandler, 'manager');
-    
+
 	// execute all the steps for running a server
 	l_appManager.init(onDone);
 };
@@ -72,19 +73,18 @@ exports.init = function (manager_port, onDone) {
 // function to shutdown the game frontier externally
 exports.dispose = function (onDone) {
 	if (l_appManager) {
-		l_appManager.dispose(function () {
+		l_appManager.dispose(() => {
 			l_appManager = undefined;
 			UTIL.safeCall(onDone);
 		});
-	} else
-		UTIL.safeCall(onDone);
+	} else {UTIL.safeCall(onDone);}
 };
 
 // shutdown lobby externally (from monitor server)
 exports.stopLobby = function () {
-	
+
 	if (SR.Settings.FRONTIER !== undefined) {
-		SR.Settings.FRONTIER.dispose(function () {
+		SR.Settings.FRONTIER.dispose(() => {
 			LOG.warn('frontier stopped', 'SR.AppManager');
 		});
 	}

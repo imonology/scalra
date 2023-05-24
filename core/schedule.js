@@ -1,3 +1,6 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
+
 var status = {
 	enabled: false
 };
@@ -33,9 +36,9 @@ exports.setTask = function (arg) {
 		LOG.warn('arg.callback Not exist', l_cat);
 	}
 
-	if (typeof arg.monthday === 'string') arg.monthday = parseInt(arg.monthday);
-	if (typeof arg.hour === 'string') arg.hour = parseInt(arg.hour);
-	if (typeof arg.minute === 'string') arg.minute = parseInt(arg.minute);
+	if (typeof arg.monthday === 'string') {arg.monthday = parseInt(arg.monthday);}
+	if (typeof arg.hour === 'string') {arg.hour = parseInt(arg.hour);}
+	if (typeof arg.minute === 'string') {arg.minute = parseInt(arg.minute);}
 
 	arg.cycle = arg.cycle.toLowerCase();
 	arg.weekday = arg.weekday.toLowerCase();
@@ -59,25 +62,22 @@ exports.setTask = function (arg) {
 
 
 
-	SR.DB.updateData(dbName_schedule, {
-		id: arg.id
-	}, l_schedulePool[arg.id],
-	function (msg) {
-		arg.onDone({
-			scheduleId: arg.id,
-			message: 'success'
-		});
+	SR.DB.updateData(
+		dbName_schedule, {
+			id: arg.id
+		},
+		l_schedulePool[arg.id],
+		(msg) => {
+			arg.onDone({scheduleId: arg.id, message: 'success'});
 		//LOG.warn('SR.Schedule', "success: ");
 		//LOG.warn('SR.Schedule', msg);
-	},
-	function (msg) {
-		arg.onDone({
-			scheduleId: arg.id,
-			message: 'db failure'
-		});
-		LOG.warn('failure: ', l_cat);
-		LOG.warn(msg, l_cat);
-	});
+		},
+		(msg) => {
+			arg.onDone({scheduleId: arg.id, message: 'db failure'});
+			LOG.warn('failure: ', l_cat);
+			LOG.warn(msg, l_cat);
+		}
+	);
 };
 
 // TODO: delete a task by id
@@ -99,7 +99,7 @@ exports.deleteTask = function (arg) {
 	}
 
 	SR.DB.deleteData(dbName_schedule,
-		function (result) {
+		(result) => {
 			delete l_schedulePool[arg.id];
 			delete l_callbackPool[arg.id];
 			arg.onDone({
@@ -108,7 +108,7 @@ exports.deleteTask = function (arg) {
 			});
 			//LOG.warn('SR.Schedule', "The given task is deleted.");
 		},
-		function (result) {}, {
+		(result) => {}, {
 			id: {
 				$in: arg.id
 			}
@@ -138,7 +138,7 @@ exports.suspendTask = function (arg) {
 	SR.DB.updateData(dbName_schedule, {
 		id: arg.id
 	}, l_schedulePool[arg.id],
-	function (msg) {
+	(msg) => {
 		//LOG.warn('SR.Schedule', "success: ");
 		//LOG.warn('SR.Schedule', msg);
 		arg.onDone({
@@ -146,7 +146,7 @@ exports.suspendTask = function (arg) {
 			message: 'The given task is suspended.'
 		});
 	},
-	function (msg) {
+	(msg) => {
 		LOG.warn('failure: db failure ', l_cat);
 		LOG.warn(msg, l_cat);
 	});
@@ -174,7 +174,7 @@ exports.resumeTask = function (arg) {
 	SR.DB.updateData(dbName_schedule, {
 		id: arg.id
 	}, l_schedulePool[arg.id],
-	function (msg) {
+	(msg) => {
 		arg.onDone({
 			id: arg.id,
 			message: 'The given task is resumed.'
@@ -182,7 +182,7 @@ exports.resumeTask = function (arg) {
 		//LOG.warn('SR.Schedule', "success: ");
 		//LOG.warn('SR.Schedule', msg);
 	},
-	function (msg) {
+	(msg) => {
 		LOG.warn('failure: ', l_cat);
 		LOG.warn(msg, l_cat);
 	});
@@ -198,7 +198,7 @@ exports.patchCallback = function (arg) {
 		return;
 	}
 
-	if (!typeof arg.callback === 'function') {
+	if (typeof arg.callback !== 'function') {
 		LOG.warn('assigned is not a callback function', l_cat);
 		return;
 	}
@@ -227,7 +227,7 @@ exports.getStatus = function (arg) {
 
 exports.enable = function (arg) {
 	status.enabled = true;
-	setTimeout(function () {
+	setTimeout(() => {
 		readDB({});
 	}, 2000);
 };
@@ -239,14 +239,14 @@ exports.disable = function (arg) {
 
 var readDB = exports.readDB = function (arg) {
 
-	SR.DB.getArray(dbName_schedule, function (msg) {
+	SR.DB.getArray(dbName_schedule, (msg) => {
 		l_schedulePool = {};
 
 		for (var index in msg) {
 			l_schedulePool[msg[index].id] = msg[index];
 		} // 之所以這裡要逐筆做，是為了能用 l_schedulePool[id] 存取
 		LOG.warn('SR.Schedule is enabled.', l_cat);
-	}, function (msg) {
+	}, (msg) => {
 		LOG.warn('failure: db failure (schedule.js )', l_cat);
 		LOG.warn(msg, l_cat);
 	});
@@ -255,45 +255,62 @@ var readDB = exports.readDB = function (arg) {
 
 
 exports.daemon = function (arg) {
-	switch (arg.action) {
-	case 'startSetInterval':
+	// switch (arg.action) {
+	// case 'startSetInterval':
+	// 	setInterval(l_schedule, 5000);
+	// 	break;
+	// default:
+	// 	break;
+	// }
+
+	if (arg.action === 'startSetInterval') {
 		setInterval(l_schedule, 5000);
-		break;
-	default:
-		break;
 	}
 };
 
-var toNumberWeekday = function (arg) {
+function toNumberWeekday (arg) {
+	let number;
+
+	// FIXME: use hash/dict to map result instead of switch cases
+	// var weekday = new Array(7);
+	// weekday[0] = "Sunday";
+	// weekday[1] = "Monday";
+	// weekday[2] = "Tuesday";
+	// weekday[3] = "Wednesday";
+	// weekday[4] = "Thursday";
+	// weekday[5] = "Friday";
+	// weekday[6] = "Saturday";
 	switch (arg.toLowerCase()) {
 	case 'sunday':
-		return 0;
+		number = 0;
 		break;
 	case 'monday':
-		return 1;
+		number = 1;
 		break;
 	case 'tuesday':
-		return 2;
+		number = 2;
 		break;
 	case 'wednesday':
-		return 3;
+		number = 3;
 		break;
 	case 'thursday':
-		return 4;
+		number = 4;
 		break;
 	case 'friday':
-		return 5;
+		number = 5;
 		break;
 	case 'saturday':
-		return 6;
+		number = 6;
 		break;
 	default:
-		return false;
+		number = false;	// why Boolean??
 		break;
 	}
-};
 
-var isNumberRange = function (arg) {
+	return number;
+}
+
+function isNumberRange (arg) {
 	LOG.warn(arg, l_cat);
 	if (!arg) {
 		LOG.warn('no arg', l_cat);
@@ -311,18 +328,22 @@ var isNumberRange = function (arg) {
 		LOG.warn('no arg.current', l_cat);
 		return;
 	}
-	var c = arg.current;
-	var s = arg.start;
-	var e = arg.end;
+	var current = arg.current;
+	var start = arg.start;
+	var end = arg.end;
 
-	if (c === s || c === e) return true;
-	else if (s <= c && c <= e) return true;
-	else if (e <= s && s <= c) return true;
-	else return false;
+	if ((current === start || current === end)
+		|| ((start <= current) && (current <= end))
+		|| ((end <= start) && (start <= current))) {
+		return true;
+	}
 	return false;
-};
+}
 
 exports.checkRange = function (arg) {
+	let date = new Date();
+	let result;
+
 	if (!arg) {
 		LOG.warn('no arg', l_cat);
 		return;
@@ -336,81 +357,87 @@ exports.checkRange = function (arg) {
 		return;
 	}
 	LOG.warn('in checkRange', l_cat);
-	if (arg.start.weekday) arg.start.weekday_num = toNumberWeekday(arg.start.weekday);
-	if (arg.end.weekday) arg.end.weekday_num = toNumberWeekday(arg.end.weekday);
+	if (arg.start.weekday) {arg.start.weekday_num = toNumberWeekday(arg.start.weekday);}
+	if (arg.end.weekday) {arg.end.weekday_num = toNumberWeekday(arg.end.weekday);}
 	LOG.warn(arg, l_cat);
 
 	if (arg.start.cycle && typeof(arg.start.cycle) === 'string') {
 		switch (arg.start.cycle.toLowerCase()) {
 		case 'daily':
 			LOG.warn('============= in daily', l_cat);
-			var d = new Date();
 			if (isNumberRange({
 				start: arg.start.hour,
 				end: arg.end.hour,
-				current: d.getHours()
-			}))
+				current: date.getHours()
+			})) {
 				if (isNumberRange({
 					start: arg.start.minute,
 					end: arg.end.minute,
-					current: d.getMinutes()
-				}))
+					current: date.getMinutes()
+				})) {
 					return true;
-			return false;
+				}
+			}
+			result = false;
 			break;
 		case 'weekly':
 			LOG.warn('============= in weekly', l_cat);
-			var d = new Date();
 			if (isNumberRange({
 				start: arg.start.weekday_num,
 				end: arg.end.weekday_num,
-				current: d.getDay()
-			}))
+				current: date.getDay()
+			})) {
 				if (isNumberRange({
 					start: arg.start.hour,
 					end: arg.end.hour,
-					current: d.getHours()
-				}))
+					current: date.getHours()
+				})) {
 					if (isNumberRange({
 						start: arg.start.minute,
 						end: arg.end.minute,
-						current: d.getMinutes()
-					}))
+						current: date.getMinutes()
+					})) {
 						return true;
-			return false;
+					}
+				}
+			}
+			result = false;
 			break;
 		case 'monthly':
 			LOG.warn('============= in monthly', l_cat);
-			var d = new Date();
 			if (isNumberRange({
 				start: arg.start.monthday,
 				end: arg.end.monthday,
-				current: d.getDate()
-			}))
+				current: date.getDate()
+			})) {
 				if (isNumberRange({
 					start: arg.start.hour,
 					end: arg.end.hour,
-					current: d.getHours()
-				}))
+					current: date.getHours()
+				})) {
 					if (isNumberRange({
 						start: arg.start.minute,
 						end: arg.end.minute,
-						current: d.getMinutes()
-					}))
+						current: date.getMinutes()
+					})) {
 						return true;
-			return false;
+					}
+				}
+			}
+			result = false;
 			break;
 		default:
-			return false;
+			result = false;
 			break;
 		}
 	}
+
+	return result;
 };
 
 exports.triggerTask = function (arg) {
-	if (typeof(arg) != 'string') 
-		return;
-	
+	if (typeof(arg) != 'string') {return;}
+
 	var i = arg;
 	if (!l_schedulePool[i]) {
 		LOG.warn('The assigned id does not exist.' + i, l_cat);
@@ -445,11 +472,11 @@ exports.triggerTask = function (arg) {
 	SR.DB.updateData(dbName_schedule, {
 		id: l_schedulePool[i].id
 	}, l_schedulePool[i],
-	function (msg) {
+	(msg) => {
 		LOG.warn('success: ', l_cat);
 		LOG.warn(msg, l_cat);
 	},
-	function (msg) {
+	(msg) => {
 		LOG.warn('failure: ', l_cat);
 		LOG.warn(msg, l_cat);
 	});
@@ -461,18 +488,18 @@ exports.triggerTask = function (arg) {
 // 每單位時間(目前為 5 秒) 檢查是否有符合條件的 task
 //
 ////////////////////////////////////////
-var l_schedule = function () {
+function l_schedule () {
 	if (status.enabled !== true) {
 		return;
 	}
 	//~ console.log("l_callbackPool: ", l_callbackPool);
 	//~ console.log("l_schedulePool: ", l_schedulePool);
 	//console.log(l_schedulePool);
-	var resolutionTS = 1000 * 60; // one minute support; 最小解析度(目前每分鐘) 
-	var cycleTShourly = 1000 * 60 * 60; // 每小時有 60 分鐘 (60*60秒)
-	var cycleTSdaily = cycleTShourly * 24; // 每天有 24 小時 
-	var cycleTSweekly = cycleTSdaily * 7; // 每周有 7 天 
-	var cycleTSmonthly = cycleTSdaily * 30;
+	var resolutionTS = 1000 * 60; // one minute support; 最小解析度(目前每分鐘)
+	// var cycleTShourly = 1000 * 60 * 60; // 每小時有 60 分鐘 (60*60秒)
+	// var cycleTSdaily = cycleTShourly * 24; // 每天有 24 小時
+	// var cycleTSweekly = cycleTSdaily * 7; // 每周有 7 天
+	// var cycleTSmonthly = cycleTSdaily * 30;
 	// 因為推導時間的演算法還未想完整，有些變數還沒有用到，暫時先留著
 	var now = getDateTime();
 	var currentTS = new Date()
@@ -484,9 +511,9 @@ var l_schedule = function () {
 		//~ console.log("IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII:::::::::::::::: ", i);
 		var latestExecutedTS = new Date(l_schedulePool[i].latestExecuted)
 			.valueOf(); // latest executed date and time
-		var createdTS = new Date(l_schedulePool[i].created)
-			.valueOf(); // created date and time
-		//~ console.log("latestExecutedTS - createdTS: " + Math.abs(latestExecutedTS - createdTS)); 
+		// var createdTS = new Date(l_schedulePool[i].created)
+		// 	.valueOf(); // created date and time
+		//~ console.log("latestExecutedTS - createdTS: " + Math.abs(latestExecutedTS - createdTS));
 		var deltaTS = (currentTS - latestExecutedTS); //現在時間減最後執行過的時間
 		//~ console.log("delta: " + deltaTS );
 		if (l_schedulePool[i].suspend === true) {
@@ -574,11 +601,11 @@ var l_schedule = function () {
 			SR.DB.updateData(dbName_schedule, {
 				id: l_schedulePool[i].id
 			}, l_schedulePool[i],
-			function (msg) {
+			(msg) => {
 				LOG.warn('success: ', l_cat);
 				LOG.warn(msg, l_cat);
 			},
-			function (msg) {
+			(msg) => {
 				LOG.warn('failure: ', l_cat);
 				LOG.warn(msg, l_cat);
 			});
@@ -586,13 +613,17 @@ var l_schedule = function () {
 			//~ console.log("trigger is false ---------");
 		}
 	}
-};
+}
 
 
-var getDateTime = function (d) {
-	var eventName = 'getDateTime';
-	if (d) var date = new Date(d);
-	else var date = new Date();
+function getDateTime (d) {
+	// var eventName = 'getDateTime';
+	let date = new Date();
+
+	if (d) {
+		date = new Date(d);
+	}
+
 	var hour = date.getHours();
 	hour = (hour < 10 ? '0' : '') + hour;
 	var min = date.getMinutes();
@@ -641,4 +672,4 @@ var getDateTime = function (d) {
 		break;
 	}
 	return timeObj;
-};
+}

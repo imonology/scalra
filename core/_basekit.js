@@ -1,3 +1,6 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
+
 var net = require('net');
 var util = require('util');
 var uuid = require('./uuid');
@@ -8,16 +11,15 @@ var uuid = require('./uuid');
 
 // method: to add an additional method to a function
 Function.prototype.method = function(name, func) {
-	if (!this.prototype[name])
-		this.prototype[name] = func;
+	if (!this.prototype[name]) {this.prototype[name] = func;}
 	return this;
 };
 
-// add the 'curry' method, 
+// add the 'curry' method,
 Function.method('curry', function() {
 	var slice = Array.prototype.slice,
-		args = slice.apply(arguments),
-		that = this;
+					args = slice.apply(arguments),
+					that = this;
 
 	// use 'that' to refer to 'this' outside of the return function
 	return function() {
@@ -140,10 +142,9 @@ String.method('trim', function() {
 
 // Date
 Date.prototype.diff = function(tar, type) {
-	if (!type) type = 'd';
+	if (!type) {type = 'd';}
 	var tmEnd = new Date(tar);
-	if (isNaN(tmEnd))
-		return undefined;
+	if (isNaN(tmEnd)) {return undefined;}
 	switch (type) {
 	case 'ms':
 		return parseInt(tmEnd - this);
@@ -174,9 +175,9 @@ var Say = exports.Say = function() {
 	var l_currDate = new Date();
 	var term = (arguments[2]) ? arguments[2] : ' ';
 
-	var str = '-' + l_currDate.getHours() + ':' +
-		l_currDate.getMinutes() + '-' +
-		arguments[0] + '::' + term + '::' + arguments[1];
+	var str = '-' + l_currDate.getHours() + ':'
+		+ l_currDate.getMinutes() + '-'
+		+ arguments[0] + '::' + term + '::' + arguments[1];
 
 	// print to screen
 	console.log(str);
@@ -208,7 +209,7 @@ var Sej = exports.Sej =  function (){
  */
 function format(s, args) {
 	var re = /\{([^}]+)\}/g;
-	return s.replace(re, function(_, match) {
+	return s.replace(re, (_, match) => {
 		return args[match];
 	});
 }
@@ -333,8 +334,7 @@ var eventuality = exports.eventuality = function(that) {
 				handler = array[i];
 
 				func = handler.method;
-				if (typeof func === 'string')
-					func = this[func];
+				if (typeof func === 'string') {func = this[func];}
 
 				func.apply(this, handler.param || [event]);
 			}
@@ -348,10 +348,7 @@ var eventuality = exports.eventuality = function(that) {
 			'param': param
 		};
 
-		if (reg.hasOwnProperty(type))
-			reg[type].push(handler);
-		else
-			reg[type] = [handler];
+		if (reg.hasOwnProperty(type)) {reg[type].push(handler);} else {reg[type] = [handler];}
 
 		return this;
 	};
@@ -363,8 +360,7 @@ var send = exports.send = function() {
 	var socket = arguments[0];
 	var obj = arguments[1];
 	var ret = socket.write(JSON.stringify(obj) + ',');
-	if (ret === false)
-		See('', ret, 'SOCKET_BUFFER_IS_FULL @ ' + new Date());
+	if (ret === false) {See('', ret, 'SOCKET_BUFFER_IS_FULL @ ' + new Date());}
 };
 
 var recv = exports.recv = function(msg) {
@@ -394,7 +390,7 @@ var recv2 = exports.recv2 = function(data) {
 
 var getRecv = exports.getRecv = function(cb) {
 	if (cb === undefined) {
-		say('getRecv lacks callback');
+		console.error('getRecv lacks callback');
 		return;
 	}
 	var _ver = '1';
@@ -416,8 +412,7 @@ var getRecv = exports.getRecv = function(cb) {
 };
 
 var quicklog = exports.quicklog = function(s, logpath) {
-	if (logpath === undefined)
-		logpath = './quick.log';
+	if (logpath === undefined) {logpath = './quick.log';}
 	var fs = require('fs');
 	s = s.toString().replace(/\r\n|\r/g, '\n'); // hack
 	var fd = fs.openSync(logpath, 'a+', '0666');
@@ -430,15 +425,14 @@ var connector = exports.connector = function(port, ip, hndEX, hndOCM, hndSRM, hn
 	var _send = function(obj) {
 		conn.write(JSON.stringify(obj) + '\n');
 	};
-	var _recv = getRecv(function(cmd) {
-		if (cmd === undefined)
-			return;
+	var _recv = getRecv((cmd) => {
+		if (cmd === undefined) {return;}
 
 		try {
-			if (cmd.ex) hndEX(cmd);
-			if (cmd.ocm) hndOCM(cmd);
-			if (cmd.icm) hndSRM(cmd);
-			if (cmd.mj) hndMJ(cmd);
+			if (cmd.ex) {hndEX(cmd);}
+			if (cmd.ocm) {hndOCM(cmd);}
+			if (cmd.icm) {hndSRM(cmd);}
+			if (cmd.mj) {hndMJ(cmd);}
 		} catch (ex) {
 			See(ex);
 		}
@@ -449,20 +443,20 @@ var connector = exports.connector = function(port, ip, hndEX, hndOCM, hndSRM, hn
 	conn.send = _send;
 	conn.recv = _recv;
 
-	conn.on('data', function(data) {
-		if (data.length < 1) return;
+	conn.on('data', (data) => {
+		if (data.length < 1) {return;}
 		_recv(data);
 	});
 
-	conn.on('end', function() {});
-	conn.on('close', function() {}); //conn.connect(port, ip);
-	conn.on('error', function(ex) {
+	conn.on('end', () => {});
+	conn.on('close', () => {}); //conn.connect(port, ip);
+	conn.on('error', (ex) => {
 		Say(ex.errno + ' ' + ex.message, 'FRONTIER');
 	});
 	return conn;
 };
 
-// quick function to get current UTC epoch 
+// quick function to get current UTC epoch
 exports.getEpoch = function() {
 	return Math.floor((new Date()).getTime() / 1000.0);
 };

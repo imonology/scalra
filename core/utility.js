@@ -1,3 +1,5 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 //
 // icUtility.js
 //
@@ -11,7 +13,7 @@ createToken						// generate a random number and convert it to base 36 (0-9a-z):
 createID						// generate a random number ID (internal use)
 getTrimedByteStringByLength
 clone
-asyncCall 
+asyncCall
 safeCall
 timeoutCall
 hash(data, type)									// generate a hash from data, given encryption type
@@ -42,7 +44,7 @@ contactMonitor(type, para, onDone)					// contact monitor server to get certain 
 // functions related to local server (localhost)
 getLocalIP
 getLocalDomain
-validatePath					
+validatePath
 validateFile										// check if a file exists on file system or not (file size > 0)
 validateFileSync									// check if a file exists and is accessible (sync version)
 findValidFile										// search several directories to find a valid file
@@ -60,22 +62,20 @@ writeSystemConfig(file, onDone)
 readJSON(path)										// read a JSON file as a js object
 parsePath(path)										// convert a path into an object for easier handling
 
-
-
-
 */
-// used by HTTPget
+
+// deepcode ignore HttpToHttps: it's safe behind a proxy (traefik)
 const http = require('http');
 const https = require('https');
-
-const url = require('url');
+const urlparser = require('url');
 const querystring = require('querystring');
-
 const os = require('os');
 const cpu  = require('os-utils');
-
 const spawn = require('child_process').spawn;	// for starting servers
 const exec = require('child_process').exec;
+const fs = require('fs');
+const pathparser = require('path');
+const mailsender = require('emailjs/email');
 
 var l_name = 'UTIL';
 
@@ -105,22 +105,23 @@ exports.createUUID = function () {
 
 
 // ref: http://stackoverflow.com/questions/8532406/create-a-random-token-in-javascript-based-on-user-details
-var rand = function () {
+function rand () {
 	return Math.random().toString(36).substr(2); // remove `0.`
-};
+}
 
 // generate random token
 exports.createToken = function () {
 	return rand() + rand(); // to make it longer
 };
 
+// FIXME: similar to rand() function
 // generate a random number between a 'floor' and 'top' limits
 // (copied from _basekit originally)
-var l_rand = function () {
+function l_rand () {
 	var f = (arguments[1]) ? arguments[0] : 0;
 	var t = (arguments[1]) ? arguments[1] : arguments[0];
 	return Math.floor((Math.random() * (t - f)) + f);
-};
+}
 
 // create a numerical ID number between 0 and 10,000
 exports.createID = function (limit) {
@@ -128,29 +129,33 @@ exports.createID = function (limit) {
 };
 
 exports.getTrimedByteStringByLength = function (pString, trimedByteSz) {
-	if (pString.length === 0)
+	if (pString.length === 0) {
 		return 0;
-
-	if ((pString.length * 2) < trimedByteSz)
+	}
+	if ((pString.length * 2) < trimedByteSz) {
 		return pString;
+	}
 
 	var tmpCt = 1;
 	var tmpByteSz = 0;
 	var tmpBL = Buffer.byteLength(pString[tmpCt - 1], 'utf8');
-	if (tmpBL === 3)
+	if (tmpBL === 3) {
 		tmpBL = 2;
+	}
 
 	tmpByteSz += tmpBL;
 
 	while (tmpByteSz <= trimedByteSz) {
 		tmpCt++;
-		if ((tmpCt - 1) === pString.length)
+		if ((tmpCt - 1) === pString.length) {
 			break;
+		}
 
 		//require('util').puts('length of '+pString[tmpCt-1]+' ='+Buffer.byteLength(pString[tmpCt-1], 'utf8'));
 		tmpBL = Buffer.byteLength(pString[tmpCt - 1], 'utf8');
-		if (tmpBL === 3)
+		if (tmpBL === 3) {
 			tmpBL = 2;
+		}
 
 		tmpByteSz += tmpBL;
 
@@ -184,25 +189,26 @@ var clone = exports.clone = function (src) {
 //      http://www.nczonline.net/blog/2011/09/19/script-yielding-with-setimmediate/
 // async callback: call the specified callback at a later time
 exports.asyncCall = function (callback) {
-	if (typeof callback === 'function')
-	//process.nextTick(callback);
+	if (typeof callback === 'function') {
+		//process.nextTick(callback);
 		setImmediate(callback);
+	}
 };
 
 // safe callback (with exception catching)
-// 
+//
 // see: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Functions_and_function_scope/arguments
 // for how to convert 'arguments' into array form
-// 
+//
 
 // catch & print exception when calling callback
-l_safeCall = exports.safeCall = function (callback) {
+exports.safeCall = l_safeCall;
+function l_safeCall (callback) {
 
 	var return_value = undefined;
 
 	// first check if callback is indeed a function
-	if (typeof callback !== 'function')
-		return return_value;
+	if (typeof callback !== 'function') {return return_value;}
 
 	// call the callback with exception catching
 	try {
@@ -213,29 +219,28 @@ l_safeCall = exports.safeCall = function (callback) {
 		//console.log('safecall entering error...');
 		var err_str = 'callback exception, function:\n' + callback;
 
-		if (e.stack)
-			err_str += '\n\n' + UTIL.convertString(e.stack);
+		if (e.stack) {err_str += '\n\n' + UTIL.convertString(e.stack);}
 
 		LOG.error(err_str, l_name);
 
 		l_notifyAdmin('script error',
 			'server:\n' + UTIL.convertString(SR.Settings.SERVER_INFO) + '\n\n' + err_str);
-		
+
 		// if catch is not enable, then simply terminate program
 		if (SR.Settings.SAFE_CALL === true || SR.Settings.Project.SAFE_CALL === true) {
 			return;
 		}
-		
+
 		// NOTE: do not throw exception as it'll process extra messages
 		//throw new Error('program terminated by error in script');
 		//process.exit();
 		// notify server crash
-		SR.Callback.notify('onCrash');	
+		SR.Callback.notify('onCrash');
 		SR.Callback.shutdown();
 	}
 
 	return return_value;
-};
+}
 
 /*
 else {
@@ -258,7 +263,7 @@ exports.timeoutCall = function (callback, timeout, msg) {
 		return function () {};
 	}
 
-	var done_func = function () {
+	function done_func () {
 
 		// remove trigger, if exist
 		if (timeout_trigger !== undefined) {
@@ -268,12 +273,11 @@ exports.timeoutCall = function (callback, timeout, msg) {
 
 		// call original callback
 		UTIL.safeCall(callback);
-	};
+	}
 
 	// force calling timeout after some time (in ms)
-	var timeout_trigger = setTimeout(function () {
-		if (msg !== undefined)
-			LOG.error(msg, l_name);
+	var timeout_trigger = setTimeout(() => {
+		if (msg !== undefined) {LOG.error(msg, l_name);}
 		done_func();
 	}, timeout);
 
@@ -284,28 +288,27 @@ exports.timeoutCall = function (callback, timeout, msg) {
 // get & store local IP
 var _localIP = undefined;
 
-// method 
+// method
 var net = require('net');
 
 function getNetworkIP (onDone) {
 	var socket = net.createConnection(80, 'www.google.com');
-	socket.on('connect', function () {
+	socket.on('connect', () => {
 		onDone(undefined, socket.address().address);
 		socket.end();
 	});
-	socket.on('error', function (e) {
+	socket.on('error', (e) => {
 		onDone(e, 'error');
 	});
 }
 
 // return the host IP for the current machine
 exports.getLocalIP = function (onDone) {
-	
-	// if already available, return directly
-	if (_localIP)
-		return l_safeCall(onDone, _localIP);
 
-	getNetworkIP(function (error, ip) {
+	// if already available, return directly
+	if (_localIP) {return l_safeCall(onDone, _localIP);}
+
+	getNetworkIP((error, ip) => {
 
 		if (error) {
 			LOG.error('cannot determine local IP', l_name);
@@ -320,20 +323,20 @@ exports.getLocalIP = function (onDone) {
 	/*
     var hostname = require('os').hostname();
     LOG.sys('hostname: ' + hostname, l_name);
-    
+
     // if already available, return directly
     if (_localIP !== undefined)
         return onDone(_localIP);
-                                    
+
     require('dns').lookup(hostname, function (err, addr, fam) {
-        
+
         if (err) {
             LOG.warn(err + '. Assign 127.0.0.1 to host', l_name);
             _localIP = "127.0.0.1";
         }
-        else 
+        else
             _localIP = addr;
-        
+
         onDone(_localIP);
     })
 	*/
@@ -345,7 +348,7 @@ exports.getLocalDomain = function () {
 };
 
 //
-// support for HTTP requests (GET/POST) 
+// support for HTTP requests (GET/POST)
 //
 
 // ref: http://stackoverflow.com/questions/6158933/http-post-request-in-node-js
@@ -353,13 +356,14 @@ exports.getLocalDomain = function () {
 // url_request = 'http://somedomain.com'
 // data_obj = {name: 'john', addr: '1st street'};
 // content_type = ['form' | <other types> | <header object>];
-// encoding = ['binary' | 'utf-8'] 
+// encoding = ['binary' | 'utf-8']
 //
 // helper to send HTTP post request to an URL with JSON parameters
 var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, content_type, encoding) {
+	let send_data = '';
 
 	// parse the url first to extract different fields
-	var parsed_url = url.parse(url_request);
+	var parsed_url = urlparser.parse(url_request);
 	var header = undefined;
 
 	// set default to empty object, if not specified
@@ -367,8 +371,7 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 		data_obj = {};
 	}
 
-	// Build the post string from an object to string format	
-	var data = '';
+	// Build the post string from an object to string format
 	if (typeof data_obj !== 'object') {
 		LOG.warn('data_obj of type: ' + typeof data_obj + ' POST now only accepts object as parameter. cannot do POST', l_name);
 		return l_safeCall(onDone, 'input not an object');
@@ -379,15 +382,13 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 		header = content_type;
 		LOG.sys('custom header provided: ', l_name);
 		LOG.sys(header, l_name);
-	}
-	// check for form posting
-	else if (content_type === 'form') {
-		data = querystring.stringify(data_obj);
+	} else if (content_type === 'form') {
+		// check for form posting
+		send_data = querystring.stringify(data_obj);
 		content_type = 'application/x-www-form-urlencoded';
-	}
-	// NOTE: we default to 'application/json' type for the request parameters
-	else {
-		data = encodeURIComponent(JSON.stringify(data_obj));
+	} else {
+		// NOTE: we default to 'application/json' type for the request parameters
+		send_data = encodeURIComponent(JSON.stringify(data_obj));
 		content_type = 'application/json';
 	}
 
@@ -399,13 +400,11 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 		headers: header || {
 			//'Connection':	  'keep-alive',
 			'content-type': content_type,
-			'content-length': data.length
+			'content-length': send_data.length
 		}
 	};
 
-	if (parsed_url.port !== null)
-		options.port = parsed_url.port;
-	else {
+	if (parsed_url.port !== null) {options.port = parsed_url.port;} else {
 		// fill in default port
 		options.port = (url_request.indexOf('https') === 0 ? 443 : 80);
 	}
@@ -418,52 +417,50 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 
 	// default to 'binary' but can be customized (or auto-determined by response's content-type)
 	encoding = encoding || 'binary';
-	
+
 	// Set up the request
 	// TODO: combine response handling with GET request
-	var req = server.request(options, function (res) {
+	var req = server.request(options, (res) => {
+		let recv_data = '';
 
 		//LOG.sys('HTTP POST request respond header:', l_name);
 		//LOG.sys(res.headers);
 
-		
+
 		// extract content type & make sure 'content-type' & 'Content-Type' are treated equally
 		var type = res.headers['Content-Type'] || res.headers['content-type'];
 
 		if (typeof type !== 'undefined') {
 			LOG.sys('HTTP post response content-type: ' + type, l_name);
-			
+
 			// try to determine proper encoding type automatically
-			// NOTE: for images / webpages we need to have 'binary' encoding, 
+			// NOTE: for images / webpages we need to have 'binary' encoding,
 			// for JSON objects we need 'utf-8' for proper Chinese display
-			if (type.indexOf('application/json') >= 0) 
-				encoding = 'utf-8';
+			if (type.indexOf('application/json') >= 0) {encoding = 'utf8';}
 		}
-		
-		var data = '';
 
 		// set encoding, which can be passed in, default (binary), or determined (for application/json it's 'utf-8')
 		LOG.sys('encoding: ' + encoding + ' url: ' + url_request, l_name);
 		res.setEncoding(encoding);
-		
-		res.on('data', function (chunk) {
-			data += chunk;
+
+		res.on('data', (chunk) => {
+			recv_data += chunk;
 		});
 
-		res.on('end', function () {
-			var res_obj = data;
-			
-			try {
-				if (data !== '') {
+		res.on('end', () => {
+			var res_obj = recv_data;
 
-					// convert JSON data (otherwise assume we can return data directly) 
+			try {
+				if (recv_data !== '') {
+
+					// convert JSON data (otherwise assume we can return data directly)
 					if (type.indexOf('application/json') >= 0) {
 						LOG.sys('converting data (string type) to JSON...', l_name);
-						res_obj = JSON.parse(data);
+						res_obj = JSON.parse(recv_data);
 					}
 				}
 			} catch (e) {
-				LOG.error('JSON parsing error for data: ' + data, l_name);
+				LOG.error('JSON parsing error for data: ' + recv_data, l_name);
 				return l_safeCall(onDone, e);
 			}
 
@@ -472,7 +469,7 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 		});
 	});
 
-	req.on('error', function (e) {
+	req.on('error', (e) => {
 		LOG.error('HTTP post error', l_name);
 		LOG.error(e, l_name);
 		LOG.error('options:', l_name);
@@ -485,7 +482,7 @@ var l_HTTPpost = exports.HTTPpost = function (url_request, data_obj, onDone, con
 	});
 
 	// post the data
-	req.write(data);
+	req.write(send_data);
 	req.end();
 };
 
@@ -500,26 +497,27 @@ var l_HTTPSget = exports.HTTPSget = function (url, onDone) {
 
 function get_function(obj, url, onDone){
 	// send request to app server to get stat
-	obj.get(url, function (res) {
+	obj.get(url, (res) => {
 
 		// temp buffer for incoming request
 		var data = '';
 
-		res.on('data', function (chunk) {
+		res.on('data', (chunk) => {
 			data += chunk;
 		});
 
-		res.on('end', function () {
+		res.on('end', () => {
 
 			var res_obj = undefined;
 			try {
 				if (data !== '') {
 					// see if return object is a text doc
-					if (res.headers['content-type'] === 'text/html')
+					if (res.headers['content-type'] === 'text/html') {
 						res_obj = data;
-					// perform parsing
-					else
+					} else {
+						// perform parsing
 						res_obj = JSON.parse(data);
+					}
 				}
 			} catch (e) {
 				LOG.error('JSON parsing error for data: ' + data, l_name);
@@ -530,7 +528,7 @@ function get_function(obj, url, onDone){
 			l_safeCall(onDone, res_obj);
 		});
 
-	}).on('error', function (e) {
+	}).on('error', (e) => {
 
 		LOG.error('HTTP get error: ' + e.message, l_name);
 		l_safeCall(onDone, null);
@@ -542,8 +540,7 @@ exports.convertJSON = function (data) {
 
 	var JSONobj = undefined;
 	try {
-		if (typeof data === 'string' && data !== '')
-			JSONobj = JSON.parse(data);
+		if (typeof data === 'string' && data !== '') {JSONobj = JSON.parse(data);}
 	} catch (e) {
 		LOG.error('JSON parsing error for data: ' + data, l_name);
 		LOG.error('check if names are enclosed in double quotation such as {"name": "john"}', l_name);
@@ -566,18 +563,17 @@ exports.stringify = function (obj) {
 };
 
 // extracting all legitimate emails from a string to an array
-var l_extractEmails = function (text) {
+function l_extractEmails (text) {
 	return text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi);
-};
+}
 
 
-var email = require('emailjs/email');
 /*
 format of msg:
 
 {
-   text:    "i hope this works", 
-   from:    "you <username@gmail.com>", 
+   text:    "i hope this works",
+   from:    "you <username@gmail.com>",
    to:      "someone <someone@gmail.com>, another <another@gmail.com>",
    cc:      "else <else@gmail.com>",
    bcc:		"else else <elseelse@gmail>",
@@ -600,7 +596,7 @@ exports.emailText = function (msg, onSuccess, onFail) {
 		// if no admin mail then return
 		var adminMail = UTIL.userSettings('adminMail');
 		if (adminMail === undefined || adminMail === '') {
-			var errmsg = 'No receiver for sending e-mail:\n' + 'subject: ' + msg.subject;
+			let errmsg = 'No receiver for sending e-mail:\n' + 'subject: ' + msg.subject;
 			LOG.warn(errmsg, l_name);
 			return l_safeCall(onFail, errmsg);
 		}
@@ -621,20 +617,20 @@ exports.emailText = function (msg, onSuccess, onFail) {
 		}, ];
 	}
 
-	// connect to mail server			
+	// connect to mail server
 	// check if email config exists
-	if (SR.Settings.EMAIL_CONFIG === undefined ||
-		SR.Settings.EMAIL_CONFIG.user === '' ||
-		SR.Settings.EMAIL_CONFIG.password === '') {
-		var errmsg = 'no EMAIL_CONFIG specified for system or project, cannot send emails';
+	if (SR.Settings.EMAIL_CONFIG === undefined
+		|| SR.Settings.EMAIL_CONFIG.user === ''
+		|| SR.Settings.EMAIL_CONFIG.password === '') {
+		let errmsg = 'no EMAIL_CONFIG specified for system or project, cannot send emails';
 		LOG.error(errmsg, l_name);
 		return l_safeCall(onFail, errmsg);
 	}
 
-	var server = email.server.connect(SR.Settings.EMAIL_CONFIG);
+	var server = mailsender.server.connect(SR.Settings.EMAIL_CONFIG);
 
 	// send the message and get a callback with an error or details of the message that was sent
-	server.send(msg, function (err, message) {
+	server.send(msg, (err, message) => {
 
 		if (err) {
 			LOG.error('send e-mail error to: [' + msg.to + '] subject: ' + msg.subject, l_name);
@@ -652,8 +648,7 @@ exports.emailText = function (msg, onSuccess, onFail) {
 // return a given user-defined settings, or undefined if not found
 exports.userSettings = function (section, name) {
 	if (SR.Settings.Project.hasOwnProperty(section)) {
-		if (name !== undefined)
-			return (SR.Settings.Project[section].hasOwnProperty(name) ? SR.Settings.Project[section][name] : undefined);
+		if (name !== undefined) {return (SR.Settings.Project[section].hasOwnProperty(name) ? SR.Settings.Project[section][name] : undefined);}
 		return SR.Settings.Project[section];
 	}
 	return undefined;
@@ -676,7 +671,7 @@ exports.getServerDomain = function (secured, type) {
 	return (secured === true? 'https' : 'http') + '://' + SR.Settings.SERVER_INFO.IP + (port ? (':' + port) : '') + '/';
 };
 
-var ISODateString = function (d) {
+function ISODateString (d) {
 	function pad(n) {
 		return n < 10 ? '0' + n : n;
 	}
@@ -686,14 +681,14 @@ var ISODateString = function (d) {
 	}
 
 	// NOTE: need to add '' to force a string, otherwise it's possible to turn out a number
-	return '' + d.getFullYear() +
-		pad(d.getMonth() + 1) +
-		pad(d.getDate()) +
-		pad(d.getHours()) +
-		pad(d.getMinutes()) +
-		pad(d.getSeconds()) +
-		pad1000(d.getMilliseconds());
-};
+	return '' + d.getFullYear()
+		+ pad(d.getMonth() + 1)
+		+ pad(d.getDate())
+		+ pad(d.getHours())
+		+ pad(d.getMinutes())
+		+ pad(d.getSeconds())
+		+ pad1000(d.getMilliseconds());
+}
 
 // return a unique date time string
 exports.getDateTimeString = function () {
@@ -705,14 +700,14 @@ exports.getDateTimeString = function () {
 
 // check if a directory exists or create if not
 exports.validatePath = function (path, create_if_invalid) {
-	
+
 	// by default we'd always create path if not exist
 	var create_path = (create_if_invalid === false ? false : true);
 
 	LOG.warn('validating path: ' + path + ' create_if_invalid: ' + create_path, l_name);
 	try {
 		if (SR.fs.existsSync(path) === false) {
-			
+
 			if (create_path === true) {
 				LOG.warn('creating new directory: ' + path + SR.Tags.ERREND, l_name);
 				//SR.fs.ensureDirSync(path);
@@ -720,7 +715,7 @@ exports.validatePath = function (path, create_if_invalid) {
 				return true;
 			}
 			return false;
-		}			
+		}
 	} catch (e) {
 		LOG.error(e, l_name);
 		LOG.error('validatePath failed: ' + path, l_name);
@@ -731,12 +726,11 @@ exports.validatePath = function (path, create_if_invalid) {
 // check if a directory exists or create if not (async version)
 exports.validatePathAsync = function (path, onDone) {
 
-	SR.fs.exists(path, function (exists) {
-		if (exists)
-			return l_safeCall(onDone, true);
+	SR.fs.exists(path, (exists) => {
+		if (exists) {return l_safeCall(onDone, true);}
 
-		console.log(SR.Tags.WARN + 'creating new directory: ' + path + SR.Tags.ERREND, l_name);
-		SR.fs.mkdir(path, function () {
+		console.info(SR.Tags.WARN + 'creating new directory: ' + path + SR.Tags.ERREND, l_name);
+		SR.fs.mkdir(path, () => {
 			l_safeCall(onDone, false);
 		});
 	});
@@ -744,9 +738,9 @@ exports.validatePathAsync = function (path, onDone) {
 
 // get a list of directories under a given path
 exports.getDirectoriesSync = function (srcpath) {
-	try {	
-		return SR.fs.readdirSync(srcpath).filter(function(file) {
-			return SR.fs.statSync(path.join(srcpath, file)).isDirectory();
+	try {
+		return SR.fs.readdirSync(srcpath).filter((file) => {
+			return SR.fs.statSync(pathparser.join(srcpath, file)).isDirectory();
 		});
 	} catch (e) {
 		LOG.warn('cannot list dir: ' + srcpath, l_name);
@@ -757,17 +751,17 @@ exports.getDirectoriesSync = function (srcpath) {
 
 // check if a file exists on file system or not (file size > 0)
 var l_validateFile = exports.validateFile = function (path, onDone) {
-	
+
 	// version 1: simply check existence (size 0 will return 'true')
 	//SR.fs.exists(path, onDone);
-	
+
 	// version 2: return false if size is 0
-	SR.fs.lstat(path, function (err, stats) {
+	SR.fs.lstat(path, (err, stats) => {
 		if (err) {
 			//LOG.error(err, l_name);
 			return UTIL.safeCall(onDone, false);
 		}
-		
+
 		UTIL.safeCall(onDone, stats.size > 0);
 	});
 };
@@ -784,27 +778,27 @@ exports.validateFileSync = function (path) {
 
 // search several directories to find a valid file
 exports.findValidFile = function (list, path, onDone) {
-	
-	var build_task = function (base_path) {
+
+	function build_task (base_path) {
 		return function (onTaskDone) {
-			var fullpath = SR.path.resolve(base_path, path);		
-			l_validateFile(fullpath, function (result) {
+			var fullpath = SR.path.resolve(base_path, path);
+			l_validateFile(fullpath, (result) => {
 				// if positive result found we just end the search
 				if (result) {
 					onTaskDone(fullpath);
 				} else {
 					onTaskDone(null);
 				}
-			});			
+			});
 		};
-	};
-	
+	}
+
 	var tasks = [];
-	for (var i in list) {
+	for (let i in list) {
 		tasks.push(build_task(list[i]));
 	}
-	
-	SR.async.series(tasks, function (err, results) {
+
+	SR.async.series(tasks, (err, results) => {
 		if (err) {
 			return UTIL.safeCall(onDone, null, err);
 		}
@@ -822,9 +816,9 @@ exports.dumpError = function (err) {
 			msg += '\nMessage: ' + err.message;
 		}
 		if (err.stack) {
-			msg += '\nStacktrace:\n' +
-				'====================\n' +
-				err.stack;
+			msg += '\nStacktrace:\n'
+				+ '====================\n'
+				+ err.stack;
 		}
 	} else {
 		msg = 'dumpError :: argument is not an object';
@@ -836,15 +830,13 @@ exports.dumpError = function (err) {
 // send custom message to project admin, if "adminMail" is specified in project settings
 var l_notifyAdmin = exports.notifyAdmin = function (title, msg, email) {
 
-	// notify by e-mail if admin is provided, default to only project admin, optional emails can be added	
+	// notify by e-mail if admin is provided, default to only project admin, optional emails can be added
 	email = (email || '');
 
-	if (email !== '')
-		email += ', ';
+	if (email !== '') {email += ', ';}
 	email += (UTIL.userSettings('adminMail') || '');
 
-	if (email === '')
-		return false;
+	if (email === '') {return false;}
 
 	var ip_port = 'unknown_server';
 	if (typeof SR.Settings.FRONTIER.getHostAddress === 'function') {
@@ -852,7 +844,7 @@ var l_notifyAdmin = exports.notifyAdmin = function (title, msg, email) {
 		ip_port = ip_port.IP + ':' + ip_port.port;
 	}
 
-	// set server name (domain if available, default to IP + port)		
+	// set server name (domain if available, default to IP + port)
 	var server_name = UTIL.getLocalDomain() || '';
 	server_name += (' ' + ip_port);
 
@@ -871,39 +863,34 @@ var l_notifyAdmin = exports.notifyAdmin = function (title, msg, email) {
 var l_isPortOpen = exports.isPortOpen = function (port, onResponse) {
 
 	// client approach
-	var client = SR.net.connect({
-		port: port
-	},
-	function (result) { //'connect' listener
-		if (typeof onResponse === 'function')
-			onResponse(false);
+	var client = SR.net.connect({port: port}, (result) => { //'connect' listener
+		if (typeof onResponse === 'function') {onResponse(false);}
 		client.end();
 	});
-	
-	client.on('error', function () {
+
+	client.on('error', () => {
 		LOG.sys('port [' + port + '] cannot be connected... port is open...', l_name);
-		if (typeof onResponse === 'function')
-			onResponse(true);
+		if (typeof onResponse === 'function') {onResponse(true);}
 	});
 
 	/* listen approach
 	// adapted from: https://gist.github.com/timoxley/1689041
 	var tester = net.createServer();
-	
+
 	tester.once('error', function (err) {
-		if (err.code != 'EADDRINUSE') 
+		if (err.code != 'EADDRINUSE')
 			return onResponse(err);
 		onResponse(null, true)
 	});
-	
+
 	tester.once('listening', function () {
-		tester.once('close', 
-					function () { 
+		tester.once('close',
+					function () {
 						onResponse(null, false);
 					});
 		tester.close();
 	});
-	
+
 	tester.listen(port);
 	*/
 };
@@ -911,8 +898,9 @@ var l_isPortOpen = exports.isPortOpen = function (port, onResponse) {
 ///////////////////////////////////////////////////////////////
 // for getSystemInfo
 ///////////////////////////////////////////////////////////////
-var fs = require('fs');
-realtimeInfo = {
+
+// FIXME: should be in it's own module
+var realtimeInfo = {
 	previousRX: 0,
 	previousTX: 0,
 	currentRXBPS: 0,
@@ -922,28 +910,32 @@ realtimeInfo = {
 };
 
 exports.daemon = function (arg) {
-	
+
 	if (typeof arg !== 'object' || typeof arg.action !== 'string') {
 		LOG.error('cannot start daemon, no arguments or action specified', l_name);
 		process.exit(0);
 		return;
 	}
-	
-	switch (arg.action) {
-	case 'startSetInterval':
+
+	if (arg.action === 'startSetInterval') {
 		setInterval(l_njds, 5000);
 		setInterval(l_cpu_realtime_info, 2000);
-		break;
-	default:
-		break;
 	}
+	// switch (arg.action) {
+	// case 'startSetInterval':
+	// 	setInterval(l_njds, 5000);
+	// 	setInterval(l_cpu_realtime_info, 2000);
+	// 	break;
+	// default:
+	// 	break;
+	// }
 };
 
 
-var l_cpu_realtime_info = function (arg) {
-		
-	cpu.cpuUsage( function (input) { realtimeInfo.cpu.cpuUsage = input; } );
-	cpu.cpuFree( function (input) { realtimeInfo.cpu.cpuFree = input; } );
+function l_cpu_realtime_info (arg) {
+
+	cpu.cpuUsage( (input) => { realtimeInfo.cpu.cpuUsage = input; } );
+	cpu.cpuFree( (input) => { realtimeInfo.cpu.cpuFree = input; } );
 	realtimeInfo.cpu.platform = cpu.platform();
 	realtimeInfo.cpu.cpuCount = cpu.cpuCount();
 	realtimeInfo.cpu.freemem = cpu.freemem();
@@ -955,16 +947,16 @@ var l_cpu_realtime_info = function (arg) {
 		'5': cpu.loadavg(5),
 		'15': cpu.loadavg(15),
 	};
-};
+}
 
 //var njds = require('nodejs-disks');
 var node_df = require('node-df');
-var l_njds = function (arg) {
+function l_njds (arg) {
 	if (process.platform === 'linux') {
 		// get disk info
 		/*
 		njds.drives(function (err, drives) {
-			njds.drivesDetail(drives, function (err, data) {				
+			njds.drivesDetail(drives, function (err, data) {
 				realtimeInfo.disks = data;
 			});
 		});*/
@@ -973,12 +965,12 @@ var l_njds = function (arg) {
 				        isDisplayPrefixMultiplier: true,
 				        precision: 2
 				    };
-		node_df(options_df, function (err, result) {
+		node_df(options_df, (err, result) => {
 			if (err) {
 				LOG.error(err, l_name);
 				return;
 			}
-			for (var i in result) {
+			for (let i in result) {
 				result[i].mountpoint = result[i].mount;
 				result[i].total = result[i].size;
 				result[i].drive = result[i].filesystem;
@@ -1013,15 +1005,15 @@ var l_njds = function (arg) {
 		var property_list = ['deviceid', 'freespace', 'size'];
 		var wmic = spawn('wmic', ['logicaldisk', 'get', property_list.join()]);
 		var disk_info = '';
-		wmic.stdout.on('data', function (data) {
-			for (var i = 0; i < data.length; i++) {
+		wmic.stdout.on('data', (data) => {
+			for (let i = 0; i < data.length; i++) {
 				disk_info += String.fromCharCode(data[i]);
 			}
 		});
-		wmic.on('exit', function (code, signal) {
+		wmic.on('exit', (code, signal) => {
 			realtimeInfo.disks = [];
 			var disks = disk_info.split('\r\r\n');
-			for (var i = 1; i < disks.length - 2; i++) {
+			for (let i = 1; i < disks.length - 2; i++) {
 				var disk = disks[i].replace(/\s+/g, ' ').split(' ');
 				var drive = disk[0];
 
@@ -1050,12 +1042,12 @@ var l_njds = function (arg) {
 
 		var netstat = spawn('netstat', ['-e']);
 		var traffinfo = '';
-		netstat.stdout.on('data', function (data) {
-			for (var i = 0; i < data.length; i++) {
+		netstat.stdout.on('data', (data) => {
+			for (let i = 0; i < data.length; i++) {
 				traffinfo += String.fromCharCode(data[i]);
 			}
 		});
-		netstat.on('exit', function (code, signal) {
+		netstat.on('exit', (code, signal) => {
 			var traffin = traffinfo.split('\r\n')[4].replace(/\s+/g, ' ').split(' ')[1];
 			realtimeInfo.currentRXBPS = Math.round((traffin - realtimeInfo.previousRX) / 2);
 			realtimeInfo.previousRX = traffin;
@@ -1067,35 +1059,34 @@ var l_njds = function (arg) {
 	}
 
 	if (os.platform() === 'linux') {
-		fs.readFile('/sys/class/net/eth0/statistics/rx_bytes', 'utf8', function (err, data) {
+		fs.readFile('/sys/class/net/eth0/statistics/rx_bytes', 'utf8', (err, data) => {
 		//fs.readFile('/sys/class/net/p5p1/statistics/rx_bytes', 'utf8', function (err, data) {
 			var value = parseInt(data);
 			if (err) {
-				return console.log(err);
+				return console.warn(err);
 			}
 			realtimeInfo.currentRXBPS = Math.round((value - realtimeInfo.previousRX) / 2);
 			realtimeInfo.previousRX = value;
 		});
 
-		fs.readFile('/sys/class/net/eth0/statistics/tx_bytes', 'utf8', function (err, data) {
+		fs.readFile('/sys/class/net/eth0/statistics/tx_bytes', 'utf8', (err, data) => {
 		//fs.readFile('/sys/class/net/p5p1/statistics/tx_bytes', 'utf8', function (err, data) {
 			var value = parseInt(data);
 			if (err) {
-				return console.log(err);
+				return console.warn(err);
 			}
 			realtimeInfo.currentTXBPS = Math.round((value - realtimeInfo.previousTX) / 2);
 			realtimeInfo.previousTX = value;
 		});
 	}
-};
+}
 
 // get a current snapshot of system's hardware
 var l_getSystemInfo = exports.getSystemInfo = function () {
 
 
-	if (process.platform === 'linux') {
-
-	}
+	// if (process.platform === 'linux') {
+	// }
 
 	return {
 		//title:  process.title,
@@ -1138,7 +1129,7 @@ var l_hash = exports.hash = function (data, type) {
 
 // generate a random integer between 0 and (limit-1)
 var l_randInteger = exports.randInteger = function (limit) {
-	return Math.floor(Math.random() * limit);	
+	return Math.floor(Math.random() * limit);
 };
 
 // ref: http://stackoverflow.com/questions/2573521/how-do-i-output-an-iso-8601-formatted-string-in-javascript
@@ -1148,7 +1139,7 @@ var l_localISOString = exports.localISOString = function (date, includeSeconds) 
 		return n < 10 ? '0' + n : n;
 	}
 	var localIsoString = date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + pad(date.getHours()) + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds());
-	if (date.getTimezoneOffset() == 0) localIsoString += 'Z';
+	if (date.getTimezoneOffset() == 0) {localIsoString += 'Z';}
 	return localIsoString;
 };
 
@@ -1169,24 +1160,24 @@ var l_getLocalPort = exports.getLocalPort = function (onDone, size) {
 	if (typeof onDone === 'undefined') {
 		return l_assignedPorts;
 	}
-	
+
 	var url = 'http://' + SR.Settings.IP_MONITOR + ':' + SR.Settings.PORT_MONITOR + '/getPort' + (size ? '?size=' + size : '');
 
 	LOG.warn('get available port from: ' + url, l_name);
 
 	UTIL.HTTPget(url, function (res_obj) {
 		if (res_obj !== null) {
-			
+
 			var port = res_obj.port;
-			
+
 			// store ports obtained
 			if (typeof port === 'number')
 				l_assignedPorts.push(port);
 			else {
-				for (var i=0; i < port.length; i++)
+				for (let i =0; i < port.length; i++)
 					l_assignedPorts.push(port[i]);
 			}
-				
+
 			UTIL.safeCall(onDone, port);
 		}
 		else {
@@ -1198,49 +1189,49 @@ var l_getLocalPort = exports.getLocalPort = function (onDone, size) {
 }
 */
 
+// FIXME: which "size"???
 // version 2: self-generated
 var l_getLocalPort = exports.getLocalPort = function (onDone, size) {
 
 	if (typeof onDone === 'undefined') {
 		return l_assignedPorts;
 	}
-	
+
 	// try to find a random unused port between range
 	var start = SR.Settings.PORT_APP_RANGE_START;
 	var end = SR.Settings.PORT_APP_RANGE_END;
-	var size = SR.Settings.PORT_RESERVED_SIZE;
-	
+	var size = SR.Settings.PORT_RESERVED_SIZE;	// FIXME: Input argument got overwritten
+
 	// if all attempts fail, we give up
 	var max_attempts = (end - start) / size;
 	var curr_attempt = 0;
-	
+
 	// NOTE: the attempted port are always start anew, as previously used port could be released
-	var attempts = {};		
-	
-	var get_port = function () {
-		
+	var attempts = {};
+
+	function get_port () {
+
 		// no ports found, we give up
 		if (curr_attempt === max_attempts) {
 			// get port fail, try to trace
 			LOG.stack();
-			return UTIL.safeCall(onDone, 0);		
+			return UTIL.safeCall(onDone, 0);
 		}
 
 		// pick one random port
 		var port = SR.Settings.PORT_APP_RANGE_START + UTIL.randInteger(max_attempts) * size;
-		
+
 		if (attempts.hasOwnProperty(port) === false) {
-			
+
 			LOG.warn('try to find an open port attempt ' + (curr_attempt+1) + '/' + max_attempts + '...', l_name);
-			UTIL.isPortOpen(port, function (response) {
+			UTIL.isPortOpen(port, (response) => {
 				// an open port is found
 				if (response) {
 					LOG.warn('open port [' + port + '] found!', l_name);
-					
+
 					// TODO: probably can remove this now as no need for monitor to keep track of assigned ports
-					for (var i=0; i < size; i++)
-						l_assignedPorts.push(port + i);
-					
+					for (let i =0; i < size; i++) {l_assignedPorts.push(port + i);}
+
 					return UTIL.safeCall(onDone, port);
 				}
 				// record port & try again
@@ -1248,23 +1239,23 @@ var l_getLocalPort = exports.getLocalPort = function (onDone, size) {
 				attempts[port] = true;
 				setTimeout(get_port, 0);
 			});
-		}
-		// try again
-		else
+		} else {
+			// try again
 			setTimeout(get_port, 0);
-	};
-	
+		}
+	}
+
 	// make the first attempt
 	get_port();
-	
+
 };
 
 
 // TODO: detect more correctly instead of specifying in settings?
 // get domain + port for current entry server
 exports.getEntryServer = function (secured) {
-	return (secured ? 'https' : 'http') + '://' + SR.Settings.DOMAIN_LOBBY + ':' +
-		(secured ? SR.Settings.PORT_ENTRY + 1 : SR.Settings.PORT_ENTRY) + '/';
+	return (secured ? 'https' : 'http') + '://' + SR.Settings.DOMAIN_LOBBY + ':'
+		+ (secured ? SR.Settings.PORT_ENTRY + 1 : SR.Settings.PORT_ENTRY) + '/';
 };
 
 // mix two objects into same object
@@ -1273,11 +1264,9 @@ exports.mixin = exports.merge = require('merge');
 // compare if two arrays are the same
 // ref: https://stackoverflow.com/questions/4025893/how-to-check-identical-array-in-most-efficient-way
 var l_arraysEqual = exports.arraysEqual = function (arr1, arr2) {
-	if (arr1.length !== arr2.length)
-		return false;
-	for (var i = arr1.length; i--;) {
-		if (arr1[i] !== arr2[i])
-			return false;
+	if (arr1.length !== arr2.length) {return false;}
+	for (let i = arr1.length; i--;) {
+		if (arr1[i] !== arr2[i]) {return false;}
 	}
 
 	return true;
@@ -1285,15 +1274,13 @@ var l_arraysEqual = exports.arraysEqual = function (arr1, arr2) {
 
 // read a JSON file as js object
 exports.readJSON = function (path, onDone) {
-	var fs = require('fs');
 	var file = SR.path.join(__dirname, path);
 
-	if (typeof onDone !== 'function')
-		onDone = undefined;
+	if (typeof onDone !== 'function') {onDone = undefined;}
 
 	LOG.debug('read JSON from: ' + file, l_name);
 
-	fs.readFile(file, 'utf8', function (err, data) {
+	fs.readFile(file, 'utf8', (err, data) => {
 		if (err) {
 			LOG.error(err, l_name);
 			UTIL.safeCall(onDone, err);
@@ -1305,12 +1292,12 @@ exports.readJSON = function (path, onDone) {
 		} catch (e) {
 			LOG.error(e, l_name);
 			//throw e;
-			UTIL.safeCall(onDone, e);			
+			UTIL.safeCall(onDone, e);
 			return;
 		}
 		LOG.sys(data);
 
-		UTIL.safeCall(onDone, null, data);		
+		UTIL.safeCall(onDone, null, data);
 	});
 };
 
@@ -1325,7 +1312,7 @@ var l_readFile = exports.readFile = function (path, onDone) {
 
 	path = SR.path.join(__dirname, path);
 	LOG.sys('reading file: ' + path, l_name);
-	SR.fs.readFile(path, 'utf-8', function (err, data) {
+	SR.fs.readFile(path, 'utf8', (err, data) => {
 		if (err) {
 			LOG.error(err, l_name);
 			UTIL.safeCall(onDone);
@@ -1341,7 +1328,7 @@ var l_writeFile = exports.writeFile = function (path, file, onDone) {
 
 	path = SR.path.join(__dirname, path);
 	LOG.sys('writing file: ' + path, l_name);
-	SR.fs.writeFile(path, file, 'utf-8', function (err) {
+	SR.fs.writeFile(path, file, 'utf-8', (err) => {
 		if (err) {
 			LOG.error(err, l_name);
 			UTIL.safeCall(onDone, false);
@@ -1364,13 +1351,13 @@ exports.writeSystemConfig = function (file, onDone) {
 
 ///////////////////////////////////
 // input: {}
-// example: 
+// example:
 // output: JSON with date and time
 ///////////////////////////////////
 // get a JSON with date and time
 var l_getDateTimeJson = exports.getDateTimeJson = function (d) {
-	if (d) var date = new Date(d);
-	else var date = new Date();
+	let date = d ? new Date(d) : new Date();
+	// if (d) {var date = new Date(d);} else {var date = new Date();}
 	var hour = date.getHours();
 	hour = (hour < 10 ? '0' : '') + hour;
 	var min = date.getMinutes();
@@ -1415,7 +1402,7 @@ var l_getDateTimeJson = exports.getDateTimeJson = function (d) {
 		timeObj.weekDay = 'saturday';
 		break;
 	default:
-		console.log('error code: xxxxxxxx');
+		console.warn('error code: xxxxxxxx');
 		break;
 	}
 	return timeObj;
@@ -1431,11 +1418,11 @@ exports.getDateTimeTS = function (arg) {
 		m: x.minute.toString(),
 		s: x.second.toString()
 	};
-	if (result.M.length === 1) result.M = '0' + result.M;
-	if (result.D.length === 1) result.D = '0' + result.D;
-	if (result.h.length === 1) result.h = '0' + result.h;
-	if (result.m.length === 1) result.m = '0' + result.m;
-	if (result.s.length === 1) result.s = '0' + result.s;
+	if (result.M.length === 1) {result.M = '0' + result.M;}
+	if (result.D.length === 1) {result.D = '0' + result.D;}
+	if (result.h.length === 1) {result.h = '0' + result.h;}
+	if (result.m.length === 1) {result.m = '0' + result.m;}
+	if (result.s.length === 1) {result.s = '0' + result.s;}
 	//console.log("result " + result);
 	return result.Y + result.M + result.D + '-' + result.h + result.m + result.s;
 };
@@ -1457,8 +1444,8 @@ var cleanArray = exports.cleanArray = function (actual) {
 		return false;
 	}
 
-	var newArray = new Array();
-	for (var i = 0; i < actual.length; i++) {
+	var newArray = [];
+	for (let i = 0; i < actual.length; i++) {
 		if (actual[i]) {
 			newArray.push(actual[i]);
 		}
@@ -1470,18 +1457,16 @@ var cleanArray = exports.cleanArray = function (actual) {
 
 // http://stackoverflow.com/questions/5827612/node-js-fs-readdir-recursive-directory-search
 //////////////////////////////
-// multi-purpose find (-- walk a file hierarchy) cross-platform(pure nodejs version) 
+// multi-purpose find (-- walk a file hierarchy) cross-platform(pure nodejs version)
 // 此功能用來取代 linux find 指令
 // input: {path: "path", onDone: function (){}, option: "lengthOfFilename atime mtime ctime filesize"}
 // output: []
 //////////////////////////////
-// recursive file list 
-var fs = require('fs');
-var path = require('path');
+// recursive file list
 
-var walk = function (dir, done) {
+function walk (dir, done) {
 	var results = [];
-	fs.readdir(dir, function (err, list) {
+	fs.readdir(dir, (err, list) => {
 		if (err) {
 			return done(err);
 		}
@@ -1491,12 +1476,12 @@ var walk = function (dir, done) {
 			return done(null, results);
 		}
 
-		list.forEach(function (file) {
+		list.forEach((file) => {
 			//file = dir + '/' + file;
 			file = SR.path.join(dir, file);
-			fs.stat(file, function (err, stat) {
+			fs.stat(file, (err, stat) => {
 				if (stat && stat.isDirectory()) {
-					walk(file, function (err, res) {
+					walk(file, (err, res) => {
 						results = results.concat(res);
 						if (!--pending) {
 							done(null, results);
@@ -1514,9 +1499,9 @@ var walk = function (dir, done) {
 			});
 		});
 	});
-};
+}
 
-// multi-purpose find (-- walk a file hierarchy) cross-platform(pure nodejs version) 
+// multi-purpose find (-- walk a file hierarchy) cross-platform(pure nodejs version)
 exports.findFiles = function (arg) {
 	LOG.debug('in findFiles', l_name);
 	LOG.debug(arg, l_name);
@@ -1540,7 +1525,7 @@ exports.findFiles = function (arg) {
 		return;
 	}
 
-	walk(arg.path, function (err, results) {
+	walk(arg.path, (err, results) => {
 		if (err) {
 			//throw err;
 			console.log('error: path exists?');
@@ -1552,51 +1537,55 @@ exports.findFiles = function (arg) {
 		var r = undefined;
 
 		if (arg.sortOption) {
-			r = results.sort(function(a, b) {
-				if (!a) return 0;
-				if (!b) return 0;
+			r = results.sort((a, b) => {
+				let ret;
+				if (!a || !b) {
+					return 0;
+				}
+
 				switch (arg.sortOption) {
 				case 'filenameLocale':
-					return a.file.localeCompare(b.file);
+					ret = a.file.localeCompare(b.file);
 					break;
 				case 'filename':
-					return a.file - b.file; // length of filename
+					ret = a.file - b.file; // length of filename
 					break;
 				case 'lengthOfFilename':
-					return a.file.length - b.file.length; // length of filename
+					ret = a.file.length - b.file.length; // length of filename
 					break;
 				case 'atime':
-					return a.stat.atime - b.stat.atime; // access time of file
+					ret = a.stat.atime - b.stat.atime; // access time of file
 					break;
 				case 'mtime':
-					if (!a.stat) return 0;
-					if (!b.stat) return 0;
-					if (!a.stat.mtime) return 0;
-					if (!b.stat.mtime) return 0;
-					return a.stat.mtime - b.stat.mtime; // modification time of file
+					if (!a.stat || !b.stat) {return 0;}
+					if (!a.stat.mtime || !b.stat.mtime) {return 0;}
+
+					ret = a.stat.mtime - b.stat.mtime; // modification time of file
 					break;
 					// http://www.linux-faqs.info/general/difference-between-mtime-ctime-and-atime
 					// ctime: ctime is the inode or file change time. The ctime gets updated when the file attributes are changed, like changing the owner, changing the permission or moving the file to an other filesystem but will also be updated when you modify a file.
 					// mtime: mtime is the file modify time. The mtime gets updated when you modify a file. Whenever you update content of a file or save a file the mtime gets updated.
 					// atime: atime is the file access time. The atime gets updated when you open a file but also when a file is used for other operations like grep, sort, cat, head, tail and so on.
 				case 'ctime':
-					return a.stat.ctime - b.stat.ctime; // creation time of file
+					ret = a.stat.ctime - b.stat.ctime; // creation time of file
 					break;
 				case 'filesize':
-					return a.stat.size - b.stat.size; // size of file
+					ret = a.stat.size - b.stat.size; // size of file
 					break;
 				default:
 					break;
 				}
+
+				return ret;
 			});
 		} else {
 			console.log('no sortOption');
 		}
 		//console.log(r);
 
-		for (var i in r) {
+		for (let i in r) {
 			if (arg.rexmatch) {
-				if (r[i].file.match(arg.rexmatch)) {} else {
+				if ( !(r[i].file.match(arg.rexmatch)) ) {
 					//console.log("delete: ");
 					//console.log(r[i]);
 					delete r[i];
@@ -1604,7 +1593,8 @@ exports.findFiles = function (arg) {
 			}
 
 			if (r[i] && r[i].stat && arg.ctime && arg.ctime.start && arg.ctime.end) {
-				if (r[i].stat.ctime.getTime() >= arg.ctime.start.getTime() && r[i].stat.ctime.getTime() <= arg.ctime.end.getTime()) {} else {
+				if ( r[i].stat.ctime.getTime() < arg.ctime.start.getTime()
+				    || r[i].stat.ctime.getTime() > arg.ctime.end.getTime() ) {
 					//console.log("delete: ");
 					//console.log(r[i]);
 					delete r[i];
@@ -1612,7 +1602,8 @@ exports.findFiles = function (arg) {
 			}
 
 			if (r[i] && r[i].stat && arg.mtime && arg.mtime.start && arg.mtime.end) {
-				if (r[i].stat.mtime.getTime() >= arg.mtime.start.getTime() && r[i].stat.mtime.getTime() <= arg.mtime.end.getTime()) {} else {
+				if (r[i].stat.mtime.getTime() < arg.mtime.start.getTime()
+				    || r[i].stat.mtime.getTime() > arg.mtime.end.getTime()) {
 					//console.log("delete: ");
 					//console.log(r[i]);
 					delete r[i];
@@ -1627,8 +1618,8 @@ exports.findFiles = function (arg) {
 		}
 
 		if (arg.limit && typeof arg.limit === 'number') {
-			var re = [];
-			for (var i in r) {
+			let re = [];
+			for (let i in r) {
 				if (i > arg.limit - 1) {
 					break;
 				}
@@ -1638,8 +1629,8 @@ exports.findFiles = function (arg) {
 		}
 
 		if (arg.outputFilenameOnly && arg.outputFilenameOnly === true) {
-			var re = [];
-			for (var i in r) {
+			let re = [];
+			for (let i in r) {
 				re.push(r[i].file);
 			}
 			r = re;
@@ -1653,7 +1644,7 @@ exports.findFiles = function (arg) {
 
 /* Array.prototype.getUnique = function (){
    var u = {}, a = [];
-   for(var i = 0, l = this.length; i < l; ++i){
+   for(let i = 0, l = this.length; i < l; ++i){
       if(u.hasOwnProperty(this[i])) {
          continue;
       }
@@ -1671,11 +1662,11 @@ exports.mkdirParent = function (dirPath, mode, callback) {
 	}
 	fs.mkdirParent = function (dirPath, mode, callback) {
 		//Call the standard fs.mkdir
-		fs.mkdir(dirPath, mode, function (error) {
+		fs.mkdir(dirPath, mode, (error) => {
 			//When it fail in this way, do the custom steps
 			if (error && error.errno === 34) {
 				//Create all the parents recursively
-				fs.mkdirParent(path.dirname(dirPath), mode, callback);
+				fs.mkdirParent(pathparser.dirname(dirPath), mode, callback);
 				//And then the directory
 				fs.mkdirParent(dirPath, mode, callback);
 			}
@@ -1686,7 +1677,7 @@ exports.mkdirParent = function (dirPath, mode, callback) {
 };
 
 ////////////////////////////////////////
-// 
+//
 //
 ////////////////////////////////////////
 // to decide which partition from given path
@@ -1714,15 +1705,14 @@ exports.whichPartition = function (arg) {
 	}
 
 	var paths = ' ';
-	for (var i in arg) {
-		if (typeof(arg[i]) === 'string')
-			paths = paths + arg[i] + ' ';
+	for (let i in arg) {
+		if (typeof(arg[i]) === 'string') {paths = paths + arg[i] + ' ';}
 	}
 	//console.log("paths");
 	//console.log(paths);
 
 	if (process.platform === 'linux') {
-		exec('df -TP ' + paths, function (err, stdout, stderr) {
+		exec('df -TP ' + paths, (err, stdout, stderr) => {
 			if (err) {
 				console.log('utility.js error 12541292');
 				console.log(err);
@@ -1730,13 +1720,13 @@ exports.whichPartition = function (arg) {
 				var partitions = [];
 				var partitionTemp1 = stdout.split(' ');
 				var partitionTemp2 = [];
-				for (var i in partitionTemp1) {
+				for (let i in partitionTemp1) {
 					partitionTemp2[i] = partitionTemp1[i].split('\n');
 				}
 				//console.log("partitionTemp");
-				for (var i in partitionTemp2) {
+				for (let i in partitionTemp2) {
 					for (var j in partitionTemp2[i]) {
-						if (partitionTemp2[i][j].match(/\//) > -1) {} else {
+						if (partitionTemp2[i][j].match(/\//) < 0) {
 							if (partitions.indexOf(partitionTemp2[i][j]) === -1) {
 								partitions.push(partitionTemp2[i][j]);
 							}
@@ -1744,7 +1734,7 @@ exports.whichPartition = function (arg) {
 					}
 				}
 				//console.log(partitions);
-				if (arg.onDone) arg.onDone(partitions);
+				if (arg.onDone) {arg.onDone(partitions);}
 				return partitions;
 			}
 		});
@@ -1755,12 +1745,11 @@ exports.whichPartition = function (arg) {
 exports.contactMonitor = function (type, para, onDone, is_broadcast) {
 
 	var monitors = [];
-	
+
 	// choose one monitor server (randomly choose one if more than one)
 	if (SR.Settings.IP_MONITOR instanceof Array) {
 		if (is_broadcast) {
-			for (var i=0; i < SR.Settings.IP_MONITOR.length; i++)
-				monitors.push(SR.Settings.IP_MONITOR[i]);
+			for (let i =0; i < SR.Settings.IP_MONITOR.length; i++) {monitors.push(SR.Settings.IP_MONITOR[i]);}
 		} else {
 			var index = UTIL.randInteger(SR.Settings.IP_MONITOR.length);
 			monitors.push(SR.Settings.IP_MONITOR[index]);
@@ -1768,34 +1757,31 @@ exports.contactMonitor = function (type, para, onDone, is_broadcast) {
 	} else {
 		monitors.push(SR.Settings.IP_MONITOR);
 	}
-	
-	for (var i=0; i < monitors.length; i++) {
+
+	for (let i =0; i < monitors.length; i++) {
 
 		var monitor = monitors[i] + ':' + SR.Settings.PORT_MONITOR;
 		LOG.sys('contact monitor: ' + monitor, l_name);
-		
+
 		// TODO: change this from POST requests to socket-based persistant connections
 		var url = 'http://' + monitor + '/' + type + '/';
-		
+
 		//LOG.warn('contact monitor url: ' + url);
 		//LOG.warn(para);
-		
+
 		// send POST request
 		UTIL.HTTPpost(
 			url,
 			para,
-			function (err, response, body) {
+			(err, response, body) => {
 				//LOG.debug('contactMonitor statusCode: ' + response.statusCode + ' body:', l_name);
 				//LOG.warn(response, l_name);
 				//LOG.debug(body, l_name);
-				
-				if (err)
-					LOG.error(err, l_name);
-				else if (response.statusCode == 200) {
-					if (body === '')
-						err = 'no proper response from monitor';
+
+				if (err) {LOG.error(err, l_name);} else if (response.statusCode == 200) {
+					if (body === '') {err = 'no proper response from monitor';}
 				}
-				
+
 				UTIL.safeCall(onDone, err, body);
 			}
 		);
@@ -1803,8 +1789,8 @@ exports.contactMonitor = function (type, para, onDone, is_broadcast) {
 };
 
 // build objects as part of UTIL
-var files = SR.fs.readdirSync(__dirname + '/UTIL');
-for (var i=0; i < files.length; i++) {
-	var name = files[i].split('.')[0];
+var util_files = SR.fs.readdirSync(__dirname + '/UTIL');
+for (let i =0; i < util_files.length; i++) {
+	let name = util_files[i].split('.')[0];
 	exports[name] = require(__dirname + '/UTIL/' + name)[name];
 }

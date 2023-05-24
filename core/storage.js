@@ -1,3 +1,5 @@
+/* cSpell:disable */
+/* global SR, LOG, UTIL */
 //
 //  storage.js
 //
@@ -16,7 +18,7 @@ exports.version = function () {
 };
 
 exports.unlink = function (path, callback) {
-	return SR.fs.unlink(path, callback);	
+	return SR.fs.unlink(path, callback);
 };
 
 exports.rename = function (oldPath, newPath, callback) {
