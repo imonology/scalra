@@ -54,7 +54,7 @@
     "minimist": "1.2.6",
     "mocha": "^10.2.0",
     "moment": "^2.24.0",
-    "mongodb": "3.6.3",
+    "mongodb": "3.6.10",
     "mysql": "^2.18.1",
     "node-df": "0.1.1",
     "node-upload-progress": "0.0.1",
